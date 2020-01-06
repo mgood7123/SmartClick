@@ -20,6 +20,34 @@ public class MediaProjectionHelper {
         this.variables = variables;
     }
 
+    public void takeScreenShot() {
+        variables.log.errorNoStackTrace("taking screenshot");
+        variables.screenshot = true;
+        startScreenMirror();
+    }
+
+    public void startScreenMirror() {
+        variables.log.errorNoStackTrace("looper is " + variables.looper);
+        if (variables.looper == null) {
+            variables.log.errorNoStackTrace("startLooper");
+            variables.looperHelper.startLooper();
+            variables.log.errorNoStackTrace("requestCapturePermission");
+            requestCapturePermission();
+            variables.log.errorNoStackTrace("requested");
+        }
+    }
+
+    public void stopScreenMirror() {
+        variables.log.errorNoStackTrace("looper is " + variables.looper);
+        if (variables.looper != null) {
+            variables.log.errorNoStackTrace("stopCapture");
+            stopCapture();
+            variables.log.errorNoStackTrace("stopLooper");
+            variables.looperHelper.stopLooper();
+            variables.log.errorNoStackTrace("stopped");
+        }
+    }
+
     public MediaProjectionManager getMediaProjectionManager() {
         if (variables.activity == null)
             variables.log.errorAndThrow(

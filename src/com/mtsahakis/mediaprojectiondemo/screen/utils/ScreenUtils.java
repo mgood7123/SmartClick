@@ -22,37 +22,21 @@ public class ScreenUtils {
         variables.mProjectionManager = variables.mediaProjectionHelper.getMediaProjectionManager();
     }
 
-    public void takeScreenShot() {
-        variables.log.errorNoStackTrace("taking screenshot");
-        variables.screenshot = true;
-        startScreenMirror();
-    }
-
-    public void startScreenMirror() {
-        variables.log.errorNoStackTrace("looper is " + variables.looper);
-        if (variables.looper == null) {
-            variables.log.errorNoStackTrace("startLooper");
-            variables.looperHelper.startLooper();
-            variables.log.errorNoStackTrace("requestCapturePermission");
-            variables.mediaProjectionHelper.requestCapturePermission();
-            variables.log.errorNoStackTrace("requested");
-        }
-    }
-
-    public void stopScreenMirror() {
-        variables.log.errorNoStackTrace("looper is " + variables.looper);
-        if (variables.looper != null) {
-            variables.log.errorNoStackTrace("stopCapture");
-            variables.mediaProjectionHelper.stopCapture();
-            variables.log.errorNoStackTrace("stopLooper");
-            variables.looperHelper.stopLooper();
-            variables.log.errorNoStackTrace("stopped");
-        }
-    }
-
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == variables.REQUEST_CODE) {
             variables.mediaProjectionHelper.startCapture(resultCode, data);
         }
+    }
+
+    public void takeScreenShot() {
+        variables.mediaProjectionHelper.takeScreenShot();
+    }
+
+    public void startScreenMirror() {
+        variables.mediaProjectionHelper.startScreenMirror();
+    }
+
+    public void stopScreenMirror() {
+        variables.mediaProjectionHelper.stopScreenMirror();
     }
 }

@@ -59,8 +59,7 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
                             @Override
                             public void run() {
                                 Log.e("TAG", "took screenshot");
-                                variables.mediaProjectionHelper.stopCapture();
-                                variables.looperHelper.stopLooper();
+                                variables.mediaProjectionHelper.stopScreenMirror();
                                 variables.screenshot = false;
                                 single = false;
                             }

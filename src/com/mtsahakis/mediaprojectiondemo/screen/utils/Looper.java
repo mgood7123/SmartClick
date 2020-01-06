@@ -3,14 +3,14 @@ package com.mtsahakis.mediaprojectiondemo.screen.utils;
 import android.os.Handler;
 import android.util.Log;
 
-class Looper {
+public class Looper {
     private final Variables variables;
 
     public Looper(Variables variables) {
         this.variables = variables;
     }
 
-    void startLooper() {
+    public void startLooper() {
         variables.looper = new Thread() {
             @Override
             public void run() {
@@ -36,7 +36,7 @@ class Looper {
         variables.looper.start();
     }
 
-    void stopLooper() {
+    public void stopLooper() {
         try {
             Log.e("Looper", "joining looper");
             variables.mHandler.getLooper().getThread().join();
