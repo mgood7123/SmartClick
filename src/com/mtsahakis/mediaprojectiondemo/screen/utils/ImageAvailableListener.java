@@ -1,11 +1,9 @@
 package com.mtsahakis.mediaprojectiondemo.screen.utils;
 
-import android.app.Activity;
 import android.graphics.Bitmap;
 import android.media.Image;
 import android.media.ImageReader;
 import android.util.Log;
-import android.widget.ImageView;
 
 import java.nio.ByteBuffer;
 

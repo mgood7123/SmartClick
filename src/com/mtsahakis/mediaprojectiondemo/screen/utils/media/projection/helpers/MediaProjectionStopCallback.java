@@ -1,13 +1,8 @@
 package com.mtsahakis.mediaprojectiondemo.screen.utils.media.projection.helpers;
 
-import android.hardware.display.VirtualDisplay;
-import android.media.ImageReader;
 import android.media.projection.MediaProjection;
-import android.os.Handler;
 import android.util.Log;
 
-import com.mtsahakis.mediaprojectiondemo.screen.utils.OrientationChangeCallback;
-import com.mtsahakis.mediaprojectiondemo.screen.utils.ScreenUtils;
 import com.mtsahakis.mediaprojectiondemo.screen.utils.Variables;
 
 public class MediaProjectionStopCallback extends MediaProjection.Callback {

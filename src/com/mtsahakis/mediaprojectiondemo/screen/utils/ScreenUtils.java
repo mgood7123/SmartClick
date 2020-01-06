@@ -2,14 +2,7 @@ package com.mtsahakis.mediaprojectiondemo.screen.utils;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.PixelFormat;
-import android.graphics.Point;
-import android.media.ImageReader;
-import android.util.DisplayMetrics;
 import android.widget.ImageView;
-
-import com.mtsahakis.mediaprojectiondemo.screen.utils.media.projection.helpers.MediaProjectionHelper;
-import com.mtsahakis.mediaprojectiondemo.screen.utils.media.projection.helpers.MediaProjectionStopCallback;
 
 public class ScreenUtils {
 

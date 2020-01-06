@@ -1,9 +1,5 @@
 package com.mtsahakis.mediaprojectiondemo.screen.utils;
 
-import android.content.Context;
-import android.hardware.display.VirtualDisplay;
-import android.media.ImageReader;
-import android.view.Display;
 import android.view.OrientationEventListener;
 
 import com.mtsahakis.mediaprojectiondemo.screen.utils.media.projection.helpers.MediaProjectionHelper;

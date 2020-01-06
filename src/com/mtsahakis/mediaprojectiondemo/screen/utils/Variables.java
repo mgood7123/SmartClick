@@ -10,7 +10,6 @@ import android.os.Handler;
 import android.view.Display;
 import android.widget.ImageView;
 
-import com.mtsahakis.mediaprojectiondemo.LogUtils;
 import com.mtsahakis.mediaprojectiondemo.screen.utils.media.projection.helpers.MediaProjectionHelper;
 
 public class Variables {

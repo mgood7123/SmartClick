@@ -1,4 +1,4 @@
-package com.mtsahakis.mediaprojectiondemo;
+package com.mtsahakis.mediaprojectiondemo.screen.utils;
 
 import android.util.Log;
 
