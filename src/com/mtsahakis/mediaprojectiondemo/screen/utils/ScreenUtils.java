@@ -14,29 +14,45 @@ import com.mtsahakis.mediaprojectiondemo.screen.utils.media.projection.helpers.M
 public class ScreenUtils {
 
 
-    Variables variables = new Variables();
-    MediaProjectionHelper mediaProjectionHelper = new MediaProjectionHelper(variables);
-    Looper looper = new Looper(variables);
+    public Variables variables = new Variables();
 
     public void onCreate(Activity activity, ImageView imageView) {
         variables.activity = activity;
         variables.imageView = imageView;
-        variables.mProjectionManager = mediaProjectionHelper.getMediaProjectionManager();
+        variables.mProjectionManager = variables.mediaProjectionHelper.getMediaProjectionManager();
+    }
+
+    public void takeScreenShot() {
+        variables.log.errorNoStackTrace("taking screenshot");
+        variables.screenshot = true;
+        startScreenMirror();
     }
 
     public void startScreenMirror() {
-        looper.startLooper();
-        mediaProjectionHelper.requestCapturePermission();
+        variables.log.errorNoStackTrace("looper is " + variables.looper);
+        if (variables.looper == null) {
+            variables.log.errorNoStackTrace("startLooper");
+            variables.looperHelper.startLooper();
+            variables.log.errorNoStackTrace("requestCapturePermission");
+            variables.mediaProjectionHelper.requestCapturePermission();
+            variables.log.errorNoStackTrace("requested");
+        }
     }
 
     public void stopScreenMirror() {
-        mediaProjectionHelper.stopCapture();
-        looper.stopLooper();
+        variables.log.errorNoStackTrace("looper is " + variables.looper);
+        if (variables.looper != null) {
+            variables.log.errorNoStackTrace("stopCapture");
+            variables.mediaProjectionHelper.stopCapture();
+            variables.log.errorNoStackTrace("stopLooper");
+            variables.looperHelper.stopLooper();
+            variables.log.errorNoStackTrace("stopped");
+        }
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == variables.REQUEST_CODE) {
-            mediaProjectionHelper.startCapture(resultCode, data);
+            variables.mediaProjectionHelper.startCapture(resultCode, data);
         }
     }
 }

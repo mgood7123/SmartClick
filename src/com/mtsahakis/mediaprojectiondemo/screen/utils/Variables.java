@@ -11,6 +11,7 @@ import android.view.Display;
 import android.widget.ImageView;
 
 import com.mtsahakis.mediaprojectiondemo.LogUtils;
+import com.mtsahakis.mediaprojectiondemo.screen.utils.media.projection.helpers.MediaProjectionHelper;
 
 public class Variables {
 
@@ -30,6 +31,9 @@ public class Variables {
 
     public MediaProjectionManager mProjectionManager;
 
+    public MediaProjectionHelper mediaProjectionHelper = new MediaProjectionHelper(this);
+    public Looper looperHelper = new Looper(this);
+
     public ImageReader mImageReader;
     public Handler mHandler;
     public Display mDisplay;
@@ -46,4 +50,5 @@ public class Variables {
     );
 
     public Thread looper;
+    public boolean screenshot;
 }

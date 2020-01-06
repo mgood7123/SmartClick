@@ -7,6 +7,7 @@ import android.graphics.Point;
 import android.media.ImageReader;
 import android.media.projection.MediaProjectionManager;
 import android.util.DisplayMetrics;
+import android.util.Log;
 
 import com.mtsahakis.mediaprojectiondemo.screen.utils.ImageAvailableListener;
 import com.mtsahakis.mediaprojectiondemo.screen.utils.OrientationChangeCallback;
@@ -61,6 +62,7 @@ public class MediaProjectionHelper {
 
     public void startCapture(int resultCode, Intent data) {
         if (variables.sMediaProjection != null) return;
+        Log.e("ScreenCapture", "starting projection.");
         variables.sMediaProjection = variables.mProjectionManager.getMediaProjection(resultCode, data);
 
         if (variables.sMediaProjection != null) {
@@ -80,6 +82,7 @@ public class MediaProjectionHelper {
 
             // register media projection stop callback
             variables.sMediaProjection.registerCallback(new MediaProjectionStopCallback(variables, this), variables.mHandler);
+            Log.e("ScreenCapture", "started projection.");
         }
     }
 }

@@ -42,7 +42,15 @@ public class ScreenCaptureImageActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        SU.onCreate(this, (ImageView) findViewById(R.id.SCREENSHOT));
+        SU.onCreate(this, (ImageView) findViewById(R.id.renderedCapture));
+
+        findViewById(R.id.screenshotButton).setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                SU.takeScreenShot();
+            }
+        });
 
         // start projection
         findViewById(R.id.startButton).setOnClickListener(new View.OnClickListener() {
