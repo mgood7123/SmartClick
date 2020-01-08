@@ -52,10 +52,4 @@ public class Variables {
     public boolean grantedPermission;
     public int resultCodeSaved;
     public Intent dataSaved;
-    public LogUtils log2;
-    public Variables() {
-        log = new LogUtils(
-                TAG, "a bug has occurred, this should not happen"
-        );
-    }
 }
