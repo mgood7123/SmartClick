@@ -1,4 +1,4 @@
-package com.mtsahakis.mediaprojectiondemo.screen.utils;
+package screen.utils;
 
 import android.util.Log;
 
@@ -6,7 +6,7 @@ import androidx.annotation.Nullable;
 
 import static org.junit.Assert.assertNotNull;
 
-public final class LogUtils {
+public class LogUtils {
     private String TAG = "";
     private String ERRORMESSAGE = "An error has occured";
 

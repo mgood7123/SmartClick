@@ -6,7 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
 
-import com.mtsahakis.mediaprojectiondemo.screen.utils.ScreenUtils;
+import screen.utils.ScreenUtils;
 
 
 public class ScreenCaptureImageActivity extends Activity {

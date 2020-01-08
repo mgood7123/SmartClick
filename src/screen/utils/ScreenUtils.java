@@ -1,11 +1,10 @@
-package com.mtsahakis.mediaprojectiondemo.screen.utils;
+package screen.utils;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.widget.ImageView;
 
 public class ScreenUtils {
-
 
     public Variables variables = new Variables();
 

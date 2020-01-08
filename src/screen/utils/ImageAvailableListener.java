@@ -1,4 +1,4 @@
-package com.mtsahakis.mediaprojectiondemo.screen.utils;
+package screen.utils;
 
 import android.graphics.Bitmap;
 import android.media.Image;

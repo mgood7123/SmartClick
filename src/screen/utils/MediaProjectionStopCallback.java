@@ -1,9 +1,7 @@
-package com.mtsahakis.mediaprojectiondemo.screen.utils.media.projection.helpers;
+package screen.utils;
 
 import android.media.projection.MediaProjection;
 import android.util.Log;
-
-import com.mtsahakis.mediaprojectiondemo.screen.utils.Variables;
 
 public class MediaProjectionStopCallback extends MediaProjection.Callback {
     private final Variables variables;

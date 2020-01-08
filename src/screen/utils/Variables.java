@@ -1,6 +1,7 @@
-package com.mtsahakis.mediaprojectiondemo.screen.utils;
+package screen.utils;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.VirtualDisplay;
 import android.media.ImageReader;
@@ -9,8 +10,6 @@ import android.media.projection.MediaProjectionManager;
 import android.os.Handler;
 import android.view.Display;
 import android.widget.ImageView;
-
-import com.mtsahakis.mediaprojectiondemo.screen.utils.media.projection.helpers.MediaProjectionHelper;
 
 public class Variables {
 
@@ -44,10 +43,19 @@ public class Variables {
 
     public Activity activity;
 
-    public final LogUtils log = new LogUtils(
+    public LogUtils log = new LogUtils(
             TAG, "a bug has occurred, this should not happen"
     );
 
     public Thread looper;
     public boolean screenshot;
+    public boolean grantedPermission;
+    public int resultCodeSaved;
+    public Intent dataSaved;
+    public LogUtils log2;
+    public Variables() {
+        log = new LogUtils(
+                TAG, "a bug has occurred, this should not happen"
+        );
+    }
 }

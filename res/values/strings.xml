@@ -7,5 +7,6 @@
     <string name="take_screenshot">Take A Screenshot</string>
     <string name="start_recording">Start Recording</string>
     <string name="stop_recording">Stop Recording</string>
-
+    <string name="power">Power</string>
+    <string name="capture">Capture</string>
 </resources>

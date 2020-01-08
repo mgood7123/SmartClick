@@ -1,8 +1,6 @@
-package com.mtsahakis.mediaprojectiondemo.screen.utils;
+package screen.utils;
 
 import android.view.OrientationEventListener;
-
-import com.mtsahakis.mediaprojectiondemo.screen.utils.media.projection.helpers.MediaProjectionHelper;
 
 public class OrientationChangeCallback extends OrientationEventListener {
 
