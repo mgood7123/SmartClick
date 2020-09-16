@@ -1,6 +1,7 @@
 package screen.utils;
 
 import android.media.projection.MediaProjection;
+import android.os.Looper;
 import android.util.Log;
 
 public class MediaProjectionStopCallback extends MediaProjection.Callback {
@@ -19,6 +20,7 @@ public class MediaProjectionStopCallback extends MediaProjection.Callback {
             @Override
             public void run() {
                 Log.e("ScreenCapture", "stopping projection.");
+
                 if (variables.mVirtualDisplay != null) variables.mVirtualDisplay.release();
                 if (variables.mImageReader != null) variables.mImageReader.setOnImageAvailableListener(null, null);
                 if (variables.mOrientationChangeCallback != null) variables.mOrientationChangeCallback.disable();
@@ -32,6 +34,23 @@ public class MediaProjectionStopCallback extends MediaProjection.Callback {
                 Log.e("ScreenCapture", "quit looper");
             }
         });
+        if (variables.looper != null) {
+            variables.log.errorNoStackTrace("stopCapture");
+            Looper l = variables.mHandler.getLooper();
+            if (l != null) {
+                Log.e("ScreenCapture", "quiting looper");
+                l.quitSafely();
+                Log.e("ScreenCapture", "quit looper");
+            }
+            variables.log.errorNoStackTrace("stopLooper");
+            new Thread() {
+                @Override
+                public void run() {
+                    variables.looperHelper.stopLooper();
+                }
+            }.start();
+            variables.log.errorNoStackTrace("stopped");
+        }
         Log.e("ScreenCapture", "posted stop projection.");
     }
 }

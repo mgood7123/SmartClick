@@ -32,10 +32,14 @@ public class Variables {
     public MediaProjectionManager mProjectionManager;
 
     public MediaProjectionHelper mediaProjectionHelper = new MediaProjectionHelper(this);
-    public Looper looperHelper = new Looper(this);
 
     public ImageReader mImageReader;
+
+    public Thread looper;
+    public Looper looperHelper = new Looper(this);
+
     public Handler mHandler;
+
     public Display mDisplay;
     public VirtualDisplay mVirtualDisplay;
 
@@ -51,7 +55,6 @@ public class Variables {
             TAG, "a bug has occurred, this should not happen"
     );
 
-    public Thread looper;
     public boolean screenshot;
     public boolean grantedPermission;
     public int resultCodeSaved;

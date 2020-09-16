@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.os.Handler;
 import android.os.IBinder;
-import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -14,8 +13,6 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 
 import com.mtsahakis.mediaprojectiondemo.R;
-
-import java.util.concurrent.Callable;
 
 public class FloatingViewService extends Service {
 
@@ -74,7 +71,6 @@ public class FloatingViewService extends Service {
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT
         );
-
 
         //getting windows services and adding the floating view to it
         mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
