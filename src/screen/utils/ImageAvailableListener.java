@@ -43,12 +43,16 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
 
                     // render bitmap
                     final Bitmap finalBitmap = bitmap.copy(bitmap.getConfig(), bitmap.isMutable());
-                    variables.activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            variables.imageView.setImageBitmap(finalBitmap);
-                        }
-                    });
+                    if (variables.activity != null) {
+                        variables.activity.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                variables.imageView.setImageBitmap(finalBitmap);
+                            }
+                        });
+                    } else if (variables.service != null) {
+                        Log.e(TAG, "service has no image view");
+                    }
 
                     IMAGES_PRODUCED++;
                     Log.e(TAG, "captured image: " + IMAGES_PRODUCED);

@@ -1,12 +1,24 @@
 package screen.utils;
 
 import android.app.Activity;
+import android.app.Service;
 import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
+import android.provider.Settings;
 import android.widget.ImageView;
+
+import static android.app.Activity.RESULT_OK;
 
 public class ScreenUtils {
 
     public Variables variables = new Variables();
+
+    public void onCreate(Service service) {
+        // service overload
+        variables.service = service;
+        variables.mProjectionManager = variables.mediaProjectionHelper.getMediaProjectionManager();
+    }
 
     public void onCreate(Activity activity, ImageView imageView) {
         variables.activity = activity;
@@ -16,7 +28,44 @@ public class ScreenUtils {
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == variables.REQUEST_CODE) {
-            variables.mediaProjectionHelper.startCapture(resultCode, data);
+            if (resultCode == RESULT_OK) {
+                variables.mediaProjectionHelper.startCapture(resultCode, data);
+            }
+        } else if (requestCode == variables.REQUEST_CODE_FLOATING_WINDOW) {
+            if (resultCode == RESULT_OK) {
+                startFloatingWindowService();
+            }
+        }
+    }
+
+    public void createFloatingWindow() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkDrawOverlayPermission()) {
+                startFloatingWindowService();
+            }
+        }
+    }
+
+    void startFloatingWindowService() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (Settings.canDrawOverlays(variables.activity)) {
+                variables.activity.startService(new Intent(variables.activity, FloatingViewService.class));
+            }
+        }
+    }
+
+    public boolean checkDrawOverlayPermission() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            return true;
+        }
+
+        if (!Settings.canDrawOverlays(variables.activity)) {
+            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:" + variables.activity.getPackageName()));
+            variables.activity.startActivityForResult(intent, variables.REQUEST_CODE_FLOATING_WINDOW);
+            return false;
+        } else {
+            return true;
         }
     }
 

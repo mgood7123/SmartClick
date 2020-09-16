@@ -1,5 +1,8 @@
 package screen.utils;
 
+import android.app.Activity;
+import android.app.Service;
+import android.content.Context;
 import android.view.OrientationEventListener;
 
 public class OrientationChangeCallback extends OrientationEventListener {
@@ -8,8 +11,14 @@ public class OrientationChangeCallback extends OrientationEventListener {
     private final MediaProjectionHelper mediaProjectionHelper;
     private int mRotation;
 
-    public OrientationChangeCallback(Variables variables, MediaProjectionHelper mediaProjectionHelper) {
-        super(variables.activity);
+    public OrientationChangeCallback(Activity activity, Variables variables, MediaProjectionHelper mediaProjectionHelper) {
+        super(activity);
+        this.variables = variables;
+        this.mediaProjectionHelper = mediaProjectionHelper;
+    }
+
+    public OrientationChangeCallback(Service service, Variables variables, MediaProjectionHelper mediaProjectionHelper) {
+        super(service);
         this.variables = variables;
         this.mediaProjectionHelper = mediaProjectionHelper;
     }

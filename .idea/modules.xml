@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/AndroidStudioProjects-MediaProjectionDemo.iml" filepath="$PROJECT_DIR$/.idea/modules/AndroidStudioProjects-MediaProjectionDemo.iml" group="MediaProjectionDemo" />
       <module fileurl="file://$PROJECT_DIR$/MediaProjectionDemo.iml" filepath="$PROJECT_DIR$/MediaProjectionDemo.iml" />
     </modules>
   </component>

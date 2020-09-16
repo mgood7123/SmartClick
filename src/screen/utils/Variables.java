@@ -1,6 +1,7 @@
 package screen.utils;
 
 import android.app.Activity;
+import android.app.Service;
 import android.content.Intent;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.VirtualDisplay;
@@ -18,6 +19,7 @@ public class Variables {
     public ImageView imageView;
 
     public final int REQUEST_CODE = 100;
+    public final int REQUEST_CODE_FLOATING_WINDOW = 101;
 
     public final String SCREENCAP_NAME = "screencap";
 
@@ -42,6 +44,8 @@ public class Variables {
     public OrientationChangeCallback mOrientationChangeCallback;
 
     public Activity activity;
+    public Activity projectionActivity;
+    public Service service;
 
     public LogUtils log = new LogUtils(
             TAG, "a bug has occurred, this should not happen"

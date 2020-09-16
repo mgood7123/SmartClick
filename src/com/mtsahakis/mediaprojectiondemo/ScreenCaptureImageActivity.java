@@ -8,6 +8,13 @@ import android.widget.ImageView;
 
 import screen.utils.ScreenUtils;
 
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
+import android.provider.Settings;
+import android.view.View;
+import android.widget.Toast;
 
 public class ScreenCaptureImageActivity extends Activity {
 
@@ -45,6 +52,12 @@ public class ScreenCaptureImageActivity extends Activity {
                 SU.stopScreenMirror();
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        SU.createFloatingWindow();
     }
 
     @Override
