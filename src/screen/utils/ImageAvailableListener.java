@@ -66,13 +66,18 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
                             // create an output stream to the memory file
                             FileOutputStream out = new FileOutputStream(outFile);
                             // copy bitmap into memory and compress
+                            //
+                            // lower quality increases recording latency
+                            // and thus decreases frame accuracy
+                            // however allows for longer durations of recording
+                            //
+                            // keep at 100 for now for max recording speed
+                            //
                             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
                             // close the output stream
                             out.close();
                             // add the file into the buffer
                             randomAccessFileBuffer.add(outFile);
-
-//                    bitmapInfo(randomAccessFileBuffer, null, 1024*1024*1024, 30);
 
                             // decompress memory to bitmap
                             // create an input stream from the memory file
