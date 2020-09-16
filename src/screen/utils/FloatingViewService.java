@@ -136,7 +136,7 @@ public class FloatingViewService extends Service {
             @Override
             public void onClick(View v) {
                 Log.e("FLOATING VIEW SERVICE", "RECORD START");
-                SU.startScreenMirror();
+                SU.startScreenRecord();
             }
         });
 
@@ -144,7 +144,7 @@ public class FloatingViewService extends Service {
             @Override
             public void onClick(View v) {
                 Log.e("FLOATING VIEW SERVICE", "RECORD STOP");
-                SU.stopScreenMirror();
+                SU.stopScreenRecord();;
             }
         });
 

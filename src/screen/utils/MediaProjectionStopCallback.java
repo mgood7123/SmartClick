@@ -26,6 +26,7 @@ public class MediaProjectionStopCallback extends MediaProjection.Callback {
                 if (variables.mOrientationChangeCallback != null) variables.mOrientationChangeCallback.disable();
                 variables.sMediaProjection.unregisterCallback(MediaProjectionStopCallback.this);
                 variables.sMediaProjection = null;
+                if (variables.screenRecord) variables.screenRecord = false;
                 Log.e("ScreenCapture", "stopped projection.");
 
                 // we quit from here as it seems to be the last message posted to the handler

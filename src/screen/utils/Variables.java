@@ -59,4 +59,5 @@ public class Variables {
     public boolean grantedPermission;
     public int resultCodeSaved;
     public Intent dataSaved;
+    public boolean screenRecord;
 }

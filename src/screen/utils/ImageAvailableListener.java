@@ -6,6 +6,7 @@ import android.media.ImageReader;
 import android.util.Log;
 
 import java.nio.ByteBuffer;
+import java.util.Vector;
 
 public class ImageAvailableListener implements ImageReader.OnImageAvailableListener {
     private final Variables variables;
@@ -15,6 +16,8 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
     int mHeight;
 
     boolean single;
+
+    Vector<Bitmap> bitmapBuffer = new Vector<>();
 
     public ImageAvailableListener(Variables variables, int mWidth, int mHeight) {
         this.variables = variables;
@@ -42,19 +45,33 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
                     bitmap.copyPixelsFromBuffer(buffer);
 
                     // render bitmap
-                    final Bitmap finalBitmap = bitmap.copy(bitmap.getConfig(), bitmap.isMutable());
+                    if (bitmapBuffer.size() == 10) bitmapBuffer.remove(0);
+                    bitmapBuffer.add(bitmap.copy(bitmap.getConfig(), bitmap.isMutable()));
+                    final Bitmap last = bitmapBuffer.lastElement();
+                    long fileSizeInBytes = last.getAllocationByteCount();
+                    // Convert the bytes to Kilobytes (1 KB = 1024 Bytes)
+                    long fileSizeInKB = fileSizeInBytes / 1024;
+                    // Convert the KB to MegaBytes (1 MB = 1024 KBytes)
+                    long fileSizeInMB = fileSizeInKB / 1024;
+                    variables.log.errorNoStackTrace(
+                            "bitmap resolution (width x height): " + last.getWidth() + "x" + last.getHeight() + ", size: " + fileSizeInMB + " MB (" + fileSizeInKB + " KB)");
+                    variables.log.errorNoStackTrace(
+                            "bitmap array length: " + bitmapBuffer.size() + ", size: " + fileSizeInMB*bitmapBuffer.size() + " MB (" + fileSizeInKB*bitmapBuffer.size() + " KB)");
+                    if (variables.screenRecord) {
+
+                    }
                     if (variables.activity != null) {
                         variables.activity.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                variables.imageView.setImageBitmap(finalBitmap);
+                                variables.imageView.setImageBitmap(last);
                             }
                         });
                     } else if (variables.service != null) {
                         ((FloatingViewService) variables.service).runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                variables.imageView.setImageBitmap(finalBitmap);
+                                variables.imageView.setImageBitmap(last);
                             }
                         });
                     }

@@ -18,6 +18,17 @@ public class MediaProjectionHelper {
         this.variables = variables;
     }
 
+    public void startScreenRecord() {
+        variables.log.errorNoStackTrace("recording screen");
+        variables.screenRecord = true;
+        startScreenMirror();
+    }
+
+    public void stopScreenRecord() {
+        variables.log.errorNoStackTrace("recorded screen");
+        stopScreenMirror();
+    }
+
     public void takeScreenShot() {
         variables.log.errorNoStackTrace("taking screenshot");
         variables.screenshot = true;

@@ -70,6 +70,14 @@ public class ScreenUtils {
         }
     }
 
+    public void startScreenRecord() {
+        variables.mediaProjectionHelper.startScreenRecord();
+    }
+
+    public void stopScreenRecord() {
+        variables.mediaProjectionHelper.stopScreenRecord();
+    }
+
     public void takeScreenShot() {
         variables.mediaProjectionHelper.takeScreenShot();
     }
