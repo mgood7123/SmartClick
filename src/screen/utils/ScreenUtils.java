@@ -14,9 +14,10 @@ public class ScreenUtils {
 
     public Variables variables = new Variables();
 
-    public void onCreate(Service service) {
+    public void onCreate(Service service, ImageView imageView) {
         // service overload
         variables.service = service;
+        variables.imageView = imageView;
         variables.mProjectionManager = variables.mediaProjectionHelper.getMediaProjectionManager();
     }
 
@@ -38,7 +39,7 @@ public class ScreenUtils {
         }
     }
 
-    public void createFloatingWindow() {
+    public void createFloatingWidget() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkDrawOverlayPermission()) {
                 startFloatingWindowService();

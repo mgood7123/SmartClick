@@ -51,7 +51,12 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
                             }
                         });
                     } else if (variables.service != null) {
-                        Log.e(TAG, "service has no image view");
+                        ((FloatingViewService) variables.service).runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                variables.imageView.setImageBitmap(finalBitmap);
+                            }
+                        });
                     }
 
                     IMAGES_PRODUCED++;

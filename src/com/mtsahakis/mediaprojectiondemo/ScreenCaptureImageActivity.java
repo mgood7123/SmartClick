@@ -3,22 +3,14 @@ package com.mtsahakis.mediaprojectiondemo;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 import android.widget.ImageView;
-
 import screen.utils.ScreenUtils;
-
-import android.content.Intent;
-import android.net.Uri;
-import android.os.Build;
-import android.os.Bundle;
-import android.provider.Settings;
-import android.view.View;
-import android.widget.Toast;
 
 public class ScreenCaptureImageActivity extends Activity {
 
-    static ScreenUtils SU = new ScreenUtils();
+    ScreenUtils SU = new ScreenUtils();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +18,14 @@ public class ScreenCaptureImageActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         SU.onCreate(this, (ImageView) findViewById(R.id.renderedCapture));
+
+        findViewById(R.id.StartFloatingServiceButton).setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                SU.createFloatingWidget();
+            }
+        });
 
         findViewById(R.id.screenshotButton).setOnClickListener(new View.OnClickListener() {
 
@@ -57,7 +57,7 @@ public class ScreenCaptureImageActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        SU.createFloatingWindow();
+        SU.createFloatingWidget();
     }
 
     @Override

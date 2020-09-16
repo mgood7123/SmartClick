@@ -45,6 +45,11 @@
                 android:src="@drawable/ic_launcher"
                 tools:ignore="ContentDescription" />
 
+            <ImageView
+                android:id="@+id/renderedCaptureFloatingWidget"
+                android:layout_width="120dp"
+                android:layout_height="match_parent"/>
+
             <LinearLayout
                 android:id="@+id/buttonSimplifiedCoding"
                 android:layout_width="match_parent"
@@ -58,7 +63,7 @@
                     android:paddingLeft="15dp"
                     android:paddingRight="15dp"
                     android:paddingTop="0dp"
-                    android:text="Start recording"
+                    android:text="@string/start_recording"
                     android:textAlignment="center"
                     android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
                     android:textColor="#ffffff"
@@ -70,7 +75,7 @@
                     android:paddingLeft="15dp"
                     android:paddingRight="15dp"
                     android:paddingTop="0dp"
-                    android:text="Stop recording"
+                    android:text="@string/stop_recording"
                     android:textAlignment="center"
                     android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
                     android:textColor="#ffffff"
@@ -82,7 +87,7 @@
                     android:paddingLeft="15dp"
                     android:paddingRight="15dp"
                     android:paddingTop="0dp"
-                    android:text="Analyse"
+                    android:text="@string/analyse"
                     android:textAlignment="center"
                     android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
                     android:textColor="#ffffff"
@@ -95,7 +100,7 @@
                     android:paddingLeft="15dp"
                     android:paddingRight="15dp"
                     android:paddingTop="0dp"
-                    android:text="Kill Widget"
+                    android:text="@string/kill"
                     android:textAlignment="center"
                     android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
                     android:textColor="#ffffff"

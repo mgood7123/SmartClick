@@ -7,6 +7,9 @@
     <string name="take_screenshot">Take A Screenshot</string>
     <string name="start_recording">Start Recording</string>
     <string name="stop_recording">Stop Recording</string>
+    <string name="start_floating_widget">Start Floating Widget</string>
+    <string name="analyse">Analyse</string>
+    <string name="kill">Kill Widget</string>
     <string name="power">Power</string>
     <string name="capture">Capture</string>
 </resources>

@@ -3,14 +3,19 @@ package screen.utils;
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.PixelFormat;
+import android.os.Handler;
 import android.os.IBinder;
+import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ImageView;
 
 import com.mtsahakis.mediaprojectiondemo.R;
+
+import java.util.concurrent.Callable;
 
 public class FloatingViewService extends Service {
 
@@ -19,6 +24,29 @@ public class FloatingViewService extends Service {
     private View collapsedView;
     private View expandedView;
     private ScreenUtils SU = new ScreenUtils();
+
+    private Handler mHandler = new Handler();
+    private Thread mUiThread = Thread.currentThread();
+
+
+    // start of android.app.Activity.runOnUiThread
+
+    /**
+     * Runs the specified action on the UI thread. If the current thread is the UI
+     * thread, then the action is executed immediately. If the current thread is
+     * not the UI thread, the action is posted to the event queue of the UI thread.
+     *
+     * @param action the action to run on the UI thread
+     */
+    public void runOnUiThread(Runnable action) {
+        if (Thread.currentThread() != mUiThread) {
+            mHandler.post(action);
+        } else {
+            action.run();
+        }
+    }
+
+    // end of android.app.Activity.runOnUiThread
 
     public FloatingViewService() {
     }
@@ -33,10 +61,10 @@ public class FloatingViewService extends Service {
         super.onCreate();
         Log.e("FLOATING VIEW SERVICE", "onCreate");
 
-        SU.onCreate(this);
-
         //getting the widget layout from xml using layout inflater
         mFloatingView = LayoutInflater.from(this).inflate(R.layout.layout_floating_widget, null);
+
+        SU.onCreate(this, (ImageView) mFloatingView.findViewById(R.id.renderedCaptureFloatingWidget));
 
         //setting the layout parameters
         final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
