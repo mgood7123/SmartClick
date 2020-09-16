@@ -1,13 +1,11 @@
 package screen.utils;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.media.Image;
 import android.media.ImageReader;
 import android.util.Log;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
@@ -55,7 +53,10 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
                         // create bitmap
                         bitmap = Bitmap.createBitmap(mWidth + rowPadding / pixelStride, mHeight, Bitmap.Config.ARGB_8888);
                         bitmap.copyPixelsFromBuffer(buffer);
-                        Bitmap last = null;
+
+                        // copying directly appears to be faster than reading and decoding
+                        Bitmap last = bitmap.copy(bitmap.getConfig(), bitmap.isMutable());
+
                         if (variables.screenRecord) {
                             if (randomAccessFileBuffer.size() == 10)
                                 randomAccessFileBuffer.remove(0);
@@ -79,16 +80,20 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
                             // add the file into the buffer
                             randomAccessFileBuffer.add(outFile);
 
-                            // decompress memory to bitmap
-                            // create an input stream from the memory file
-                            FileInputStream in = new FileInputStream(randomAccessFileBuffer.lastElement());
-                            // decompress bitmap into memory
-                            last = BitmapFactory.decodeStream(in);
-                            // close the input stream
-                            in.close();
-                        } else {
-                            last = bitmap.copy(bitmap.getConfig(), bitmap.isMutable());
+                            // performance can be slightly improved by not reading this back in
+                            // and instead copying directly as above
+
+                            // kept for reference
+
+//                            // decompress memory to bitmap
+//                            // create an input stream from the memory file
+//                            FileInputStream in = new FileInputStream(randomAccessFileBuffer.lastElement());
+//                            // decompress bitmap into memory
+//                            last = BitmapFactory.decodeStream(in);
+//                            // close the input stream
+//                            in.close();
                         }
+
                         if (variables.activity != null) {
                             final Bitmap finalLast = last;
                             variables.activity.runOnUiThread(new Runnable() {
