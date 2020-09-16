@@ -1,10 +1,15 @@
 package screen.utils;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.Image;
 import android.media.ImageReader;
 import android.util.Log;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.util.Vector;
 
@@ -14,15 +19,21 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
     long IMAGES_PRODUCED;
     int mWidth;
     int mHeight;
+    String dir = "";
 
     boolean single;
 
-    Vector<Bitmap> bitmapBuffer = new Vector<>();
+    Vector<File> randomAccessFileBuffer = new Vector<File>();
 
     public ImageAvailableListener(Variables variables, int mWidth, int mHeight) {
         this.variables = variables;
         this.mWidth = mWidth;
         this.mHeight = mHeight;
+        if (null != variables.activity) {
+            dir = variables.activity.getCacheDir().getAbsolutePath();
+        } else if (null != variables.service) {
+            dir = variables.service.getCacheDir().getAbsolutePath();
+        }
     }
 
     @Override
@@ -44,19 +55,33 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
                     bitmap = Bitmap.createBitmap(mWidth + rowPadding / pixelStride, mHeight, Bitmap.Config.ARGB_8888);
                     bitmap.copyPixelsFromBuffer(buffer);
 
-                    // render bitmap
-                    if (bitmapBuffer.size() == 10) bitmapBuffer.remove(0);
-                    bitmapBuffer.add(bitmap.copy(bitmap.getConfig(), bitmap.isMutable()));
-                    final Bitmap last = bitmapBuffer.lastElement();
-                    long fileSizeInBytes = last.getAllocationByteCount();
-                    // Convert the bytes to Kilobytes (1 KB = 1024 Bytes)
-                    long fileSizeInKB = fileSizeInBytes / 1024;
-                    // Convert the KB to MegaBytes (1 MB = 1024 KBytes)
-                    long fileSizeInMB = fileSizeInKB / 1024;
-                    variables.log.errorNoStackTrace(
-                            "bitmap resolution (width x height): " + last.getWidth() + "x" + last.getHeight() + ", size: " + fileSizeInMB + " MB (" + fileSizeInKB + " KB)");
-                    variables.log.errorNoStackTrace(
-                            "bitmap array length: " + bitmapBuffer.size() + ", size: " + fileSizeInMB*bitmapBuffer.size() + " MB (" + fileSizeInKB*bitmapBuffer.size() + " KB)");
+                    // remove bitmap
+                    if (randomAccessFileBuffer.size() == 10) randomAccessFileBuffer.remove(0);
+
+                    // holy crap we get 1 frame per second if we use disk io
+
+                    // compress bitmap to memory
+                        // create a memory file
+                        File outFile = new File(dir + "/bitmap" + randomAccessFileBuffer.size());
+                        // create an output stream to the memory file
+                        FileOutputStream out = new FileOutputStream(outFile);
+                        // copy bitmap into memory and compress
+                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+                        // close the output stream
+                        out.close();
+                        // add the file into the buffer
+                        randomAccessFileBuffer.add(outFile);
+
+//                    bitmapInfo(randomAccessFileBuffer, null, 1024*1024*1024, 30);
+                    
+                    // decompress memory to bitmap
+                        // create an input stream from the memory file
+                        FileInputStream in = new FileInputStream(randomAccessFileBuffer.lastElement());
+                        // decompress bitmap into memory
+                        final Bitmap last = BitmapFactory.decodeStream(in);
+                        // close the input stream
+                        in.close();
+
                     if (variables.screenRecord) {
 
                     }
@@ -104,5 +129,69 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
                 }
             }
         }
+    }
+
+    long divideBy1024(long what) {
+        if (what >= 1024) return what / 1024;
+        else return -1L;
+    }
+
+    long BytesToKB(long bytes) {
+        return divideBy1024(bytes);
+    }
+
+    long BytesToMB(long bytes) {
+        long kb = BytesToKB(bytes);
+        return -1L == kb ? kb : divideBy1024(kb);
+    }
+
+    long BytesToGB(long bytes) {
+        long mb = BytesToMB(bytes);
+        return -1L == mb ? mb : divideBy1024(mb);
+    }
+
+    private void bitmapInfo(final Vector<RandomAccessFile> randomAccessFileBuffer, RandomAccessFile last, long bytes, int fps) {
+//        if (last == null) last = randomAccessFileBuffer.lastElement();
+//        long fileSizeInBytes = 0;
+//        try {
+//            fileSizeInBytes = last.length();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        long RAM_Bytes = bytes;
+//        long RAM_KB = BytesToKB(RAM_Bytes);
+//        long RAM_MB = BytesToMB(RAM_Bytes);
+//        long RAM_GB = BytesToGB(RAM_Bytes);
+//
+//        long fileSize_Bytes = fileSizeInBytes;
+//        long fileSize_KB = BytesToKB(fileSize_Bytes);
+//        long fileSize_MB = BytesToMB(fileSize_Bytes);
+//        long fileSize_GB = BytesToGB(fileSize_Bytes);
+//
+//        long BytesPerFPS = fps*fileSizeInBytes;
+//        long KBPerFPS = BytesToKB(BytesPerFPS);
+//        long MBPerFPS = BytesToMB(BytesPerFPS);
+//        long GBPerFPS = BytesToGB(BytesPerFPS);
+//
+//        long bufferSize = randomAccessFileBuffer.size();
+//
+//        variables.log.errorNoStackTrace(
+//                "bitmap array length: " + bufferSize + "," +
+//                        " size: " + fileSize_MB*bufferSize + " MB" +
+//                        " (" + fileSize_KB*bufferSize + " KB)" +
+//                        " (" + fileSize_Bytes*bufferSize + " Bytes)"
+//
+//        );
+//        variables.log.errorNoStackTrace(
+//                "single bitmap:" +
+//                        " resolution (width x height): " + last.getWidth() + "x" + last.getHeight()
+//                        + ", size: " + fileSize_MB + " MB (" + fileSize_KB + " KB)" +
+//                        " (" + fileSize_Bytes + " Bytes)"
+//        );
+//        variables.log.errorNoStackTrace(
+//                "max amount of seconds recordable at " + fps + " FPS," +
+//                        " for " + RAM_GB + " GB of memory: " + RAM_Bytes/BytesPerFPS +
+//                        " (" + RAM_Bytes + "/" + BytesPerFPS + ")"
+//        );
     }
 }
