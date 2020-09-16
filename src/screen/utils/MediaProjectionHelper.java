@@ -36,6 +36,7 @@ public class MediaProjectionHelper {
     }
 
     public void startScreenMirror() {
+        variables.stop = false;
         variables.log.errorNoStackTrace("looper is " + variables.looper);
         if (variables.looper == null) {
             variables.log.errorNoStackTrace("startLooper");
@@ -47,6 +48,7 @@ public class MediaProjectionHelper {
     }
 
     public void stopScreenMirror() {
+        variables.stop = true;
         variables.log.errorNoStackTrace("looper is " + variables.looper);
         if (variables.looper != null) {
             variables.log.errorNoStackTrace("stopCapture");

@@ -144,7 +144,7 @@ public class FloatingViewService extends Service {
             @Override
             public void onClick(View v) {
                 Log.e("FLOATING VIEW SERVICE", "RECORD STOP");
-                SU.stopScreenRecord();;
+                SU.stopScreenRecord();
             }
         });
 

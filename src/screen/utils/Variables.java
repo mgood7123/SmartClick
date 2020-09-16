@@ -60,4 +60,5 @@ public class Variables {
     public int resultCodeSaved;
     public Intent dataSaved;
     public boolean screenRecord;
+    public boolean stop;
 }

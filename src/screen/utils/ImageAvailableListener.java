@@ -38,94 +38,96 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
 
     @Override
     public void onImageAvailable(ImageReader reader) {
-        if (!single) {
-            Image image = null;
-            Bitmap bitmap = null;
+        if (!variables.stop) {
+            if (!single) {
+                Image image = null;
+                Bitmap bitmap = null;
 
-            try {
-                image = reader.acquireLatestImage();
-                if (image != null) {
-                    Image.Plane[] planes = image.getPlanes();
-                    ByteBuffer buffer = planes[0].getBuffer();
-                    int pixelStride = planes[0].getPixelStride();
-                    int rowStride = planes[0].getRowStride();
-                    int rowPadding = rowStride - pixelStride * mWidth;
+                try {
+                    image = reader.acquireLatestImage();
+                    if (image != null) {
+                        Image.Plane[] planes = image.getPlanes();
+                        ByteBuffer buffer = planes[0].getBuffer();
+                        int pixelStride = planes[0].getPixelStride();
+                        int rowStride = planes[0].getRowStride();
+                        int rowPadding = rowStride - pixelStride * mWidth;
 
-                    // create bitmap
-                    bitmap = Bitmap.createBitmap(mWidth + rowPadding / pixelStride, mHeight, Bitmap.Config.ARGB_8888);
-                    bitmap.copyPixelsFromBuffer(buffer);
+                        // create bitmap
+                        bitmap = Bitmap.createBitmap(mWidth + rowPadding / pixelStride, mHeight, Bitmap.Config.ARGB_8888);
+                        bitmap.copyPixelsFromBuffer(buffer);
+                        Bitmap last = null;
+                        if (variables.screenRecord) {
+                            if (randomAccessFileBuffer.size() == 10)
+                                randomAccessFileBuffer.remove(0);
 
-                    // remove bitmap
-                    if (randomAccessFileBuffer.size() == 10) randomAccessFileBuffer.remove(0);
-
-                    // holy crap we get 1 frame per second if we use disk io
-
-                    // compress bitmap to memory
-                        // create a memory file
-                        File outFile = new File(dir + "/bitmap" + randomAccessFileBuffer.size());
-                        // create an output stream to the memory file
-                        FileOutputStream out = new FileOutputStream(outFile);
-                        // copy bitmap into memory and compress
-                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
-                        // close the output stream
-                        out.close();
-                        // add the file into the buffer
-                        randomAccessFileBuffer.add(outFile);
+                            // compress bitmap to memory
+                            // create a memory file
+                            File outFile = new File(dir + "/bitmap" + randomAccessFileBuffer.size());
+                            // create an output stream to the memory file
+                            FileOutputStream out = new FileOutputStream(outFile);
+                            // copy bitmap into memory and compress
+                            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+                            // close the output stream
+                            out.close();
+                            // add the file into the buffer
+                            randomAccessFileBuffer.add(outFile);
 
 //                    bitmapInfo(randomAccessFileBuffer, null, 1024*1024*1024, 30);
-                    
-                    // decompress memory to bitmap
-                        // create an input stream from the memory file
-                        FileInputStream in = new FileInputStream(randomAccessFileBuffer.lastElement());
-                        // decompress bitmap into memory
-                        final Bitmap last = BitmapFactory.decodeStream(in);
-                        // close the input stream
-                        in.close();
 
-                    if (variables.screenRecord) {
+                            // decompress memory to bitmap
+                            // create an input stream from the memory file
+                            FileInputStream in = new FileInputStream(randomAccessFileBuffer.lastElement());
+                            // decompress bitmap into memory
+                            last = BitmapFactory.decodeStream(in);
+                            // close the input stream
+                            in.close();
+                        } else {
+                            last = bitmap.copy(bitmap.getConfig(), bitmap.isMutable());
+                        }
+                        if (variables.activity != null) {
+                            final Bitmap finalLast = last;
+                            variables.activity.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    variables.imageView.setImageBitmap(finalLast);
+                                }
+                            });
+                        } else if (variables.service != null) {
+                            final Bitmap finalLast1 = last;
+                            ((FloatingViewService) variables.service).runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    variables.imageView.setImageBitmap(finalLast1);
+                                }
+                            });
+                        }
 
+                        IMAGES_PRODUCED++;
+                        Log.e(TAG, "captured image: " + IMAGES_PRODUCED);
+                        if (variables.screenshot) {
+                            new Thread() {
+                                @Override
+                                public void run() {
+                                    Log.e("TAG", "took screenshot");
+                                    variables.mediaProjectionHelper.stopScreenMirror();
+                                    variables.screenshot = false;
+                                    single = false;
+                                }
+                            }.start();
+                            single = true;
+                        }
                     }
-                    if (variables.activity != null) {
-                        variables.activity.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                variables.imageView.setImageBitmap(last);
-                            }
-                        });
-                    } else if (variables.service != null) {
-                        ((FloatingViewService) variables.service).runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                variables.imageView.setImageBitmap(last);
-                            }
-                        });
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    if (bitmap != null) {
+                        bitmap.recycle();
                     }
 
-                    IMAGES_PRODUCED++;
-                    Log.e(TAG, "captured image: " + IMAGES_PRODUCED);
-                    if (variables.screenshot) {
-                        new Thread() {
-                            @Override
-                            public void run() {
-                                Log.e("TAG", "took screenshot");
-                                variables.mediaProjectionHelper.stopScreenMirror();
-                                variables.screenshot = false;
-                                single = false;
-                            }
-                        }.start();
-                        single = true;
+                    if (image != null) {
+                        image.close();
                     }
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                if (bitmap != null) {
-                    bitmap.recycle();
-                }
-
-                if (image != null) {
-                    image.close();
                 }
             }
         }
