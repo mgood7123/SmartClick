@@ -6,9 +6,7 @@ import android.media.ImageReader;
 import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
-import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
-import java.util.Vector;
 
 public class ImageAvailableListener implements ImageReader.OnImageAvailableListener {
     private final Variables variables;
@@ -48,13 +46,14 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
                         // copying directly appears to be faster than reading and decoding
                         Bitmap last = bitmap.copy(bitmap.getConfig(), bitmap.isMutable());
 
+//                        bitmapInfo(last, 1L*1024*1024*1024, 60);
+//                        bitmapInfo(last, 4L*1024*1024*1024, 60);
+
                         if (variables.screenRecord) {
                             //
                             // lower quality increases recording latency
                             // and thus decreases frame accuracy
-                            // however allows for longer durations of recording
-                            //
-                            // keep at 100 for now for max recording speed
+                            // however allows for drastically longer durations of recording
                             //
 
                             // compress bitmap to memory
@@ -64,6 +63,8 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
                             }
                             ByteArrayOutputStream out = new ByteArrayOutputStream();
                             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+//                            bitmapInfo(out, last.getWidth(), last.getHeight(), 1L*1024*1024*1024, 60);
+//                            bitmapInfo(out, last.getWidth(), last.getHeight(), 4L*1024*1024*1024, 60);
                             variables.bitmapBuffer.add(out);
                         }
 
@@ -125,48 +126,40 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
         return -1L == mb ? mb : divideBy1024(mb);
     }
 
-    private void bitmapInfo(final Vector<RandomAccessFile> bitmapBuffer, RandomAccessFile last, long bytes, int fps) {
-//        if (last == null) last = bitmapBuffer.lastElement();
-//        long fileSizeInBytes = 0;
-//        try {
-//            fileSizeInBytes = last.length();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        long RAM_Bytes = bytes;
-//        long RAM_KB = BytesToKB(RAM_Bytes);
-//        long RAM_MB = BytesToMB(RAM_Bytes);
-//        long RAM_GB = BytesToGB(RAM_Bytes);
-//
-//        long fileSize_Bytes = fileSizeInBytes;
-//        long fileSize_KB = BytesToKB(fileSize_Bytes);
-//        long fileSize_MB = BytesToMB(fileSize_Bytes);
-//        long fileSize_GB = BytesToGB(fileSize_Bytes);
-//
-//        long BytesPerFPS = fps*fileSizeInBytes;
-//        long KBPerFPS = BytesToKB(BytesPerFPS);
-//        long MBPerFPS = BytesToMB(BytesPerFPS);
-//        long GBPerFPS = BytesToGB(BytesPerFPS);
-//
-//        long bufferSize = bitmapBuffer.size();
-//
-//        variables.log.errorNoStackTrace(
-//                "bitmap array length: " + bufferSize + "," +
-//                        " size: " + fileSize_MB*bufferSize + " MB" +
-//                        " (" + fileSize_KB*bufferSize + " KB)" +
-//                        " (" + fileSize_Bytes*bufferSize + " Bytes)"
-//
-//        );
-//        variables.log.errorNoStackTrace(
-//                "single bitmap:" +
-//                        " resolution (width x height): " + last.getWidth() + "x" + last.getHeight()
-//                        + ", size: " + fileSize_MB + " MB (" + fileSize_KB + " KB)" +
-//                        " (" + fileSize_Bytes + " Bytes)"
-//        );
-//        variables.log.errorNoStackTrace(
-//                "max amount of seconds recordable at " + fps + " FPS," +
-//                        " for " + RAM_GB + " GB of memory: " + RAM_Bytes/BytesPerFPS +
-//                        " (" + RAM_Bytes + "/" + BytesPerFPS + ")"
-//        );
+    private void bitmapInfo(long fileSizeInBytes, long width, long height, long bytes, int fps) {
+        long RAM_Bytes = bytes;
+        long RAM_KB = BytesToKB(RAM_Bytes);
+        long RAM_MB = BytesToMB(RAM_Bytes);
+        long RAM_GB = BytesToGB(RAM_Bytes);
+
+        long fileSize_Bytes = fileSizeInBytes;
+        long fileSize_KB = BytesToKB(fileSize_Bytes);
+        long fileSize_MB = BytesToMB(fileSize_Bytes);
+        long fileSize_GB = BytesToGB(fileSize_Bytes);
+
+        long BytesPerFPS = fps*fileSizeInBytes;
+        long KBPerFPS = BytesToKB(BytesPerFPS);
+        long MBPerFPS = BytesToMB(BytesPerFPS);
+        long GBPerFPS = BytesToGB(BytesPerFPS);
+
+        variables.log.errorNoStackTrace(
+                "single bitmap:" +
+                        " resolution (width x height): " + width + "x" + height
+                        + ", size: " + fileSize_MB + " MB (" + fileSize_KB + " KB)" +
+                        " (" + fileSize_Bytes + " Bytes)"
+        );
+        variables.log.errorNoStackTrace(
+                "max amount of seconds recordable at " + fps + " FPS," +
+                        " for " + RAM_GB + " GB of memory: " + RAM_Bytes/BytesPerFPS +
+                        " (" + RAM_Bytes + "/" + BytesPerFPS + ")"
+        );
+    }
+
+    private void bitmapInfo(Bitmap last, long bytes, int fps){
+        bitmapInfo(last.getAllocationByteCount(), last.getWidth(), last.getHeight(), bytes, fps);
+    }
+
+    private void bitmapInfo(ByteArrayOutputStream last, long width, long height, long bytes, int fps){
+        bitmapInfo(last.size(), width, height, bytes, fps);
     }
 }
