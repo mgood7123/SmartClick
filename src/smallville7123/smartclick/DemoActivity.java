@@ -29,32 +29,6 @@ public class DemoActivity extends Activity {
             }
         });
 
-        findViewById(R.id.screenshotButton).setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                SU.takeScreenShot();
-            }
-        });
-
-        // start projection
-        findViewById(R.id.startButton).setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                SU.startScreenMirror();
-            }
-        });
-
-        // stop projection
-        findViewById(R.id.stopButton).setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                SU.stopScreenMirror();
-            }
-        });
-
         findViewById(R.id.BouncingBall).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
