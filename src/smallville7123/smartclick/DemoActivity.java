@@ -1,4 +1,4 @@
-package com.mtsahakis.mediaprojectiondemo;
+package smallville7123.smartclick;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -6,9 +6,10 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
 
+import screen.utils.BouncingBallActivity;
 import screen.utils.ScreenUtils;
 
-public class ScreenCaptureImageActivity extends Activity {
+public class DemoActivity extends Activity {
 
     ScreenUtils SU = new ScreenUtils();
 
@@ -17,7 +18,8 @@ public class ScreenCaptureImageActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        SU.onCreate(this, (ImageView) findViewById(R.id.renderedCapture));
+        SU.onCreate(this);
+        SU.setImageView((ImageView) findViewById(R.id.renderedCapture));
 
         findViewById(R.id.StartFloatingServiceButton).setOnClickListener(new View.OnClickListener() {
 
@@ -50,6 +52,15 @@ public class ScreenCaptureImageActivity extends Activity {
             @Override
             public void onClick(View v) {
                 SU.stopScreenMirror();
+            }
+        });
+
+        findViewById(R.id.BouncingBall).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent pIntent = new Intent(DemoActivity.this, BouncingBallActivity.class);
+                pIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(pIntent);
             }
         });
     }

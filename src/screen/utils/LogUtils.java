@@ -90,6 +90,10 @@ public class LogUtils {
         Log.d(TAG, Thread.currentThread().getStackTrace()[3].getMethodName() + "() called");
     }
 
+    public void logParentMethodName() {
+        Log.d(TAG, Thread.currentThread().getStackTrace()[4].getMethodName() + "() called");
+    }
+
     public String getMethodName() {
         return getMethodName(1);
     }

@@ -17,7 +17,6 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
     long IMAGES_PRODUCED;
     int mWidth;
     int mHeight;
-    String dir = "";
 
     boolean single;
 
@@ -27,11 +26,6 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
         this.variables = variables;
         this.mWidth = mWidth;
         this.mHeight = mHeight;
-        if (null != variables.activity) {
-            dir = variables.activity.getCacheDir().getAbsolutePath();
-        } else if (null != variables.service) {
-            dir = variables.service.getCacheDir().getAbsolutePath();
-        }
     }
 
     @Override
@@ -58,12 +52,12 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
                         Bitmap last = bitmap.copy(bitmap.getConfig(), bitmap.isMutable());
 
                         if (variables.screenRecord) {
-                            if (randomAccessFileBuffer.size() == 10)
+                            if (randomAccessFileBuffer.size() == 120)
                                 randomAccessFileBuffer.remove(0);
 
                             // compress bitmap to memory
                             // create a memory file
-                            File outFile = new File(dir + "/bitmap" + randomAccessFileBuffer.size());
+                            File outFile = new File(variables.cacheDir + "/bitmap" + randomAccessFileBuffer.size());
                             // create an output stream to the memory file
                             FileOutputStream out = new FileOutputStream(outFile);
                             // copy bitmap into memory and compress
@@ -94,23 +88,13 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
 //                            in.close();
                         }
 
-                        if (variables.activity != null) {
-                            final Bitmap finalLast = last;
-                            variables.activity.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    variables.imageView.setImageBitmap(finalLast);
-                                }
-                            });
-                        } else if (variables.service != null) {
-                            final Bitmap finalLast1 = last;
-                            ((FloatingViewService) variables.service).runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    variables.imageView.setImageBitmap(finalLast1);
-                                }
-                            });
-                        }
+                        final Bitmap finalLast = last;
+                        variables.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                variables.imageView.setImageBitmap(finalLast);
+                            }
+                        });
 
                         IMAGES_PRODUCED++;
                         Log.e(TAG, "captured image: " + IMAGES_PRODUCED);

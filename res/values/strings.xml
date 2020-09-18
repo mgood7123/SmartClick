@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">ScreenCaptureImage</string>
+    <string name="app_name">SmartClick</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="take_screenshot">Take A Screenshot</string>
@@ -12,4 +12,5 @@
     <string name="kill">Kill Widget</string>
     <string name="power">Power</string>
     <string name="capture">Capture</string>
+    <string name="bouncing_ball">Bouncing Ball</string>
 </resources>

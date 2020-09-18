@@ -6,18 +6,18 @@ import android.graphics.PixelFormat;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageView;
 
-import com.mtsahakis.mediaprojectiondemo.R;
+import smallville7123.smartclick.R;
 
 public class FloatingViewService extends Service {
 
     private WindowManager mWindowManager;
-    private View mFloatingView;
+    private ViewGroup mFloatingView;
     private View collapsedView;
     private View expandedView;
     private ScreenUtils SU = new ScreenUtils();
@@ -53,15 +53,23 @@ public class FloatingViewService extends Service {
         return null;
     }
 
+    final ImageAnalysis analyser = new ImageAnalysis(SU.variables);
+
     @Override
     public void onCreate() {
         super.onCreate();
         Log.e("FLOATING VIEW SERVICE", "onCreate");
 
-        //getting the widget layout from xml using layout inflater
-        mFloatingView = LayoutInflater.from(this).inflate(R.layout.layout_floating_widget, null);
+        SU.onCreate(this, new Variables.Callback() {
+            @Override
+            public void run(Object o) {
+                runOnUiThread((Runnable) o);
+            }
+        });
 
-        SU.onCreate(this, (ImageView) mFloatingView.findViewById(R.id.renderedCaptureFloatingWidget));
+        //getting the widget layout from xml using layout inflater
+        mFloatingView = (ViewGroup) SU.variables.layoutInflater.inflate(R.layout.layout_floating_widget, null);
+        SU.setImageView((ImageView) mFloatingView.findViewById(R.id.renderedCaptureFloatingWidget));
 
         //setting the layout parameters
         final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
@@ -75,6 +83,13 @@ public class FloatingViewService extends Service {
         //getting windows services and adding the floating view to it
         mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         mWindowManager.addView(mFloatingView, params);
+
+        //getting the collapsed and expanded view from the floating view
+        collapsedView = mFloatingView.findViewById(R.id.layoutCollapsed);
+        expandedView = mFloatingView.findViewById(R.id.layoutExpanded);
+        //and set default views
+        collapsedView.setVisibility(View.VISIBLE);
+        expandedView.setVisibility(View.GONE);
 
         //adding an touchlistener to make drag movement of the floating widget
         mFloatingView.findViewById(R.id.relativeLayoutParent).setOnTouchListener(new View.OnTouchListener() {
@@ -116,13 +131,6 @@ public class FloatingViewService extends Service {
             }
         });
 
-        //getting the collapsed and expanded view from the floating view
-        //and set default views
-        collapsedView = mFloatingView.findViewById(R.id.layoutCollapsed);
-        collapsedView.setVisibility(View.VISIBLE);
-        expandedView = mFloatingView.findViewById(R.id.layoutExpanded);
-        expandedView.setVisibility(View.GONE);
-
         expandedView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -136,7 +144,7 @@ public class FloatingViewService extends Service {
             @Override
             public void onClick(View v) {
                 Log.e("FLOATING VIEW SERVICE", "RECORD START");
-                SU.startScreenRecord();
+                SU.startScreenMirror();
             }
         });
 
@@ -144,7 +152,7 @@ public class FloatingViewService extends Service {
             @Override
             public void onClick(View v) {
                 Log.e("FLOATING VIEW SERVICE", "RECORD STOP");
-                SU.stopScreenRecord();
+                SU.stopScreenMirror();
             }
         });
 
@@ -152,10 +160,11 @@ public class FloatingViewService extends Service {
             @Override
             public void onClick(View v) {
                 Log.e("FLOATING VIEW SERVICE", "ANALYSE");
+                analyser.start();
             }
         });
 
-        //adding click listener to close button and expanded view
+        //adding click listener to close button
         mFloatingView.findViewById(R.id.buttonClose).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -163,6 +172,8 @@ public class FloatingViewService extends Service {
                 stopSelf();
             }
         });
+
+        analyser.onCreate(this);
     }
 
     @Override

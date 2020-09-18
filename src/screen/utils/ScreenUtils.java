@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
+import android.view.LayoutInflater;
 import android.widget.ImageView;
 
 import static android.app.Activity.RESULT_OK;
@@ -14,17 +15,30 @@ public class ScreenUtils {
 
     public Variables variables = new Variables();
 
-    public void onCreate(Service service, ImageView imageView) {
+    public void onCreate(Service service, final Variables.Callback runOnUiThread) {
         // service overload
         variables.service = service;
-        variables.imageView = imageView;
         variables.mProjectionManager = variables.mediaProjectionHelper.getMediaProjectionManager();
+        variables.cacheDir = service.getCacheDir().getAbsolutePath();
+        variables.layoutInflater = LayoutInflater.from(service);
+        variables.setRunOnUIThread(runOnUiThread);
     }
 
-    public void onCreate(Activity activity, ImageView imageView) {
+    public void onCreate(Activity activity) {
         variables.activity = activity;
-        variables.imageView = imageView;
         variables.mProjectionManager = variables.mediaProjectionHelper.getMediaProjectionManager();
+        variables.cacheDir = activity.getCacheDir().getAbsolutePath();
+        variables.layoutInflater = LayoutInflater.from(activity);
+        variables.setRunOnUIThread(new Variables.Callback() {
+            @Override
+            public void run(Object o) {
+                variables.activity.runOnUiThread((Runnable) o);
+            }
+        });
+    }
+
+    public void setImageView(ImageView imageView) {
+        variables.imageView = imageView;
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {

@@ -10,6 +10,7 @@ import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
 import android.os.Handler;
 import android.view.Display;
+import android.view.LayoutInflater;
 import android.widget.ImageView;
 
 public class Variables {
@@ -61,4 +62,31 @@ public class Variables {
     public Intent dataSaved;
     public boolean screenRecord;
     public boolean stop;
+    public String cacheDir;
+    public LayoutInflater layoutInflater;
+
+    public interface Callback<Runnable> {
+        /**
+         * When an object implementing interface <code>Runnable</code> is used
+         * to create a thread, starting the thread causes the object's
+         * <code>run</code> method to be called in that separately executing
+         * thread.
+         * <p>
+         * The general contract of the method <code>run</code> is that it may
+         * take any action whatsoever.
+         *
+         * @see     java.lang.Thread#run()
+         */
+        public abstract void run(Runnable runnable);
+    }
+
+    Callback runOnUiThread;
+
+    public void setRunOnUIThread(Callback runnable) {
+        runOnUiThread = runnable;
+    }
+
+    public void runOnUiThread(Runnable action) {
+        runOnUiThread.run(action);
+    }
 }
