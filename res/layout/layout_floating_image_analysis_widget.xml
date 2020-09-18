@@ -3,44 +3,46 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/analyzerrootLayout">
 
-
+    <!-- this is the collapsed layout -->
     <RelativeLayout
-        android:id="@+id/analyzerrootLayout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        tools:ignore="UselessParent">
+        android:id="@+id/analyzerLayoutCollapsed"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:orientation="vertical"
+        android:visibility="visible">
 
-        <!-- this is the collapsed layout -->
-        <RelativeLayout
-            android:id="@+id/analyzerLayoutCollapsed"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone">
+        <ImageView
+            android:id="@+id/analyzerCollapsedIcon"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@android:drawable/ic_menu_gallery" />
+    </RelativeLayout>
 
-            <ImageView
-                android:id="@+id/analyzerCollapsedIcon"
-                android:layout_width="70dp"
-                android:layout_height="70dp"
-                android:layout_marginTop="8dp"
-                android:src="@android:drawable/ic_menu_gallery" />
-        </RelativeLayout>
+    <!-- this is the expanded layout -->
+    <RelativeLayout
+        android:id="@+id/analyzerLayoutExpanded"
+        android:layout_width="500dp"
+        android:layout_height="500dp"
+        android:background="#a0c3d7"
+        android:orientation="horizontal"
+        android:visibility="visible">
 
-        <!-- this is the expanded layout -->
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/analyzerLayoutExpanded"
-            android:layout_width="331dp"
-            android:layout_height="488dp"
-            android:background="#a0c3d7"
-            android:orientation="horizontal"
-            android:visibility="visible">
-
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:resizeMode="horizontal|vertical"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
             <ImageView
                 android:id="@+id/analyzerExpandedIcon"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
                 android:src="@android:drawable/ic_menu_gallery"
                 app:layout_constraintBottom_toTopOf="@id/analyserRenderedCaptureFloatingWidget"
                 app:layout_constraintLeft_toLeftOf="parent"
@@ -49,7 +51,7 @@
 
             <ImageView
                 android:id="@+id/analyserRenderedCaptureFloatingWidget"
-                android:layout_width="120dp"
+                android:layout_width="0dp"
                 android:layout_height="0dp"
                 app:layout_constraintBottom_toTopOf="@id/analyzerFinishButton"
                 app:layout_constraintLeft_toLeftOf="parent"
@@ -58,8 +60,8 @@
 
             <Button
                 android:id="@+id/analyzerFinishButton"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
+                android:layout_width="0dp"
+                android:layout_height="100dp"
                 android:text="Finish"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintLeft_toLeftOf="parent"
