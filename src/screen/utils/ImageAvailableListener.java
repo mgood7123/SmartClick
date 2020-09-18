@@ -28,8 +28,6 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
         this.mHeight = mHeight;
     }
 
-    final int max = 120;
-
     @Override
     public void onImageAvailable(ImageReader reader) {
         if (!variables.stop) {
@@ -56,12 +54,12 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
                         if (variables.screenRecord) {
                             // compress bitmap to memory
                             int size = randomAccessFileBuffer.size()+1;
-                            if (size == max) {
+                            if (size == variables.max_bitmaps) {
                                 randomAccessFileBuffer.remove(0);
                             }
 
                             // create a memory file
-                            File outFile = new File(variables.cacheDir + "/" + size + "_of_" + max);
+                            File outFile = new File(variables.cacheDir + "/" + size + "_of_" + variables.max_bitmaps);
                             // create an output stream to the memory file
                             FileOutputStream out = new FileOutputStream(outFile);
                             // copy bitmap into memory and compress
@@ -77,19 +75,6 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
                             out.close();
                             // add the file into the buffer
                             randomAccessFileBuffer.add(outFile);
-
-                            // performance can be slightly improved by not reading this back in
-                            // and instead copying directly as above
-
-                            // kept for reference
-
-//                            // decompress memory to bitmap
-//                            // create an input stream from the memory file
-//                            FileInputStream in = new FileInputStream(randomAccessFileBuffer.lastElement());
-//                            // decompress bitmap into memory
-//                            last = BitmapFactory.decodeStream(in);
-//                            // close the input stream
-//                            in.close();
                         }
 
                         final Bitmap finalLast = last;

@@ -64,6 +64,7 @@ public class Variables {
     public boolean stop;
     public String cacheDir;
     public LayoutInflater layoutInflater;
+    public int max_bitmaps = 500;
 
     public interface Callback<Runnable> {
         /**

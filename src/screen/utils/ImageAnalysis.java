@@ -1,12 +1,15 @@
 package screen.utils;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.PixelFormat;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.ImageView;
 
 import smallville7123.smartclick.R;
 
@@ -120,9 +123,9 @@ public class ImageAnalysis {
 
     public void onDestroy() {
         variables.log.logMethodName();
+        if (analyzerrootLayout != null) analyzerrootLayout.setVisibility(View.GONE);
         if (expandedView != null) expandedView.setVisibility(View.GONE);
         if (collapsedView != null) collapsedView.setVisibility(View.GONE);
-        if (analyzerrootLayout != null) analyzerrootLayout.setVisibility(View.GONE);
         if (mWindowManager != null) mWindowManager.removeViewImmediate(analyzerrootLayout);
     }
 
@@ -131,5 +134,11 @@ public class ImageAnalysis {
         expandedView.setVisibility(View.VISIBLE);
         collapsedView.setVisibility(View.GONE);
         analyzerrootLayout.setVisibility(View.VISIBLE);
+
+        // decompress memory to bitmap
+        ImageView im = (ImageView)analyzerrootLayout.findViewById(R.id.analyserRenderedCaptureFloatingWidget);
+        // decompress bitmap file into memory
+        Bitmap image = BitmapFactory.decodeFile(variables.cacheDir + "/1_of_" + variables.max_bitmaps);
+        if (image != null) im.setImageBitmap(image);
     }
 }
