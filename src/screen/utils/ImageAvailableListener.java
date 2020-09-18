@@ -5,8 +5,7 @@ import android.media.Image;
 import android.media.ImageReader;
 import android.util.Log;
 
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.util.Vector;
@@ -19,8 +18,6 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
     int mHeight;
 
     boolean single;
-
-    Vector<File> randomAccessFileBuffer = new Vector<File>();
 
     public ImageAvailableListener(Variables variables, int mWidth, int mHeight) {
         this.variables = variables;
@@ -52,17 +49,6 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
                         Bitmap last = bitmap.copy(bitmap.getConfig(), bitmap.isMutable());
 
                         if (variables.screenRecord) {
-                            // compress bitmap to memory
-                            int size = randomAccessFileBuffer.size()+1;
-                            if (size == variables.max_bitmaps) {
-                                randomAccessFileBuffer.remove(0);
-                            }
-
-                            // create a memory file
-                            File outFile = new File(variables.cacheDir + "/" + size + "_of_" + variables.max_bitmaps);
-                            // create an output stream to the memory file
-                            FileOutputStream out = new FileOutputStream(outFile);
-                            // copy bitmap into memory and compress
                             //
                             // lower quality increases recording latency
                             // and thus decreases frame accuracy
@@ -70,11 +56,15 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
                             //
                             // keep at 100 for now for max recording speed
                             //
+
+                            // compress bitmap to memory
+                            int size = variables.bitmapBuffer.size()+1;
+                            if (size == variables.max_bitmaps) {
+                                variables.bitmapBuffer.remove(0);
+                            }
+                            ByteArrayOutputStream out = new ByteArrayOutputStream();
                             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
-                            // close the output stream
-                            out.close();
-                            // add the file into the buffer
-                            randomAccessFileBuffer.add(outFile);
+                            variables.bitmapBuffer.add(out);
                         }
 
                         final Bitmap finalLast = last;
@@ -135,8 +125,8 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
         return -1L == mb ? mb : divideBy1024(mb);
     }
 
-    private void bitmapInfo(final Vector<RandomAccessFile> randomAccessFileBuffer, RandomAccessFile last, long bytes, int fps) {
-//        if (last == null) last = randomAccessFileBuffer.lastElement();
+    private void bitmapInfo(final Vector<RandomAccessFile> bitmapBuffer, RandomAccessFile last, long bytes, int fps) {
+//        if (last == null) last = bitmapBuffer.lastElement();
 //        long fileSizeInBytes = 0;
 //        try {
 //            fileSizeInBytes = last.length();
@@ -158,7 +148,7 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
 //        long MBPerFPS = BytesToMB(BytesPerFPS);
 //        long GBPerFPS = BytesToGB(BytesPerFPS);
 //
-//        long bufferSize = randomAccessFileBuffer.size();
+//        long bufferSize = bitmapBuffer.size();
 //
 //        variables.log.errorNoStackTrace(
 //                "bitmap array length: " + bufferSize + "," +

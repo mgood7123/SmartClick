@@ -11,6 +11,8 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageView;
 
+import java.io.ByteArrayInputStream;
+
 import smallville7123.smartclick.R;
 
 import static android.content.Context.WINDOW_SERVICE;
@@ -135,10 +137,11 @@ public class ImageAnalysis {
         collapsedView.setVisibility(View.GONE);
         analyzerrootLayout.setVisibility(View.VISIBLE);
 
-        // decompress memory to bitmap
-        ImageView im = (ImageView)analyzerrootLayout.findViewById(R.id.analyserRenderedCaptureFloatingWidget);
-        // decompress bitmap file into memory
-        Bitmap image = BitmapFactory.decodeFile(variables.cacheDir + "/1_of_" + variables.max_bitmaps);
-        if (image != null) im.setImageBitmap(image);
+        if (variables.bitmapBuffer.size() != 0) {
+            ImageView im = (ImageView)analyzerrootLayout.findViewById(R.id.analyserRenderedCaptureFloatingWidget);
+            // decompress memory to bitmap
+            Bitmap image = BitmapFactory.decodeStream(new ByteArrayInputStream(variables.bitmapBuffer.get(0).toByteArray()));
+            if (image != null) im.setImageBitmap(image);
+        }
     }
 }

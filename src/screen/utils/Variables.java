@@ -13,6 +13,9 @@ import android.view.Display;
 import android.view.LayoutInflater;
 import android.widget.ImageView;
 
+import java.io.ByteArrayOutputStream;
+import java.util.Vector;
+
 public class Variables {
 
     public final String TAG = getClass().getName();
@@ -64,7 +67,9 @@ public class Variables {
     public boolean stop;
     public String cacheDir;
     public LayoutInflater layoutInflater;
-    public int max_bitmaps = 500;
+    public int max_bitmaps = 20;
+    // use a ByteArrayOutputStream to eliminate disk io and keep compressed bitmaps in memory
+    public Vector<ByteArrayOutputStream> bitmapBuffer = new Vector<>();
 
     public interface Callback<Runnable> {
         /**
