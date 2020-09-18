@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="600dp"
-    android:layout_height="600dp"
-    android:id="@+id/relativeLayoutParent"
-    >
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/rootLayout">
 
     <!-- this is the collapsed layout -->
     <RelativeLayout
@@ -12,7 +12,7 @@
         android:layout_width="70dp"
         android:layout_height="70dp"
         android:orientation="vertical"
-        android:visibility="gone">
+        android:visibility="visible">
 
         <ImageView
             android:id="@+id/collapsed_iv"
@@ -24,86 +24,138 @@
     <!-- this is the expanded layout -->
     <RelativeLayout
         android:id="@+id/layoutExpanded"
-        android:layout_width="600dp"
-        android:layout_height="600dp"
+        android:layout_width="500dp"
+        android:layout_height="500dp"
         android:background="#a0c3d7"
-        android:resizeMode="horizontal|vertical"
-        android:visibility="visible"
-    >
-        <ImageView
-            android:id="@+id/renderedCaptureFloatingWidget"
-            android:layout_width="300dp"
-            android:layout_height="600dp"
-            android:background="#000000"
-            />
+        android:orientation="vertical"
+        android:visibility="visible">
 
-        <RelativeLayout
-            android:id="@+id/buttonSimplifiedCoding"
-            android:layout_marginStart="300dp"
-            android:layout_width="300dp"
-            android:layout_height="600dp"
-            android:orientation="vertical">
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:resizeMode="horizontal|vertical"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-            <Button
-                android:id="@+id/FloatMirrorStart"
-                android:layout_width="300dp"
-                android:layout_height="100dp"
-                android:text="@string/start_mirror"
-                android:textAlignment="center"
-                android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
-                android:textColor="#ffffff"
-                android:textStyle="bold" />
-            <Button
-                android:id="@+id/FloatMirrorStop"
-                android:layout_width="300dp"
-                android:layout_height="100dp"
-                android:layout_marginTop="100dp"
-                android:text="@string/stop_mirror"
-                android:textAlignment="center"
-                android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
-                android:textColor="#ffffff"
-                android:textStyle="bold" />
-            <Button
-                android:id="@+id/FloatRecordStart"
-                android:layout_width="300dp"
-                android:layout_height="100dp"
-                android:layout_marginTop="200dp"
-                android:text="@string/start_recording"
-                android:textAlignment="center"
-                android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
-                android:textColor="#ffffff"
-                android:textStyle="bold" />
-            <Button
-                android:id="@+id/FloatRecordEnd"
-                android:layout_width="300dp"
-                android:layout_height="100dp"
-                android:layout_marginTop="300dp"
-                android:text="@string/stop_recording"
-                android:textAlignment="center"
-                android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
-                android:textColor="#ffffff"
-                android:textStyle="bold" />
-            <Button
-                android:id="@+id/buttonAnalyse"
-                android:layout_width="300dp"
-                android:layout_height="100dp"
-                android:layout_marginTop="400dp"
-                android:text="@string/analyse"
-                android:textAlignment="center"
-                android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
-                android:textColor="#ffffff"
-                android:textStyle="bold" />
 
-            <Button
-                android:id="@+id/buttonClose"
-                android:layout_width="300dp"
-                android:layout_height="100dp"
-                android:layout_marginTop="500dp"
-                android:text="@string/kill"
-                android:textAlignment="center"
-                android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
-                android:textColor="#ffffff"
-                android:textStyle="bold" />
-        </RelativeLayout>
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/CaptureContainer"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/ButtonsContainer"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <ImageView
+                    android:id="@+id/renderedCaptureFloatingWidget"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:background="#000000"
+                    android:contentDescription="Screen Preview"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/ButtonsContainer"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/CaptureContainer"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <Button
+                    android:id="@+id/FloatMirrorStart"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:text="@string/start_mirror"
+                    android:textAlignment="center"
+                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
+                    android:textColor="#ffffff"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toTopOf="@+id/FloatMirrorStop"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <Button
+                    android:id="@+id/FloatMirrorStop"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:text="@string/stop_mirror"
+                    android:textAlignment="center"
+                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
+                    android:textColor="#ffffff"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toTopOf="@id/FloatRecordStart"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/FloatMirrorStart" />
+
+                <Button
+                    android:id="@+id/FloatRecordStart"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:text="@string/start_recording"
+                    android:textAlignment="center"
+                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
+                    android:textColor="#ffffff"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toTopOf="@id/FloatRecordEnd"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/FloatMirrorStop" />
+
+                <Button
+                    android:id="@+id/FloatRecordEnd"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:text="@string/stop_recording"
+                    android:textAlignment="center"
+                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
+                    android:textColor="#ffffff"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toTopOf="@id/buttonAnalyse"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/FloatRecordStart" />
+
+                <Button
+                    android:id="@+id/buttonAnalyse"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:text="@string/analyse"
+                    android:textAlignment="center"
+                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
+                    android:textColor="#ffffff"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toTopOf="@id/buttonClose"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/FloatRecordEnd" />
+
+                <Button
+                    android:id="@+id/buttonClose"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:text="@string/kill"
+                    android:textAlignment="center"
+                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
+                    android:textColor="#ffffff"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/buttonAnalyse" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </RelativeLayout>
 </FrameLayout>

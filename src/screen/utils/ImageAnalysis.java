@@ -18,7 +18,7 @@ public class ImageAnalysis {
     private View collapsedView;
     private View expandedView;
 
-    private View analyzerRelativeLayoutParent;
+    private View analyzerrootLayout;
 
     Variables variables;
 
@@ -57,9 +57,9 @@ public class ImageAnalysis {
         expandedView.setVisibility(View.VISIBLE);
 
         //adding an touchlistener to make drag movement of the floating widget
-        analyzerRelativeLayoutParent = mFloatingView.findViewById(R.id.analyzerRelativeLayoutParent);
-        analyzerRelativeLayoutParent.setVisibility(View.GONE);
-        analyzerRelativeLayoutParent.setOnTouchListener(new View.OnTouchListener() {
+        analyzerrootLayout = mFloatingView.findViewById(R.id.analyzerrootLayout);
+        analyzerrootLayout.setVisibility(View.GONE);
+        analyzerrootLayout.setOnTouchListener(new View.OnTouchListener() {
             private int initialX;
             private int initialY;
             private float initialTouchX;
@@ -111,7 +111,7 @@ public class ImageAnalysis {
             @Override
             public void onClick(View v) {
                 Log.e("ImageAnalysis", "hiding ImageAnalysis");
-                analyzerRelativeLayoutParent.setVisibility(View.GONE);
+                analyzerrootLayout.setVisibility(View.GONE);
                 expandedView.setVisibility(View.VISIBLE);
                 collapsedView.setVisibility(View.GONE);
             }
@@ -122,6 +122,6 @@ public class ImageAnalysis {
         variables.log.logMethodName();
         expandedView.setVisibility(View.VISIBLE);
         collapsedView.setVisibility(View.GONE);
-        analyzerRelativeLayoutParent.setVisibility(View.VISIBLE);
+        analyzerrootLayout.setVisibility(View.VISIBLE);
     }
 }

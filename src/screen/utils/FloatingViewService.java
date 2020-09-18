@@ -93,7 +93,7 @@ public class FloatingViewService extends Service {
         expandedView.setVisibility(View.GONE);
 
         //adding an touchlistener to make drag movement of the floating widget
-        mFloatingView.findViewById(R.id.relativeLayoutParent).setOnTouchListener(new View.OnTouchListener() {
+        mFloatingView.findViewById(R.id.rootLayout).setOnTouchListener(new View.OnTouchListener() {
             private int initialX;
             private int initialY;
             private float initialTouchX;
