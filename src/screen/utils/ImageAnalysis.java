@@ -18,7 +18,7 @@ public class ImageAnalysis {
     private View collapsedView;
     private View expandedView;
 
-    private View analyzerrootLayout;
+    View analyzerrootLayout;
 
     Variables variables;
 
@@ -116,6 +116,14 @@ public class ImageAnalysis {
                 collapsedView.setVisibility(View.GONE);
             }
         });
+    }
+
+    public void onDestroy() {
+        variables.log.logMethodName();
+        if (expandedView != null) expandedView.setVisibility(View.GONE);
+        if (collapsedView != null) collapsedView.setVisibility(View.GONE);
+        if (analyzerrootLayout != null) analyzerrootLayout.setVisibility(View.GONE);
+        if (mWindowManager != null) mWindowManager.removeViewImmediate(analyzerrootLayout);
     }
 
     public void start() {

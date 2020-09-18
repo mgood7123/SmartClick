@@ -186,6 +186,7 @@ public class FloatingViewService extends Service {
             @Override
             public void onClick(View v) {
                 Log.e("FLOATING VIEW SERVICE", "killing FLOATING VIEW SERVICE");
+                analyser.onDestroy();
                 stopSelf();
             }
         });
