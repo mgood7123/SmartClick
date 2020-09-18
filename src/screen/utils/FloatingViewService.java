@@ -140,7 +140,7 @@ public class FloatingViewService extends Service {
             }
         });
 
-        mFloatingView.findViewById(R.id.FloatRecordStart).setOnClickListener(new View.OnClickListener() {
+        mFloatingView.findViewById(R.id.FloatMirrorStart).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Log.e("FLOATING VIEW SERVICE", "RECORD START");
@@ -148,11 +148,27 @@ public class FloatingViewService extends Service {
             }
         });
 
-        mFloatingView.findViewById(R.id.FloatRecordEnd).setOnClickListener(new View.OnClickListener() {
+        mFloatingView.findViewById(R.id.FloatMirrorStop).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Log.e("FLOATING VIEW SERVICE", "RECORD STOP");
                 SU.stopScreenMirror();
+            }
+        });
+
+        mFloatingView.findViewById(R.id.FloatRecordStart).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.e("FLOATING VIEW SERVICE", "RECORD START");
+                SU.startScreenRecord();
+            }
+        });
+
+        mFloatingView.findViewById(R.id.FloatRecordEnd).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.e("FLOATING VIEW SERVICE", "RECORD STOP");
+                SU.stopScreenRecord();
             }
         });
 

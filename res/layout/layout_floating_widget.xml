@@ -56,6 +56,30 @@
                 android:orientation="vertical">
 
                 <Button
+                    android:id="@+id/FloatMirrorStart"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="15dp"
+                    android:paddingRight="15dp"
+                    android:paddingTop="0dp"
+                    android:text="@string/start_mirror"
+                    android:textAlignment="center"
+                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
+                    android:textColor="#ffffff"
+                    android:textStyle="bold" />
+                <Button
+                    android:id="@+id/FloatMirrorStop"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="15dp"
+                    android:paddingRight="15dp"
+                    android:paddingTop="0dp"
+                    android:text="@string/stop_mirror"
+                    android:textAlignment="center"
+                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
+                    android:textColor="#ffffff"
+                    android:textStyle="bold" />
+                <Button
                     android:id="@+id/FloatRecordStart"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

@@ -28,6 +28,8 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
         this.mHeight = mHeight;
     }
 
+    final int max = 120;
+
     @Override
     public void onImageAvailable(ImageReader reader) {
         if (!variables.stop) {
@@ -52,12 +54,14 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
                         Bitmap last = bitmap.copy(bitmap.getConfig(), bitmap.isMutable());
 
                         if (variables.screenRecord) {
-                            if (randomAccessFileBuffer.size() == 120)
-                                randomAccessFileBuffer.remove(0);
-
                             // compress bitmap to memory
+                            int size = randomAccessFileBuffer.size()+1;
+                            if (size == max) {
+                                randomAccessFileBuffer.remove(0);
+                            }
+
                             // create a memory file
-                            File outFile = new File(variables.cacheDir + "/bitmap" + randomAccessFileBuffer.size());
+                            File outFile = new File(variables.cacheDir + "/" + size + "_of_" + max);
                             // create an output stream to the memory file
                             FileOutputStream out = new FileOutputStream(outFile);
                             // copy bitmap into memory and compress

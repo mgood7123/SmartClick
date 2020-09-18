@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.widget.ImageView;
 
@@ -15,7 +16,7 @@ public class ScreenUtils {
 
     public Variables variables = new Variables();
 
-    public void onCreate(Service service, final Variables.Callback runOnUiThread) {
+    public void onCreate(@NonNull Service service, final Variables.Callback runOnUiThread) {
         // service overload
         variables.service = service;
         variables.mProjectionManager = variables.mediaProjectionHelper.getMediaProjectionManager();
@@ -24,7 +25,7 @@ public class ScreenUtils {
         variables.setRunOnUIThread(runOnUiThread);
     }
 
-    public void onCreate(Activity activity) {
+    public void onCreate(@NonNull Activity activity) {
         variables.activity = activity;
         variables.mProjectionManager = variables.mediaProjectionHelper.getMediaProjectionManager();
         variables.cacheDir = activity.getCacheDir().getAbsolutePath();
@@ -84,23 +85,25 @@ public class ScreenUtils {
         }
     }
 
+    public void takeScreenShot() {
+        variables.screenRecord = false;
+        variables.mediaProjectionHelper.takeScreenShot();
+    }
+
+    public void startScreenMirror() {
+        variables.screenRecord = false;
+        variables.mediaProjectionHelper.startScreenMirror();
+    }
+
+    public void stopScreenMirror() {
+        variables.mediaProjectionHelper.stopScreenMirror();
+    }
+
     public void startScreenRecord() {
         variables.mediaProjectionHelper.startScreenRecord();
     }
 
     public void stopScreenRecord() {
         variables.mediaProjectionHelper.stopScreenRecord();
-    }
-
-    public void takeScreenShot() {
-        variables.mediaProjectionHelper.takeScreenShot();
-    }
-
-    public void startScreenMirror() {
-        variables.mediaProjectionHelper.startScreenMirror();
-    }
-
-    public void stopScreenMirror() {
-        variables.mediaProjectionHelper.stopScreenMirror();
     }
 }
