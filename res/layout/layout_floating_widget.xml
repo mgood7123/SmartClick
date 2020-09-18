@@ -1,108 +1,109 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
+    android:layout_width="600dp"
+    android:layout_height="600dp"
+    android:id="@+id/relativeLayoutParent"
     >
 
+    <!-- this is the collapsed layout -->
     <RelativeLayout
-        android:id="@+id/relativeLayoutParent"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        tools:ignore="UselessParent">
+        android:id="@+id/layoutCollapsed"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:orientation="vertical"
+        android:visibility="gone">
 
-        <!-- this is the collapsed layout -->
+        <ImageView
+            android:id="@+id/collapsed_iv"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:src="@drawable/ic_launcher" />
+    </RelativeLayout>
+
+    <!-- this is the expanded layout -->
+    <RelativeLayout
+        android:id="@+id/layoutExpanded"
+        android:layout_width="600dp"
+        android:layout_height="600dp"
+        android:background="#a0c3d7"
+        android:resizeMode="horizontal|vertical"
+        android:visibility="visible"
+    >
+        <ImageView
+            android:id="@+id/renderedCaptureFloatingWidget"
+            android:layout_width="300dp"
+            android:layout_height="600dp"
+            android:background="#000000"
+            />
+
         <RelativeLayout
-            android:id="@+id/layoutCollapsed"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone">
+            android:id="@+id/buttonSimplifiedCoding"
+            android:layout_marginStart="300dp"
+            android:layout_width="300dp"
+            android:layout_height="600dp"
+            android:orientation="vertical">
 
-            <ImageView
-                android:id="@+id/collapsed_iv"
-                android:layout_width="70sp"
-                android:layout_height="70sp"
-                android:src="@drawable/ic_launcher" />
+            <Button
+                android:id="@+id/FloatMirrorStart"
+                android:layout_width="300dp"
+                android:layout_height="100dp"
+                android:text="@string/start_mirror"
+                android:textAlignment="center"
+                android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
+                android:textColor="#ffffff"
+                android:textStyle="bold" />
+            <Button
+                android:id="@+id/FloatMirrorStop"
+                android:layout_width="300dp"
+                android:layout_height="100dp"
+                android:layout_marginTop="100dp"
+                android:text="@string/stop_mirror"
+                android:textAlignment="center"
+                android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
+                android:textColor="#ffffff"
+                android:textStyle="bold" />
+            <Button
+                android:id="@+id/FloatRecordStart"
+                android:layout_width="300dp"
+                android:layout_height="100dp"
+                android:layout_marginTop="200dp"
+                android:text="@string/start_recording"
+                android:textAlignment="center"
+                android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
+                android:textColor="#ffffff"
+                android:textStyle="bold" />
+            <Button
+                android:id="@+id/FloatRecordEnd"
+                android:layout_width="300dp"
+                android:layout_height="100dp"
+                android:layout_marginTop="300dp"
+                android:text="@string/stop_recording"
+                android:textAlignment="center"
+                android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
+                android:textColor="#ffffff"
+                android:textStyle="bold" />
+            <Button
+                android:id="@+id/buttonAnalyse"
+                android:layout_width="300dp"
+                android:layout_height="100dp"
+                android:layout_marginTop="400dp"
+                android:text="@string/analyse"
+                android:textAlignment="center"
+                android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
+                android:textColor="#ffffff"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/buttonClose"
+                android:layout_width="300dp"
+                android:layout_height="100dp"
+                android:layout_marginTop="500dp"
+                android:text="@string/kill"
+                android:textAlignment="center"
+                android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
+                android:textColor="#ffffff"
+                android:textStyle="bold" />
         </RelativeLayout>
-
-        <!-- this is the expanded layout -->
-        <LinearLayout
-            android:id="@+id/layoutExpanded"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="#a0c3d7"
-            android:orientation="horizontal"
-            android:visibility="visible"
-        >
-            <ImageView
-                android:id="@+id/renderedCaptureFloatingWidget"
-                android:layout_width="120sp"
-                android:background="#000000"
-                android:layout_height="match_parent"/>
-
-            <LinearLayout
-                android:id="@+id/buttonSimplifiedCoding"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <Button
-                    android:id="@+id/FloatMirrorStart"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/start_mirror"
-                    android:textAlignment="center"
-                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
-                    android:textColor="#ffffff"
-                    android:textStyle="bold" />
-                <Button
-                    android:id="@+id/FloatMirrorStop"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/stop_mirror"
-                    android:textAlignment="center"
-                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
-                    android:textColor="#ffffff"
-                    android:textStyle="bold" />
-                <Button
-                    android:id="@+id/FloatRecordStart"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/start_recording"
-                    android:textAlignment="center"
-                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
-                    android:textColor="#ffffff"
-                    android:textStyle="bold" />
-                <Button
-                    android:id="@+id/FloatRecordEnd"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/stop_recording"
-                    android:textAlignment="center"
-                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
-                    android:textColor="#ffffff"
-                    android:textStyle="bold" />
-                <Button
-                    android:id="@+id/buttonAnalyse"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/analyse"
-                    android:textAlignment="center"
-                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
-                    android:textColor="#ffffff"
-                    android:textStyle="bold" />
-
-                <Button
-                    android:id="@+id/buttonClose"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/kill"
-                    android:textAlignment="center"
-                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
-                    android:textColor="#ffffff"
-                    android:textStyle="bold" />
-            </LinearLayout>
-        </LinearLayout>
     </RelativeLayout>
 </FrameLayout>
