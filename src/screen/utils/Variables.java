@@ -2,6 +2,7 @@ package screen.utils;
 
 import android.app.Activity;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.VirtualDisplay;
@@ -18,7 +19,7 @@ import java.util.Vector;
 
 public class Variables {
 
-    public final String TAG = getClass().getName();
+    public final String TAG = this.getClass().getName();
 
     public ImageView imageView;
 
@@ -56,7 +57,7 @@ public class Variables {
     public Service service;
 
     public LogUtils log = new LogUtils(
-            TAG, "a bug has occurred, this should not happen"
+            this.TAG, "a bug has occurred, this should not happen"
     );
 
     public boolean screenshot;
@@ -67,9 +68,14 @@ public class Variables {
     public boolean stop;
     public String cacheDir;
     public LayoutInflater layoutInflater;
-    public int max_bitmaps = 20;
+    public int max_bitmaps = 10;
+    //
+    // TODO: a LruCache could be used for higher performance, see
+    //  https://developer.android.com/topic/performance/graphics/manage-memory
+    //
     // use a ByteArrayOutputStream to eliminate disk io and keep compressed bitmaps in memory
     public Vector<ByteArrayOutputStream> bitmapBuffer = new Vector<>();
+    public Context context;
 
     public interface Callback<Runnable> {
         /**
@@ -83,16 +89,16 @@ public class Variables {
          *
          * @see     java.lang.Thread#run()
          */
-        public abstract void run(Runnable runnable);
+        void run(Runnable runnable);
     }
 
-    Callback runOnUiThread;
+    Variables.Callback runOnUiThread;
 
-    public void setRunOnUIThread(Callback runnable) {
-        runOnUiThread = runnable;
+    public void setRunOnUIThread(final Variables.Callback runnable) {
+        this.runOnUiThread = runnable;
     }
 
-    public void runOnUiThread(Runnable action) {
-        runOnUiThread.run(action);
+    public void runOnUiThread(final Runnable action) {
+        this.runOnUiThread.run(action);
     }
 }

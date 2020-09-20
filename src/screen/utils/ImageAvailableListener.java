@@ -3,14 +3,12 @@ package screen.utils;
 import android.graphics.Bitmap;
 import android.media.Image;
 import android.media.ImageReader;
-import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 
 public class ImageAvailableListener implements ImageReader.OnImageAvailableListener {
     private final Variables variables;
-    String TAG;
     long IMAGES_PRODUCED;
     int mWidth;
     int mHeight;
@@ -57,7 +55,7 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
                             //
 
                             // compress bitmap to memory
-                            int size = variables.bitmapBuffer.size()+1;
+                            int size = variables.bitmapBuffer.size();
                             if (size == variables.max_bitmaps) {
                                 variables.bitmapBuffer.remove(0);
                             }
@@ -77,12 +75,13 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
                         });
 
                         IMAGES_PRODUCED++;
-                        Log.e(TAG, "captured image: " + IMAGES_PRODUCED);
+                        variables.log.logWithClassName(this, "number of images produced: " + IMAGES_PRODUCED);
+
                         if (variables.screenshot) {
                             new Thread() {
                                 @Override
                                 public void run() {
-                                    Log.e("TAG", "took screenshot");
+                                    variables.log.logWithClassName(ImageAvailableListener.this, "took screenshot");
                                     variables.mediaProjectionHelper.stopScreenMirror();
                                     variables.screenshot = false;
                                     single = false;
@@ -93,7 +92,7 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
                     }
 
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    variables.log.errorWithClassName(this, e);
                 } finally {
                     if (bitmap != null) {
                         bitmap.recycle();
@@ -142,13 +141,13 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
         long MBPerFPS = BytesToMB(BytesPerFPS);
         long GBPerFPS = BytesToGB(BytesPerFPS);
 
-        variables.log.errorNoStackTrace(
+        variables.log.errorNoStackTraceWithClassName(this,
                 "single bitmap:" +
                         " resolution (width x height): " + width + "x" + height
                         + ", size: " + fileSize_MB + " MB (" + fileSize_KB + " KB)" +
                         " (" + fileSize_Bytes + " Bytes)"
         );
-        variables.log.errorNoStackTrace(
+        variables.log.errorNoStackTraceWithClassName(this,
                 "max amount of seconds recordable at " + fps + " FPS," +
                         " for " + RAM_GB + " GB of memory: " + RAM_Bytes/BytesPerFPS +
                         " (" + RAM_Bytes + "/" + BytesPerFPS + ")"

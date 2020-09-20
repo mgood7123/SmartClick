@@ -41,7 +41,11 @@ public class LogUtils {
     }
 
     public final void log(String message) {
-        Log.d(TAG, message);
+        Log.i("LogUtils", TAG + ": " + message);
+    }
+
+    public void logWithClassName(Object object, String message) {
+        Log.i("LogUtils", TAG + ": " + object.getClass().getName() + ": " + message);
     }
 
     public final Throwable error() {
@@ -50,16 +54,34 @@ public class LogUtils {
 
     public final AssertionError error(String message) {
         AssertionError t = new AssertionError(message);
-        Log.e(TAG, Log.getStackTraceString(t));
+        Log.e("LogUtils", TAG + ": " + Log.getStackTraceString(t));
         return t;
+    }
+
+    public void errorWithClassName(Object object, Exception exception) {
+        AssertionError t = new AssertionError(Log.getStackTraceString(exception));
+        Log.e("LogUtils", TAG + ": " + object.getClass().getName() + ": " + Log.getStackTraceString(t));
+    }
+
+    public void errorWithClassName(Object object, String message) {
+        AssertionError t = new AssertionError(message);
+        Log.e("LogUtils", TAG + ": " + object.getClass().getName() + ": " + Log.getStackTraceString(t));
     }
 
     public final void errorNoStackTrace() {
         errorNoStackTrace(ERRORMESSAGE);
     }
 
+    public final void errorNoStackTraceWithClassName(Object object) {
+        errorNoStackTraceWithClassName(object, ERRORMESSAGE);
+    }
+
     public final void errorNoStackTrace(String message) {
-        Log.e(TAG, message);
+        Log.e("LogUtils", TAG + ": " + message);
+    }
+
+    public void errorNoStackTraceWithClassName(Object object, String message) {
+        Log.e("LogUtils", TAG + ": " + object.getClass().getName() + ": " + message);
     }
 
     @Nullable
@@ -107,17 +129,23 @@ public class LogUtils {
         assertNotNull(message, null);
     }
 
+    @Nullable
+    @SuppressWarnings("ConstantOnRightSideOfComparison")
+    public final void errorAndThrowWithClass(Object object, String message) {
+        assertNotNull(object.getClass().getName() + ": " + message, null);
+    }
+
     public void logMethodName() {
-        Log.d(TAG, Thread.currentThread().getStackTrace()[3].getMethodName() + "() called");
+        Log.i("LogUtils", TAG + ": " + Thread.currentThread().getStackTrace()[3].getMethodName() + "() called");
     }
 
     public void logParentMethodName() {
-        Log.d(TAG, Thread.currentThread().getStackTrace()[4].getMethodName() + "() called");
+        Log.i("LogUtils", TAG + ": " + Thread.currentThread().getStackTrace()[4].getMethodName() + "() called");
     }
 
     public void logMethodNameWithClassName(Object object) {
-        Log.d(TAG,
-                object.getClass().getName() + ": " +
+        Log.i("LogUtils",
+                TAG + ": " + object.getClass().getName() + ": " +
                         Thread.currentThread().getStackTrace()[3].getMethodName() + "() called");
     }
 

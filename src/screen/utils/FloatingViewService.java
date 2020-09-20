@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.os.Handler;
 import android.os.IBinder;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -53,13 +52,11 @@ public class FloatingViewService extends Service {
         return null;
     }
 
-    final ImageAnalysis analyser = new ImageAnalysis(SU.variables);
+    final ImageAnalysisFloatingView analyser = new ImageAnalysisFloatingView(SU.variables);
 
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.e("FLOATING VIEW SERVICE", "onCreate");
-
         SU.onCreate(this, new Variables.Callback() {
             @Override
             public void run(Object o) {
@@ -116,7 +113,7 @@ public class FloatingViewService extends Service {
                         //  such as a drag from one area of the screen to another area of the screen
                         //
 
-                        Log.e("FLOATING VIEW SERVICE", "expanding view");
+                        SU.variables.log.logWithClassName(FloatingViewService.this, "expanding view");
                         collapsedView.setVisibility(View.GONE);
                         expandedView.setVisibility(View.VISIBLE);
                         return true;
@@ -135,7 +132,7 @@ public class FloatingViewService extends Service {
         expandedView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.e("FLOATING VIEW SERVICE", "collapsing view");
+                SU.variables.log.logWithClassName(FloatingViewService.this, "collapsing view");
                 collapsedView.setVisibility(View.VISIBLE);
                 expandedView.setVisibility(View.GONE);
             }
@@ -144,7 +141,7 @@ public class FloatingViewService extends Service {
         mFloatingView.findViewById(R.id.FloatMirrorStart).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.e("FLOATING VIEW SERVICE", "RECORD START");
+                SU.variables.log.logWithClassName(FloatingViewService.this, "RECORD START");
                 SU.startScreenMirror();
             }
         });
@@ -152,7 +149,7 @@ public class FloatingViewService extends Service {
         mFloatingView.findViewById(R.id.FloatMirrorStop).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.e("FLOATING VIEW SERVICE", "RECORD STOP");
+                SU.variables.log.logWithClassName(FloatingViewService.this, "RECORD STOP");
                 SU.stopScreenMirror();
             }
         });
@@ -160,7 +157,7 @@ public class FloatingViewService extends Service {
         mFloatingView.findViewById(R.id.FloatRecordStart).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.e("FLOATING VIEW SERVICE", "RECORD START");
+                SU.variables.log.logWithClassName(FloatingViewService.this, "RECORD START");
                 SU.startScreenRecord();
             }
         });
@@ -168,7 +165,7 @@ public class FloatingViewService extends Service {
         mFloatingView.findViewById(R.id.FloatRecordEnd).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.e("FLOATING VIEW SERVICE", "RECORD STOP");
+                SU.variables.log.logWithClassName(FloatingViewService.this, "RECORD STOP");
                 SU.stopScreenRecord();
             }
         });
@@ -176,8 +173,8 @@ public class FloatingViewService extends Service {
         mFloatingView.findViewById(R.id.buttonAnalyse).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.e("FLOATING VIEW SERVICE", "ANALYSE");
-                analyser.start();
+                SU.variables.log.logWithClassName(FloatingViewService.this, "ANALYSE");
+                analyser.onStart();
             }
         });
 
@@ -185,7 +182,7 @@ public class FloatingViewService extends Service {
         mFloatingView.findViewById(R.id.buttonClose).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.e("FLOATING VIEW SERVICE", "killing FLOATING VIEW SERVICE");
+                SU.variables.log.logWithClassName(FloatingViewService.this, "killing FLOATING VIEW SERVICE");
                 analyser.onDestroy();
                 stopSelf();
             }
@@ -197,6 +194,7 @@ public class FloatingViewService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        SU.variables.log.logMethodNameWithClassName(this);
         if (mFloatingView != null) mWindowManager.removeView(mFloatingView);
     }
 }

@@ -9,7 +9,6 @@ import android.media.ImageReader;
 import android.media.projection.MediaProjectionManager;
 import android.os.Looper;
 import android.util.DisplayMetrics;
-import android.util.Log;
 
 public class MediaProjectionHelper {
     Variables variables;
@@ -19,59 +18,54 @@ public class MediaProjectionHelper {
     }
 
     public void startScreenRecord() {
-        variables.log.errorNoStackTrace("recording screen");
+        variables.log.logWithClassName(this, "recording screen");
         variables.screenRecord = true;
         startScreenMirror();
     }
 
     public void stopScreenRecord() {
-        variables.log.errorNoStackTrace("recorded screen");
+        variables.log.logWithClassName(this, "recorded screen");
         stopScreenMirror();
     }
 
     public void takeScreenShot() {
-        variables.log.errorNoStackTrace("taking screenshot");
+        variables.log.logWithClassName(this, "taking screenshot");
         variables.screenshot = true;
         startScreenMirror();
     }
 
     public void startScreenMirror() {
         variables.stop = false;
-        variables.log.errorNoStackTrace("looper is " + variables.looper);
+        variables.log.logWithClassName(this, "looper is " + variables.looper);
         if (variables.looper == null) {
-            variables.log.errorNoStackTrace("startLooper");
+            variables.log.logWithClassName(this, "startLooper");
             variables.looperHelper.startLooper();
-            variables.log.errorNoStackTrace("requestCapturePermission");
+            variables.log.logWithClassName(this, "requestCapturePermission");
             requestCapturePermission();
-            variables.log.errorNoStackTrace("requested");
+            variables.log.logWithClassName(this, "requested");
         }
     }
 
     public void stopScreenMirror() {
         variables.stop = true;
-        variables.log.errorNoStackTrace("looper is " + variables.looper);
+        variables.log.logWithClassName(this, "looper is " + variables.looper);
         if (variables.looper != null) {
-            variables.log.errorNoStackTrace("stopCapture");
+            variables.log.logWithClassName(this, "stopCapture");
             stopCapture();
-            variables.log.errorNoStackTrace("stopLooper");
+            variables.log.logWithClassName(this, "stopLooper");
             variables.looperHelper.stopLooper();
-            variables.log.errorNoStackTrace("stopped");
+            variables.log.logWithClassName(this, "stopped");
         }
     }
 
     public MediaProjectionManager getMediaProjectionManager() {
-        if (variables.activity == null && variables.service == null) {
-            variables.log.errorAndThrow(
+        if (variables.context == null) {
+            variables.log.logWithClassName(this,
                     "please set activity or service before calling " + variables.log.getMethodName()
             );
         }
-        if (variables.activity != null) {
-            return (MediaProjectionManager)
-                    variables.activity.getSystemService(Context.MEDIA_PROJECTION_SERVICE);
-        } else {
-            return (MediaProjectionManager)
-                    variables.service.getSystemService(Context.MEDIA_PROJECTION_SERVICE);
-        }
+        return (MediaProjectionManager)
+                variables.context.getSystemService(Context.MEDIA_PROJECTION_SERVICE);
     }
 
     public void requestCapturePermission(Activity activity) {
@@ -81,27 +75,24 @@ public class MediaProjectionHelper {
 
     public void requestCapturePermission() {
         if (variables.sMediaProjection != null) {
-            Log.e("ScreenCapture", "sMediaProjection already obtained");
+            variables.log.logWithClassName(this, "sMediaProjection already obtained");
             return;
         }
-        Log.e("ScreenCapture", "obtaining sMediaProjection");
+        variables.log.logWithClassName(this, "obtaining sMediaProjection");
         if (variables.grantedPermission) {
-            Log.e("ScreenCapture", "permission already granted");
-            Log.e("ScreenCapture", "using cached permission");
+            variables.log.logWithClassName(this, "permission already granted");
+            variables.log.logWithClassName(this, "using cached permission");
             startCapture(variables.resultCodeSaved, variables.dataSaved);
         } else {
             if (null != variables.projectionActivity) {
                 variables.projectionActivity.startActivityForResult(
                         variables.mProjectionManager.createScreenCaptureIntent(), variables.REQUEST_CODE
                 );
-            } else if (null != variables.activity) {
-                variables.log.errorNoStackTrace("starting activity using activity as context");
-                ProjectionActivity.requestProjectionIntentActivity(variables.activity, this);
-            } else if (null != variables.service) {
-                variables.log.errorNoStackTrace("starting activity using service as context");
-                ProjectionActivity.requestProjectionIntentActivity(variables.service, this);
             } else {
-                variables.log.errorAndThrow("error: a service or activity must be passed");
+                if (null == variables.context) {
+                    variables.log.errorAndThrowWithClass(this, "error: a service or activity must be passed");
+                }
+                ProjectionActivity.requestProjectionIntentActivity(variables.context, this);
             }
         }
     }
@@ -122,19 +113,19 @@ public class MediaProjectionHelper {
 
     public void startCapture(int resultCode, Intent data) {
         if (variables.sMediaProjection != null) {
-            Log.e("ScreenCapture", "sMediaProjection already obtained");
+            variables.log.logWithClassName(this, "sMediaProjection already obtained");
             return;
         }
-        Log.e("ScreenCapture", "obtaining sMediaProjection");
+        variables.log.logWithClassName(this, "obtaining sMediaProjection");
         if (resultCode == Activity.RESULT_OK) {
             if (!variables.grantedPermission) {
-                Log.e("ScreenCapture", "caching permission");
+                variables.log.logWithClassName(this, "caching permission");
                 variables.grantedPermission = true;
                 variables.resultCodeSaved = resultCode;
                 variables.dataSaved = data;
-                Log.e("ScreenCapture", "cached permission");
+                variables.log.logWithClassName(this, "cached permission");
             }
-            Log.e("ScreenCapture", "starting projection.");
+            variables.log.logWithClassName(this, "starting projection.");
             variables.sMediaProjection = variables.mProjectionManager.getMediaProjection(resultCode, data);
 
             if (variables.sMediaProjection != null) {
@@ -142,11 +133,8 @@ public class MediaProjectionHelper {
                 if (variables.projectionActivity != null) {
                     variables.mDisplay = variables.projectionActivity.getWindowManager().getDefaultDisplay();
                 }
-                if (variables.activity != null) {
-                    DisplayMetrics metrics = variables.activity.getResources().getDisplayMetrics();
-                    variables.mDensity = metrics.densityDpi;
-                } else if (variables.service != null) {
-                    DisplayMetrics metrics = variables.service.getResources().getDisplayMetrics();
+                if (variables.context != null) {
+                    DisplayMetrics metrics = variables.context.getResources().getDisplayMetrics();
                     variables.mDensity = metrics.densityDpi;
                 }
 
@@ -154,18 +142,17 @@ public class MediaProjectionHelper {
                 createVirtualDisplay();
 
                 // register orientation change callback
-                if (variables.activity != null) {
-                    variables.mOrientationChangeCallback = new OrientationChangeCallback(variables.activity, variables, this);
-                } else if (variables.service != null) {
-                    variables.mOrientationChangeCallback = new OrientationChangeCallback(variables.service, variables, this);
+                if (variables.context != null) {
+                    variables.mOrientationChangeCallback = new OrientationChangeCallback(variables.context, variables, this);
                 }
+
                 if (variables.mOrientationChangeCallback.canDetectOrientation()) {
                     variables.mOrientationChangeCallback.enable();
                 }
 
                 // register media projection stop callback
                 variables.sMediaProjection.registerCallback(new MediaProjectionStopCallback(variables, this), variables.mHandler);
-                Log.e("ScreenCapture", "started projection.");
+                variables.log.logWithClassName(this, "started projection.");
             }
         } else {
             stopCapture();
@@ -181,9 +168,9 @@ public class MediaProjectionHelper {
                 } else {
                     Looper l = variables.mHandler.getLooper();
                     if (l != null) {
-                        Log.e("ScreenCapture", "quiting looper");
+                        variables.log.logWithClassName(this, "quiting looper");
                         l.quitSafely();
-                        Log.e("ScreenCapture", "quit looper");
+                        variables.log.logWithClassName(this, "quit looper");
                         new Thread() {
                             @Override
                             public void run() {

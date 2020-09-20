@@ -1,33 +1,36 @@
 package screen.utils;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.PixelFormat;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageView;
 
-import java.io.ByteArrayInputStream;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import smallville7123.smartclick.R;
 
 import static android.content.Context.WINDOW_SERVICE;
 
-public class ImageAnalysis {
+public class ImageAnalysisFloatingView {
     private WindowManager mWindowManager;
     private ViewGroup mFloatingView;
     private View collapsedView;
     private View expandedView;
 
+    private ImageView imageViewMain;
+    private RecyclerView recyclerView;
+    private RecyclerView.Adapter mAdapter;
+    private RecyclerView.LayoutManager layoutManager;
+
     View analyzerrootLayout;
 
     Variables variables;
 
-    public ImageAnalysis(Variables variables) {
+    public ImageAnalysisFloatingView(Variables variables) {
         this.variables = variables;
     }
 
@@ -36,12 +39,31 @@ public class ImageAnalysis {
     }
 
     public void onCreate(Context context) {
-        Log.e("ImageAnalysis", "onCreate");
+        variables.log.logMethodNameWithClassName(this);
 
-        //getting the widget layout from xml using layout inflater
+        // get the widget layout from xml using layout inflater
         mFloatingView = (ViewGroup) variables.layoutInflater.inflate(R.layout.layout_floating_image_analysis_widget, null);
 
-        //setting the layout parameters
+        // get all required view's from the inflated layout
+        analyzerrootLayout = mFloatingView.findViewById(R.id.analyzerrootLayout);
+        imageViewMain = (ImageView) mFloatingView.findViewById(R.id.analyzerSelectedImage);
+        recyclerView = (RecyclerView) mFloatingView.findViewById(R.id.analyzerRecyclerView);
+        collapsedView = mFloatingView.findViewById(R.id.analyzerLayoutCollapsed);
+        expandedView = mFloatingView.findViewById(R.id.analyzerLayoutExpanded);
+
+        // setup our recycler view
+
+        layoutManager = new LinearLayoutManager(variables.context);
+        recyclerView.setLayoutManager(layoutManager);
+        mAdapter = new ImageAnalysisRecyclerViewAdapter(variables.bitmapBuffer);
+        recyclerView.setAdapter(mAdapter);
+
+        // set default views
+
+        collapsedView.setVisibility(View.GONE);
+        expandedView.setVisibility(View.GONE);
+        analyzerrootLayout.setVisibility(View.GONE);
+
         final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT,
@@ -50,20 +72,13 @@ public class ImageAnalysis {
                 PixelFormat.TRANSLUCENT
         );
 
-        //getting windows services and adding the floating view to it
+        // get window services and adding the floating view to it
+
         mWindowManager = (WindowManager) context.getSystemService(WINDOW_SERVICE);
         mWindowManager.addView(mFloatingView, params);
 
-        //getting the collapsed and expanded view from the floating view
-        collapsedView = mFloatingView.findViewById(R.id.analyzerLayoutCollapsed);
-        expandedView = mFloatingView.findViewById(R.id.analyzerLayoutExpanded);
-        // and set default views
-        collapsedView.setVisibility(View.GONE);
-        expandedView.setVisibility(View.VISIBLE);
-
         //adding an touchlistener to make drag movement of the floating widget
-        analyzerrootLayout = mFloatingView.findViewById(R.id.analyzerrootLayout);
-        analyzerrootLayout.setVisibility(View.GONE);
+
         analyzerrootLayout.setOnTouchListener(new View.OnTouchListener() {
             private int initialX;
             private int initialY;
@@ -87,7 +102,7 @@ public class ImageAnalysis {
                         //  such as a drag from one area of the screen to another area of the screen
                         //
 
-                        Log.e("ImageAnalysis", "expanding view");
+                        variables.log.logWithClassName(ImageAnalysisFloatingView.this, "expanding view");
                         collapsedView.setVisibility(View.GONE);
                         expandedView.setVisibility(View.VISIBLE);
                         return true;
@@ -106,42 +121,46 @@ public class ImageAnalysis {
         expandedView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.e("ImageAnalysis", "collapsing view");
+                variables.log.logWithClassName(ImageAnalysisFloatingView.this, "collapsing view");
                 collapsedView.setVisibility(View.VISIBLE);
                 expandedView.setVisibility(View.GONE);
             }
         });
+
+        mFloatingView.findViewById(R.id.analyserEraseVideoBufferButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                variables.bitmapBuffer.clear();
+                mAdapter.notifyDataSetChanged();
+            }
+        });
+
         //adding click listener to close button
         mFloatingView.findViewById(R.id.analyzerFinishButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.e("ImageAnalysis", "hiding ImageAnalysis");
+                variables.log.logWithClassName(ImageAnalysisFloatingView.this, "hiding ImageAnalysisFloatingView");
                 analyzerrootLayout.setVisibility(View.GONE);
                 expandedView.setVisibility(View.VISIBLE);
                 collapsedView.setVisibility(View.GONE);
+                // should we erase the video buffer on finish?
             }
         });
     }
 
+    public void onStart() {
+        variables.log.logMethodNameWithClassName(this);
+        expandedView.setVisibility(View.VISIBLE);
+        collapsedView.setVisibility(View.GONE);
+        analyzerrootLayout.setVisibility(View.VISIBLE);
+        mAdapter.notifyDataSetChanged();
+    }
+
     public void onDestroy() {
-        variables.log.logMethodName();
+        variables.log.logMethodNameWithClassName(this);
         if (analyzerrootLayout != null) analyzerrootLayout.setVisibility(View.GONE);
         if (expandedView != null) expandedView.setVisibility(View.GONE);
         if (collapsedView != null) collapsedView.setVisibility(View.GONE);
         if (mWindowManager != null) mWindowManager.removeViewImmediate(analyzerrootLayout);
-    }
-
-    public void start() {
-        variables.log.logMethodName();
-        expandedView.setVisibility(View.VISIBLE);
-        collapsedView.setVisibility(View.GONE);
-        analyzerrootLayout.setVisibility(View.VISIBLE);
-
-        if (variables.bitmapBuffer.size() != 0) {
-            ImageView im = (ImageView)analyzerrootLayout.findViewById(R.id.analyserRenderedCaptureFloatingWidget);
-            // decompress memory to bitmap
-            Bitmap image = BitmapFactory.decodeStream(new ByteArrayInputStream(variables.bitmapBuffer.get(0).toByteArray()));
-            if (image != null) im.setImageBitmap(image);
-        }
     }
 }

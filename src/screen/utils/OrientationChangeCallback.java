@@ -1,7 +1,5 @@
 package screen.utils;
 
-import android.app.Activity;
-import android.app.Service;
 import android.content.Context;
 import android.view.OrientationEventListener;
 
@@ -11,14 +9,8 @@ public class OrientationChangeCallback extends OrientationEventListener {
     private final MediaProjectionHelper mediaProjectionHelper;
     private int mRotation;
 
-    public OrientationChangeCallback(Activity activity, Variables variables, MediaProjectionHelper mediaProjectionHelper) {
-        super(activity);
-        this.variables = variables;
-        this.mediaProjectionHelper = mediaProjectionHelper;
-    }
-
-    public OrientationChangeCallback(Service service, Variables variables, MediaProjectionHelper mediaProjectionHelper) {
-        super(service);
+    public OrientationChangeCallback(Context context, Variables variables, MediaProjectionHelper mediaProjectionHelper) {
+        super(context);
         this.variables = variables;
         this.mediaProjectionHelper = mediaProjectionHelper;
     }
@@ -36,7 +28,7 @@ public class OrientationChangeCallback extends OrientationEventListener {
                 // re-create virtual display depending on device width / height
                 mediaProjectionHelper.createVirtualDisplay();
             } catch (Exception e) {
-                e.printStackTrace();
+                variables.log.errorWithClassName(this, e);
             }
         }
     }

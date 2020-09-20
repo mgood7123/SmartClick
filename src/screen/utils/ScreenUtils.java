@@ -16,17 +16,13 @@ public class ScreenUtils {
 
     public Variables variables = new Variables();
 
-    public ScreenUtils(String logName) {
-        variables.log.setTag(logName);
-    }
-
     public ScreenUtils() {}
 
     public void onCreate(@NonNull Service service, final Variables.Callback runOnUiThread) {
         // service overload
-        variables.log.setTag(service);
-        variables.log.logMethodName();
+        variables.log.logMethodNameWithClassName(this);
         variables.service = service;
+        variables.context = service;
         variables.mProjectionManager = variables.mediaProjectionHelper.getMediaProjectionManager();
         variables.cacheDir = service.getCacheDir().getAbsolutePath();
         variables.layoutInflater = LayoutInflater.from(service);
@@ -34,9 +30,9 @@ public class ScreenUtils {
     }
 
     public void onCreate(@NonNull Activity activity) {
-        variables.log.setTag(activity);
-        variables.log.logMethodName();
+        variables.log.logMethodNameWithClassName(this);
         variables.activity = activity;
+        variables.context = activity;
         variables.mProjectionManager = variables.mediaProjectionHelper.getMediaProjectionManager();
         variables.cacheDir = activity.getCacheDir().getAbsolutePath();
         variables.layoutInflater = LayoutInflater.from(activity);
@@ -74,8 +70,8 @@ public class ScreenUtils {
 
     void startFloatingWindowService() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (Settings.canDrawOverlays(variables.activity)) {
-                variables.activity.startService(new Intent(variables.activity, FloatingViewService.class));
+            if (Settings.canDrawOverlays(variables.context)) {
+                variables.context.startService(new Intent(variables.context, FloatingViewService.class));
             }
         }
     }
@@ -85,9 +81,9 @@ public class ScreenUtils {
             return true;
         }
 
-        if (!Settings.canDrawOverlays(variables.activity)) {
+        if (!Settings.canDrawOverlays(variables.context)) {
             Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                    Uri.parse("package:" + variables.activity.getPackageName()));
+                    Uri.parse("package:" + variables.context.getPackageName()));
             variables.activity.startActivityForResult(intent, variables.REQUEST_CODE_FLOATING_WINDOW);
             return false;
         } else {

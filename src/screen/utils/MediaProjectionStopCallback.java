@@ -2,7 +2,6 @@ package screen.utils;
 
 import android.media.projection.MediaProjection;
 import android.os.Looper;
-import android.util.Log;
 
 public class MediaProjectionStopCallback extends MediaProjection.Callback {
     private final Variables variables;
@@ -15,43 +14,44 @@ public class MediaProjectionStopCallback extends MediaProjection.Callback {
 
     @Override
     public void onStop() {
-        Log.e("ScreenCapture", "posting stop projection.");
+        variables.log.logWithClassName(this, "posting stop projection.");
         variables.mHandler.post(new Runnable() {
             @Override
             public void run() {
-                Log.e("ScreenCapture", "stopping projection.");
+                variables.log.logWithClassName(MediaProjectionStopCallback.this, "stopping projection.");
 
                 if (variables.mVirtualDisplay != null) variables.mVirtualDisplay.release();
                 if (variables.mImageReader != null) variables.mImageReader.setOnImageAvailableListener(null, null);
-                if (variables.mOrientationChangeCallback != null) variables.mOrientationChangeCallback.disable();
+                if (variables.mOrientationChangeCallback != null)
+                    variables.mOrientationChangeCallback.disable();
                 variables.sMediaProjection.unregisterCallback(MediaProjectionStopCallback.this);
                 variables.sMediaProjection = null;
                 if (variables.screenRecord) variables.screenRecord = false;
-                Log.e("ScreenCapture", "stopped projection.");
+                variables.log.logWithClassName(MediaProjectionStopCallback.this, "stopped projection.");
 
                 // we quit from here as it seems to be the last message posted to the handler
-                Log.e("ScreenCapture", "quiting looper");
+                variables.log.logWithClassName(MediaProjectionStopCallback.this, "quiting looper");
                 variables.mHandler.getLooper().quitSafely();
-                Log.e("ScreenCapture", "quit looper");
+                variables.log.logWithClassName(MediaProjectionStopCallback.this, "quit looper");
             }
         });
         if (variables.looper != null) {
-            variables.log.errorNoStackTrace("stopCapture");
+            variables.log.logWithClassName(this, "stopCapture");
             Looper l = variables.mHandler.getLooper();
             if (l != null) {
-                Log.e("ScreenCapture", "quiting looper");
+                variables.log.logWithClassName(this, "quiting looper");
                 l.quitSafely();
-                Log.e("ScreenCapture", "quit looper");
+                variables.log.logWithClassName(this, "quit looper");
             }
-            variables.log.errorNoStackTrace("stopLooper");
+            variables.log.logWithClassName(this, "stopLooper");
             new Thread() {
                 @Override
                 public void run() {
                     variables.looperHelper.stopLooper();
                 }
             }.start();
-            variables.log.errorNoStackTrace("stopped");
+            variables.log.logWithClassName(this, "stopped");
         }
-        Log.e("ScreenCapture", "posted stop projection.");
+        variables.log.logWithClassName(this, "posted stop projection.");
     }
 }
