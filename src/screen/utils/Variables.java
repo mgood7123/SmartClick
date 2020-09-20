@@ -74,7 +74,7 @@ public class Variables {
     //  https://developer.android.com/topic/performance/graphics/manage-memory
     //
     // use a ByteArrayOutputStream to eliminate disk io and keep compressed bitmaps in memory
-    public Vector<ByteArrayOutputStream> bitmapBuffer = new Vector<>();
+    public Vector<ByteArrayOutputStream> videoMemory = new Vector<>();
     public Context context;
 
     public interface Callback<Runnable> {

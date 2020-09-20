@@ -23,7 +23,7 @@ public class ImageAnalysisFloatingView {
 
     private ImageView imageViewMain;
     private RecyclerView recyclerView;
-    private RecyclerView.Adapter mAdapter;
+    private ImageAnalysisRecyclerViewAdapter mAdapter;
     private RecyclerView.LayoutManager layoutManager;
 
     View analyzerrootLayout;
@@ -55,7 +55,7 @@ public class ImageAnalysisFloatingView {
 
         layoutManager = new LinearLayoutManager(variables.context);
         recyclerView.setLayoutManager(layoutManager);
-        mAdapter = new ImageAnalysisRecyclerViewAdapter(variables.bitmapBuffer);
+        mAdapter = new ImageAnalysisRecyclerViewAdapter();
         recyclerView.setAdapter(mAdapter);
 
         // set default views
@@ -127,10 +127,10 @@ public class ImageAnalysisFloatingView {
             }
         });
 
-        mFloatingView.findViewById(R.id.analyserEraseVideoBufferButton).setOnClickListener(new View.OnClickListener() {
+        mFloatingView.findViewById(R.id.analyzerEraseVideoBufferButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                variables.bitmapBuffer.clear();
+                mAdapter.clearData();
                 mAdapter.notifyDataSetChanged();
             }
         });
@@ -153,6 +153,8 @@ public class ImageAnalysisFloatingView {
         expandedView.setVisibility(View.VISIBLE);
         collapsedView.setVisibility(View.GONE);
         analyzerrootLayout.setVisibility(View.VISIBLE);
+        // duplicate the video memory
+        mAdapter.setData(variables.videoMemory);
         mAdapter.notifyDataSetChanged();
     }
 

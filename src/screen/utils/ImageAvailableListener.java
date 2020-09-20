@@ -55,15 +55,15 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
                             //
 
                             // compress bitmap to memory
-                            int size = variables.bitmapBuffer.size();
+                            int size = variables.videoMemory.size();
                             if (size == variables.max_bitmaps) {
-                                variables.bitmapBuffer.remove(0);
+                                variables.videoMemory.remove(0);
                             }
                             ByteArrayOutputStream out = new ByteArrayOutputStream();
                             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
 //                            bitmapInfo(out, last.getWidth(), last.getHeight(), 1L*1024*1024*1024, 60);
 //                            bitmapInfo(out, last.getWidth(), last.getHeight(), 4L*1024*1024*1024, 60);
-                            variables.bitmapBuffer.add(out);
+                            variables.videoMemory.add(out);
                         }
 
                         final Bitmap finalLast = last;

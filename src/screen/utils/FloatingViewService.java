@@ -52,7 +52,7 @@ public class FloatingViewService extends Service {
         return null;
     }
 
-    final ImageAnalysisFloatingView analyser = new ImageAnalysisFloatingView(SU.variables);
+    final ImageAnalysisFloatingView analyzer = new ImageAnalysisFloatingView(SU.variables);
 
     @Override
     public void onCreate() {
@@ -174,7 +174,7 @@ public class FloatingViewService extends Service {
             @Override
             public void onClick(View v) {
                 SU.variables.log.logWithClassName(FloatingViewService.this, "ANALYSE");
-                analyser.onStart();
+                analyzer.onStart();
             }
         });
 
@@ -183,12 +183,12 @@ public class FloatingViewService extends Service {
             @Override
             public void onClick(View v) {
                 SU.variables.log.logWithClassName(FloatingViewService.this, "killing FLOATING VIEW SERVICE");
-                analyser.onDestroy();
+                analyzer.onDestroy();
                 stopSelf();
             }
         });
 
-        analyser.onCreate(this);
+        analyzer.onCreate(this);
     }
 
     @Override

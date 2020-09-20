@@ -15,7 +15,11 @@ import java.util.Vector;
 public class ImageAnalysisRecyclerViewAdapter extends
         RecyclerView.Adapter<ImageAnalysisRecyclerViewAdapter.MyViewHolder> {
     private LogUtils log = new LogUtils(this);
-    private Vector<ByteArrayOutputStream> mDataset;
+    private Vector<byte[]> data = new Vector<>();
+
+    public void clearData() {
+        data.clear();
+    }
 
     // Provide a reference to the views for each data item
     // Complex data items may need more than one view per item, and
@@ -29,11 +33,18 @@ public class ImageAnalysisRecyclerViewAdapter extends
         }
     }
 
-    // Provide a suitable constructor (depends on the kind of dataset)
-    public ImageAnalysisRecyclerViewAdapter(Vector<ByteArrayOutputStream> mDataSet) {
-        int bufferSize = mDataSet.size();
-        log.logWithClassName(this, "mDataSet.size(): " + bufferSize);
-        mDataset = mDataSet;
+    public void setData(final Vector<ByteArrayOutputStream> data) {
+        // duplicate the video memory
+        int bufferSize = data.size();
+        log.logWithClassName(this, "data.size(): " + bufferSize);
+        this.data.setSize(bufferSize);
+        for (int i = 0; i < data.size(); i++) {
+            ByteArrayOutputStream buf = log.errorAndThrowIfNullWithClass(this, data.get(i), "data at index " + i + " is null");
+            byte[] byteArray = buf.toByteArray();
+            this.data.set(i, byteArray);
+        }
+        int dataBufferSize = this.data.size();
+        log.logWithClassName(this, "this.data.size(): " + dataBufferSize);
     }
 
     @Override
@@ -60,8 +71,8 @@ public class ImageAnalysisRecyclerViewAdapter extends
         log.logMethodNameWithClassName(this);
         // decompress memory to bitmap
         log.logWithClassName(this, "decompressing image");
-        byte[] byteArray = mDataset.get(position).toByteArray();
-        Bitmap image = BitmapFactory.decodeStream(new ByteArrayInputStream(byteArray));
+        byte[] buf = data.get(position);
+        Bitmap image = BitmapFactory.decodeStream(new ByteArrayInputStream(buf));
         holder.imageView.setImageBitmap(image);
         log.logWithClassName(this, "decompressed image");
     }
@@ -99,8 +110,8 @@ public class ImageAnalysisRecyclerViewAdapter extends
     // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
-        int bufferSize = mDataset.size();
-        log.logWithClassName(this, "mDataSet.size(): " + bufferSize);
+        int bufferSize = data.size();
+        log.logWithClassName(this, "data.size(): " + bufferSize);
         return bufferSize;
     }
 }

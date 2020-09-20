@@ -80,7 +80,7 @@ public class LogUtils {
         Log.e("LogUtils", TAG + ": " + message);
     }
 
-    public void errorNoStackTraceWithClassName(Object object, String message) {
+    public final void errorNoStackTraceWithClassName(Object object, String message) {
         Log.e("LogUtils", TAG + ": " + object.getClass().getName() + ": " + message);
     }
 
@@ -120,6 +120,13 @@ public class LogUtils {
     @SuppressWarnings("ConstantOnRightSideOfComparison")
     public final <T> T errorAndThrowIfNull(@Nullable T object, String message) {
         assertNotNull(message, object);
+        return object;
+    }
+
+    @Nullable
+    @SuppressWarnings("ConstantOnRightSideOfComparison")
+    public final <T> T errorAndThrowIfNullWithClass(Object object_, @Nullable T object, String message) {
+        assertNotNull(object_.getClass().getName() + ": " + message, object);
         return object;
     }
 
