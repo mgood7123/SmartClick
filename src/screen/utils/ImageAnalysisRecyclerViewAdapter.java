@@ -22,7 +22,7 @@ public class ImageAnalysisRecyclerViewAdapter extends
         RecyclerView.Adapter<ImageAnalysisRecyclerViewAdapter.MyViewHolder> {
 
     private LogUtils log = new LogUtils(this);
-    private Vector<byte[]> data = new Vector<>();
+    Vector<byte[]> data = new Vector<>();
     private ItemClickListener mClickListener;
 
     public void clearData() {
@@ -52,6 +52,10 @@ public class ImageAnalysisRecyclerViewAdapter extends
         }
         int dataBufferSize = this.data.size();
         log.logWithClassName(this, "this.data.size(): " + dataBufferSize);
+    }
+
+    public void setData(final ImageAnalysisRecyclerViewAdapter adapter) {
+        data = adapter.data;
     }
 
     @Override

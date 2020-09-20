@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.os.Bundle;
 
 import androidx.constraintlayout.motion.widget.MotionLayout;
-import androidx.constraintlayout.motion.widget.MotionScene;
 
 import smallville7123.smartclick.R;
 
@@ -45,11 +44,6 @@ public class BouncingBallActivity extends Activity {
 
             @Override
             public void onTransitionTrigger(MotionLayout motionLayout, int i, boolean b, float v) {
-            }
-
-            @Override
-            public boolean allowsTransition(MotionScene.Transition transition) {
-                return false;
             }
         });
         transition(motionLayout);

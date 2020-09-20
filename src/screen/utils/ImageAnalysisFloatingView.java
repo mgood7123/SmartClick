@@ -28,9 +28,13 @@ public class ImageAnalysisFloatingView {
 
     private TextView textViewMain;
     private ImageView imageViewMain;
+    
+    private String cachedText;
+    private Bitmap cachedBitmap;
 
     private RecyclerView recyclerView;
     private ImageAnalysisRecyclerViewAdapter mAdapter;
+    private ImageAnalysisRecyclerViewAdapter cachedAdapter;
     private RecyclerView.LayoutManager layoutManager;
 
     View analyzerrootLayout;
@@ -53,6 +57,9 @@ public class ImageAnalysisFloatingView {
             PixelFormat.TRANSLUCENT
     );
 
+    WindowManager.LayoutParams cachedLayout;
+    
+
     public ImageAnalysisFloatingView(Variables variables) {
         this.variables = variables;
     }
@@ -64,46 +71,119 @@ public class ImageAnalysisFloatingView {
     public void onCreate(Context context) {
         variables.log.logMethodNameWithClassName(this);
 
-        // get the widget layout from xml using layout inflater
-        mFloatingView = (ViewGroup) variables.layoutInflater.inflate(R.layout.layout_floating_image_analysis_widget, null);
-
-        // get all required view's from the inflated layout
-        analyzerrootLayout = mFloatingView.findViewById(R.id.analyzerrootLayout);
-        textViewMain = (TextView) mFloatingView.findViewById(R.id.analyzerTextView);
-        imageViewMain = (ImageView) mFloatingView.findViewById(R.id.analyzerSelectedImage);
-        recyclerView = (RecyclerView) mFloatingView.findViewById(R.id.analyzerRecyclerView);
-        collapsedView = mFloatingView.findViewById(R.id.analyzerLayoutCollapsed);
-        expandedView = mFloatingView.findViewById(R.id.analyzerLayoutExpanded);
-
-        // setup our recycler view
-
-        layoutManager = new LinearLayoutManager(variables.context, LinearLayoutManager.HORIZONTAL, false);
-        recyclerView.setLayoutManager(layoutManager);
-        mAdapter = new ImageAnalysisRecyclerViewAdapter();
-        mAdapter.setClickListener(new ImageAnalysisRecyclerViewAdapter.ItemClickListener() {
-            @Override
-            public void onItemClick(byte[] memory, String text) {
-                Bitmap image = BitmapFactory.decodeStream(new ByteArrayInputStream(memory));
-                // TODO: resize bitmap
-                textViewMain.setText(text);
-                imageViewMain.setImageBitmap(image);
-            }
-        });
-        recyclerView.setAdapter(mAdapter);
+        refreshUI();
 
         // set default views
 
         collapsedView.setVisibility(View.GONE);
         expandedView.setVisibility(View.GONE);
         analyzerrootLayout.setVisibility(View.GONE);
+    }
 
-        // get window services and adding the floating view to it
+    public void onStart() {
+        variables.log.logMethodNameWithClassName(this);
+        expandedView.setVisibility(View.VISIBLE);
+        collapsedView.setVisibility(View.GONE);
+        analyzerrootLayout.setVisibility(View.VISIBLE);
+        cachedLayout = maximizedLayout;
+        mWindowManager.updateViewLayout(mFloatingView, cachedLayout);
+        // duplicate the video memory
+        mAdapter.setData(variables.videoMemory);
+        mAdapter.notifyDataSetChanged();
+    }
 
-        mWindowManager = (WindowManager) context.getSystemService(WINDOW_SERVICE);
-        mWindowManager.addView(mFloatingView, minimizedLayout);
+    public void onDestroy() {
+        variables.log.logMethodNameWithClassName(this);
+        analyzerrootLayout.setVisibility(View.GONE);
+        mWindowManager.removeViewImmediate(analyzerrootLayout);
+        mWindowManager = null;
+        analyzerrootLayout = null;
+        expandedView.setVisibility(View.GONE);
+        expandedView = null;
+        collapsedView.setVisibility(View.GONE);
+        collapsedView = null;
+    }
 
-        //adding an touchlistener to make drag movement of the floating widget
+    public void refreshUI() {
+        // in the Analyser, we need to refresh our UI
 
+        // only problem now, is how tf do we refresh a view
+        if (mWindowManager != null) mWindowManager.removeViewImmediate(analyzerrootLayout);
+
+        // get the widget layout from xml using layout inflater
+        mFloatingView = (ViewGroup) variables.layoutInflater.inflate(R.layout.layout_floating_image_analysis_widget, null);
+
+        // cache all view visibilities so we can restore them
+
+        Integer cachedAnalyzerrootLayoutVisibility = View.VISIBLE;
+        Integer cachedTextViewMainVisibility = View.VISIBLE;
+        Integer cachedImageViewMainVisibility = View.VISIBLE;
+        Integer cachedRecyclerViewVisibility = View.VISIBLE;
+        Integer cachedCollapsedViewMainVisibility = View.VISIBLE;
+        Integer cachedExpandedViewMainVisibility = View.VISIBLE;
+
+        if (analyzerrootLayout != null)
+            cachedAnalyzerrootLayoutVisibility = analyzerrootLayout.getVisibility();
+        if (collapsedView != null)
+            cachedCollapsedViewMainVisibility = collapsedView.getVisibility();
+        if (expandedView != null)
+            cachedExpandedViewMainVisibility = expandedView.getVisibility();
+
+        if (textViewMain != null)
+            cachedTextViewMainVisibility = textViewMain.getVisibility();
+        if (imageViewMain != null)
+            cachedImageViewMainVisibility = imageViewMain.getVisibility();
+        if (recyclerView != null)
+            cachedRecyclerViewVisibility = recyclerView.getVisibility();
+
+        // get all required view's from the inflated layout
+        analyzerrootLayout = mFloatingView.findViewById(R.id.analyzerrootLayout);
+        collapsedView = mFloatingView.findViewById(R.id.analyzerLayoutCollapsed);
+        expandedView = mFloatingView.findViewById(R.id.analyzerLayoutExpanded);
+
+        textViewMain = (TextView) mFloatingView.findViewById(R.id.analyzerTextView);
+        imageViewMain = (ImageView) mFloatingView.findViewById(R.id.analyzerSelectedImage);
+        recyclerView = (RecyclerView) mFloatingView.findViewById(R.id.analyzerRecyclerView);
+
+        // set up our RecyclerView
+        layoutManager = new LinearLayoutManager(variables.context, LinearLayoutManager.HORIZONTAL, false);
+        recyclerView.setLayoutManager(layoutManager);
+
+
+        mAdapter = new ImageAnalysisRecyclerViewAdapter();
+        recyclerView.setAdapter(mAdapter);
+        // the cached adapter must be updated after the new adapter's state has been restored
+
+        // restore view states
+        analyzerrootLayout.setVisibility(cachedAnalyzerrootLayoutVisibility);
+        collapsedView.setVisibility(cachedCollapsedViewMainVisibility);
+        expandedView.setVisibility(cachedExpandedViewMainVisibility);
+
+        textViewMain.setVisibility(cachedTextViewMainVisibility);
+        imageViewMain.setVisibility(cachedImageViewMainVisibility);
+        recyclerView.setVisibility(cachedRecyclerViewVisibility);
+
+        if (cachedText != null) textViewMain.setText(cachedText);
+        if (cachedBitmap != null) imageViewMain.setImageBitmap(cachedBitmap);
+        if (cachedAdapter != null) {
+            mAdapter.setData(cachedAdapter);
+            mAdapter.notifyDataSetChanged();
+        }
+
+        // the new adapter's state has been restored, the cached adapter can now be updated
+        cachedAdapter = mAdapter;
+
+        // set up on-click listeners
+        mAdapter.setClickListener(new ImageAnalysisRecyclerViewAdapter.ItemClickListener() {
+            @Override
+            public void onItemClick(byte[] memory, String text) {
+                cachedText = text;
+                cachedBitmap = BitmapFactory.decodeStream(new ByteArrayInputStream(memory));
+                // TODO: resize bitmap
+                textViewMain.setText(cachedText);
+                imageViewMain.setImageBitmap(cachedBitmap);
+            }
+        });
         analyzerrootLayout.setOnTouchListener(new View.OnTouchListener() {
             private int initialX;
             private int initialY;
@@ -130,14 +210,16 @@ public class ImageAnalysisFloatingView {
                         variables.log.logWithClassName(ImageAnalysisFloatingView.this, "expanding view");
                         collapsedView.setVisibility(View.GONE);
                         expandedView.setVisibility(View.VISIBLE);
-                        mWindowManager.updateViewLayout(mFloatingView, maximizedLayout);
+                        cachedLayout = maximizedLayout;
+                        mWindowManager.updateViewLayout(mFloatingView, cachedLayout);
                         return true;
 
                     case MotionEvent.ACTION_MOVE:
                         //this code is helping the widget to move around the screen with fingers
                         minimizedLayout.x = initialX + (int) (event.getRawX() - initialTouchX);
                         minimizedLayout.y = initialY + (int) (event.getRawY() - initialTouchY);
-                        mWindowManager.updateViewLayout(mFloatingView, minimizedLayout);
+                        cachedLayout = minimizedLayout;
+                        mWindowManager.updateViewLayout(mFloatingView, cachedLayout);
                         return true;
                 }
                 return false;
@@ -150,7 +232,8 @@ public class ImageAnalysisFloatingView {
                 variables.log.logWithClassName(ImageAnalysisFloatingView.this, "collapsing view");
                 collapsedView.setVisibility(View.VISIBLE);
                 expandedView.setVisibility(View.GONE);
-                mWindowManager.updateViewLayout(mFloatingView, minimizedLayout);
+                cachedLayout = minimizedLayout;
+                mWindowManager.updateViewLayout(mFloatingView, cachedLayout);
             }
         });
 
@@ -170,28 +253,16 @@ public class ImageAnalysisFloatingView {
                 analyzerrootLayout.setVisibility(View.GONE);
                 expandedView.setVisibility(View.VISIBLE);
                 collapsedView.setVisibility(View.GONE);
-                mWindowManager.updateViewLayout(mFloatingView, minimizedLayout);
+                cachedLayout = minimizedLayout;
+                mWindowManager.updateViewLayout(mFloatingView, cachedLayout);
                 // should we erase the video buffer on finish?
             }
         });
-    }
 
-    public void onStart() {
-        variables.log.logMethodNameWithClassName(this);
-        expandedView.setVisibility(View.VISIBLE);
-        collapsedView.setVisibility(View.GONE);
-        analyzerrootLayout.setVisibility(View.VISIBLE);
-        mWindowManager.updateViewLayout(mFloatingView, maximizedLayout);
-        // duplicate the video memory
-        mAdapter.setData(variables.videoMemory);
-        mAdapter.notifyDataSetChanged();
-    }
+        // apply our updated UI
 
-    public void onDestroy() {
-        variables.log.logMethodNameWithClassName(this);
-        if (analyzerrootLayout != null) analyzerrootLayout.setVisibility(View.GONE);
-        if (expandedView != null) expandedView.setVisibility(View.GONE);
-        if (collapsedView != null) collapsedView.setVisibility(View.GONE);
-        if (mWindowManager != null) mWindowManager.removeViewImmediate(analyzerrootLayout);
+        mWindowManager = (WindowManager) variables.context.getSystemService(WINDOW_SERVICE);
+        if (cachedLayout == null) cachedLayout = minimizedLayout;
+        mWindowManager.addView(mFloatingView, cachedLayout);
     }
 }

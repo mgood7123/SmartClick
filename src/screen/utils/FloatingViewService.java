@@ -2,6 +2,7 @@ package screen.utils;
 
 import android.app.Service;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.PixelFormat;
 import android.os.Handler;
 import android.os.IBinder;
@@ -52,17 +53,22 @@ public class FloatingViewService extends Service {
         return null;
     }
 
-    final ImageAnalysisFloatingView analyzer = new ImageAnalysisFloatingView(SU.variables);
+    ImageAnalysisFloatingView analyzer;
 
     @Override
     public void onCreate() {
         super.onCreate();
+
+        SU.variables.log.logMethodNameWithClassName(this);
+
         SU.onCreate(this, new Variables.Callback() {
             @Override
             public void run(Object o) {
                 runOnUiThread((Runnable) o);
             }
         });
+
+        analyzer = new ImageAnalysisFloatingView(SU.variables);
 
         //getting the widget layout from xml using layout inflater
         mFloatingView = (ViewGroup) SU.variables.layoutInflater.inflate(R.layout.layout_floating_widget, null);
@@ -81,6 +87,10 @@ public class FloatingViewService extends Service {
         //getting windows services and adding the floating view to it
         mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         mWindowManager.addView(mFloatingView, params);
+
+        // the analyzer should appear ON TOP of our floating window, not behind it
+
+        analyzer.onCreate(this);
 
         //getting the collapsed and expanded view from the floating view
         collapsedView = mFloatingView.findViewById(R.id.layoutCollapsed);
@@ -183,18 +193,51 @@ public class FloatingViewService extends Service {
             @Override
             public void onClick(View v) {
                 SU.variables.log.logWithClassName(FloatingViewService.this, "killing FLOATING VIEW SERVICE");
-                analyzer.onDestroy();
                 stopSelf();
             }
         });
+    }
 
-        analyzer.onCreate(this);
+    @Override
+    public void onConfigurationChanged(final Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        // Called by the system when the device configuration changes while your component is
+        // running.
+        //
+        // Note that, unlike activities, other components are never restarted when a configuration
+        // changes:
+        // they must always deal with the results of the change, such as by re-retrieving resources.
+        //
+        // At the time that this function has been called, your Resources object will have been
+        // updated to return resource values matching the new configuration.
+
+        SU.variables.log.logMethodNameWithClassName(this);
+        // Checks the orientation of the screen
+        if (
+                newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE
+                || newConfig.orientation == Configuration.ORIENTATION_PORTRAIT
+        ) {
+            refreshUI();
+        }
+    }
+
+    void refreshUI() {
+        SU.variables.log.logMethodNameWithClassName(this);
+
+        // we do not need up update our UI for the floating view
+        // however we do need up update the analyzer's UI
+
+        if (analyzer != null) analyzer.refreshUI();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
         SU.variables.log.logMethodNameWithClassName(this);
-        if (mFloatingView != null) mWindowManager.removeView(mFloatingView);
+        analyzer.onDestroy();
+        analyzer = null;
+        mWindowManager.removeView(mFloatingView);
+        mFloatingView = null;
     }
 }
