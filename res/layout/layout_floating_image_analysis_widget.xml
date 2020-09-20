@@ -25,7 +25,7 @@
     <RelativeLayout
         android:id="@+id/analyzerLayoutExpanded"
         android:layout_width="500dp"
-        android:layout_height="500dp"
+        android:layout_height="800dp"
         android:background="#a0c3d7"
         android:orientation="horizontal"
         android:visibility="visible">
