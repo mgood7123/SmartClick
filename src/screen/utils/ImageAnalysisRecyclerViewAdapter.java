@@ -6,8 +6,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.ByteArrayInputStream;
@@ -27,15 +29,14 @@ public class ImageAnalysisRecyclerViewAdapter extends
         data.clear();
     }
 
-    // Provide a reference to the views for each data item
-    // Complex data items may need more than one view per item, and
-    // you provide access to all the views for a data item in a view holder
     public class MyViewHolder extends RecyclerView.ViewHolder {
-        // each data item is just a string in this case
+        public TextView frame;
         public ImageView imageView;
-        public MyViewHolder(ImageView v) {
+
+        public MyViewHolder(ConstraintLayout v) {
             super(v);
-            imageView = v;
+            frame = v.findViewById(R.id.frameNumber);
+            imageView = v.findViewById(R.id.ImageViewItem);
         }
     }
 
@@ -58,7 +59,7 @@ public class ImageAnalysisRecyclerViewAdapter extends
                                            int viewType) {
         log.logMethodNameWithClassName(this);
         return new ImageAnalysisRecyclerViewAdapter.MyViewHolder(
-                (ImageView) LayoutInflater.from(parent.getContext())
+                (ConstraintLayout) LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.recyclerview_item, parent, false)
         );
     }
@@ -80,16 +81,24 @@ public class ImageAnalysisRecyclerViewAdapter extends
         log.logMethodNameWithClassName(this);
         // decompress memory to bitmap
         log.logWithClassName(this, "decompressing image");
+
+        holder.frame.setText((position+1) + "/" + getItemCount());
+
         final byte[] buf = data.get(position);
+
         holder.imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (mClickListener != null) mClickListener.onItemClick(buf);
             }
         });
+
         Bitmap image = BitmapFactory.decodeStream(new ByteArrayInputStream(buf));
+
         // TODO: resize bitmap
+
         holder.imageView.setImageBitmap(image);
+
         log.logWithClassName(this, "decompressed image");
     }
 

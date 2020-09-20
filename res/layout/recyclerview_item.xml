@@ -1,8 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ImageView
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/ImageViewItem"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@drawable/outline"
     android:adjustViewBounds="true"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content">
-</ImageView>
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:id="@+id/constraint"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintLeft_toLeftOf="parent"
+    app:layout_constraintRight_toRightOf="parent"
+    app:layout_constraintBottom_toBottomOf="parent"
+    >
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/frameNumber"
+        android:adjustViewBounds="true"
+        android:textSize="20sp"
+        android:text="0/0"
+        app:layout_constraintBottom_toTopOf="@id/ImageViewItem"
+        app:layout_constraintTop_toTopOf="@id/constraint"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        >
+
+    </TextView>
+
+    <ImageView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/ImageViewItem"
+        android:adjustViewBounds="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/frameNumber"
+        app:layout_constraintBottom_toBottomOf="@id/constraint"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent">
+    </ImageView>
+</androidx.constraintlayout.widget.ConstraintLayout>
