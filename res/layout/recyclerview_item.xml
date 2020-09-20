@@ -15,29 +15,23 @@
     >
 
     <TextView
-        android:layout_width="match_parent"
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/frameNumber"
-        android:adjustViewBounds="true"
-        android:textSize="20sp"
-        android:text="0/0"
-        app:layout_constraintBottom_toTopOf="@id/ImageViewItem"
-        app:layout_constraintTop_toTopOf="@id/constraint"
+        android:text="TextView"
+        app:layout_constraintBottom_toTopOf="@id/imageView"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        >
-
-    </TextView>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/ImageViewItem"
-        android:adjustViewBounds="true"
-        android:layout_width="match_parent"
+        android:id="@+id/imageView"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/frameNumber"
-        app:layout_constraintBottom_toBottomOf="@id/constraint"
+        android:adjustViewBounds="true"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent">
-    </ImageView>
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textView"
+        app:srcCompat="@android:drawable/ic_menu_gallery" />
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -35,8 +35,8 @@ public class ImageAnalysisRecyclerViewAdapter extends
 
         public MyViewHolder(ConstraintLayout v) {
             super(v);
-            frame = v.findViewById(R.id.frameNumber);
-            imageView = v.findViewById(R.id.ImageViewItem);
+            frame = v.findViewById(R.id.textView);
+            imageView = v.findViewById(R.id.imageView);
         }
     }
 
