@@ -11,20 +11,26 @@ public class ProjectionActivity extends Activity {
 
     public static void requestProjectionIntentActivity(Context ctx, MediaProjectionHelper mediaProjectionHelper) {
         m_mediaProjectionHelper = mediaProjectionHelper;
+        m_mediaProjectionHelper.variables.log.logMethodName();
         Intent pIntent = new Intent(ctx, ProjectionActivity.class);
-        pIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_ANIMATION | Intent.FLAG_ACTIVITY_NO_HISTORY);
+        pIntent.setFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK
+                        | Intent.FLAG_ACTIVITY_MULTIPLE_TASK
+                        | Intent.FLAG_ACTIVITY_NEW_DOCUMENT
+        );
         ctx.startActivity(pIntent);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        m_mediaProjectionHelper.variables.log.logMethodNameWithClassName(this);
         m_mediaProjectionHelper.requestCapturePermission(this);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        m_mediaProjectionHelper.variables.log.log("onActivityResult");
+        m_mediaProjectionHelper.variables.log.logMethodNameWithClassName(this);
         if (requestCode == m_mediaProjectionHelper.variables.REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
                 //send screen capture intent (data) to service

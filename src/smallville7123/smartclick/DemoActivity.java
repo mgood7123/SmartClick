@@ -15,9 +15,10 @@ public class DemoActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        SU.onCreate(this);
+
         setContentView(R.layout.activity_main);
 
-        SU.onCreate(this);
 
         findViewById(R.id.StartFloatingServiceButton).setOnClickListener(new View.OnClickListener() {
 
@@ -40,11 +41,13 @@ public class DemoActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        SU.variables.log.logMethodName();
         SU.createFloatingWidget();
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        SU.variables.log.logMethodName();
         SU.onActivityResult(requestCode, resultCode, data);
     }
 }

@@ -16,8 +16,16 @@ public class ScreenUtils {
 
     public Variables variables = new Variables();
 
+    public ScreenUtils(String logName) {
+        variables.log.setTag(logName);
+    }
+
+    public ScreenUtils() {}
+
     public void onCreate(@NonNull Service service, final Variables.Callback runOnUiThread) {
         // service overload
+        variables.log.setTag(service);
+        variables.log.logMethodName();
         variables.service = service;
         variables.mProjectionManager = variables.mediaProjectionHelper.getMediaProjectionManager();
         variables.cacheDir = service.getCacheDir().getAbsolutePath();
@@ -26,6 +34,8 @@ public class ScreenUtils {
     }
 
     public void onCreate(@NonNull Activity activity) {
+        variables.log.setTag(activity);
+        variables.log.logMethodName();
         variables.activity = activity;
         variables.mProjectionManager = variables.mediaProjectionHelper.getMediaProjectionManager();
         variables.cacheDir = activity.getCacheDir().getAbsolutePath();

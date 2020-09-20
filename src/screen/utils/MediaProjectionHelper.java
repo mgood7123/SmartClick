@@ -95,8 +95,10 @@ public class MediaProjectionHelper {
                         variables.mProjectionManager.createScreenCaptureIntent(), variables.REQUEST_CODE
                 );
             } else if (null != variables.activity) {
+                variables.log.errorNoStackTrace("starting activity using activity as context");
                 ProjectionActivity.requestProjectionIntentActivity(variables.activity, this);
             } else if (null != variables.service) {
+                variables.log.errorNoStackTrace("starting activity using service as context");
                 ProjectionActivity.requestProjectionIntentActivity(variables.service, this);
             } else {
                 variables.log.errorAndThrow("error: a service or activity must be passed");

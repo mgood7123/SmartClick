@@ -10,12 +10,33 @@ public class LogUtils {
     private String TAG = "";
     private String ERRORMESSAGE = "An error has occured";
 
+    public LogUtils(Object tag) {
+        setTag(tag);
+    }
+
     public LogUtils(String tag) {
-        TAG = tag;
+        setTag(tag);
+    }
+
+    public LogUtils(Object tag, String errorMessage) {
+        setTag(tag);
+        setErrorMessage(errorMessage);
     }
 
     public LogUtils(String tag, String errorMessage) {
+        setTag(tag);
+        setErrorMessage(errorMessage);
+    }
+
+    public void setTag(Object object) {
+        setTag(object.getClass().getName());
+    }
+
+    public void setTag(String tag) {
         TAG = tag;
+    }
+
+    public void setErrorMessage(String errorMessage) {
         ERRORMESSAGE = errorMessage;
     }
 
@@ -92,6 +113,12 @@ public class LogUtils {
 
     public void logParentMethodName() {
         Log.d(TAG, Thread.currentThread().getStackTrace()[4].getMethodName() + "() called");
+    }
+
+    public void logMethodNameWithClassName(Object object) {
+        Log.d(TAG,
+                object.getClass().getName() + ": " +
+                        Thread.currentThread().getStackTrace()[3].getMethodName() + "() called");
     }
 
     public String getMethodName() {
