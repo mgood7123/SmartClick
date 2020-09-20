@@ -2,6 +2,8 @@ package screen.utils;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
@@ -12,10 +14,14 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.Vector;
 
+import smallville7123.smartclick.R;
+
 public class ImageAnalysisRecyclerViewAdapter extends
         RecyclerView.Adapter<ImageAnalysisRecyclerViewAdapter.MyViewHolder> {
+
     private LogUtils log = new LogUtils(this);
     private Vector<byte[]> data = new Vector<>();
+    private ItemClickListener mClickListener;
 
     public void clearData() {
         data.clear();
@@ -24,7 +30,7 @@ public class ImageAnalysisRecyclerViewAdapter extends
     // Provide a reference to the views for each data item
     // Complex data items may need more than one view per item, and
     // you provide access to all the views for a data item in a view holder
-    public static class MyViewHolder extends RecyclerView.ViewHolder {
+    public class MyViewHolder extends RecyclerView.ViewHolder {
         // each data item is just a string in this case
         public ImageView imageView;
         public MyViewHolder(ImageView v) {
@@ -51,7 +57,10 @@ public class ImageAnalysisRecyclerViewAdapter extends
     public ImageAnalysisRecyclerViewAdapter.MyViewHolder onCreateViewHolder(ViewGroup parent,
                                            int viewType) {
         log.logMethodNameWithClassName(this);
-        return new ImageAnalysisRecyclerViewAdapter.MyViewHolder(new ImageView(parent.getContext()));
+        return new ImageAnalysisRecyclerViewAdapter.MyViewHolder(
+                (ImageView) LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.recyclerview_item, parent, false)
+        );
     }
 
     @Override
@@ -71,7 +80,13 @@ public class ImageAnalysisRecyclerViewAdapter extends
         log.logMethodNameWithClassName(this);
         // decompress memory to bitmap
         log.logWithClassName(this, "decompressing image");
-        byte[] buf = data.get(position);
+        final byte[] buf = data.get(position);
+        holder.imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mClickListener != null) mClickListener.onItemClick(buf);
+            }
+        });
         Bitmap image = BitmapFactory.decodeStream(new ByteArrayInputStream(buf));
         holder.imageView.setImageBitmap(image);
         log.logWithClassName(this, "decompressed image");
@@ -114,4 +129,13 @@ public class ImageAnalysisRecyclerViewAdapter extends
         log.logWithClassName(this, "data.size(): " + bufferSize);
         return bufferSize;
     }
-}
+
+    // allows clicks events to be caught
+    public void setClickListener(ItemClickListener itemClickListener) {
+        mClickListener = itemClickListener;
+    }
+
+    // parent activity will implement this method to respond to click events
+    public interface ItemClickListener {
+        void onItemClick(byte[] memory);
+    }}

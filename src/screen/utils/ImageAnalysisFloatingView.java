@@ -1,6 +1,8 @@
 package screen.utils;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.PixelFormat;
 import android.view.MotionEvent;
 import android.view.View;
@@ -10,6 +12,8 @@ import android.widget.ImageView;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import java.io.ByteArrayInputStream;
 
 import smallville7123.smartclick.R;
 
@@ -53,9 +57,16 @@ public class ImageAnalysisFloatingView {
 
         // setup our recycler view
 
-        layoutManager = new LinearLayoutManager(variables.context);
+        layoutManager = new LinearLayoutManager(variables.context, LinearLayoutManager.HORIZONTAL, false);
         recyclerView.setLayoutManager(layoutManager);
         mAdapter = new ImageAnalysisRecyclerViewAdapter();
+        mAdapter.setClickListener(new ImageAnalysisRecyclerViewAdapter.ItemClickListener() {
+            @Override
+            public void onItemClick(byte[] memory) {
+                Bitmap image = BitmapFactory.decodeStream(new ByteArrayInputStream(memory));
+                imageViewMain.setImageBitmap(image);
+            }
+        });
         recyclerView.setAdapter(mAdapter);
 
         // set default views
