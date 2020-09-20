@@ -88,6 +88,7 @@ public class ImageAnalysisRecyclerViewAdapter extends
             }
         });
         Bitmap image = BitmapFactory.decodeStream(new ByteArrayInputStream(buf));
+        // TODO: resize bitmap
         holder.imageView.setImageBitmap(image);
         log.logWithClassName(this, "decompressed image");
     }

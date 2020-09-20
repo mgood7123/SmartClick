@@ -68,7 +68,7 @@ public class Variables {
     public boolean stop;
     public String cacheDir;
     public LayoutInflater layoutInflater;
-    public int max_bitmaps = 10;
+    public int max_bitmaps = 200;
     //
     // TODO: a LruCache could be used for higher performance, see
     //  https://developer.android.com/topic/performance/graphics/manage-memory

@@ -64,6 +64,7 @@ public class ImageAnalysisFloatingView {
             @Override
             public void onItemClick(byte[] memory) {
                 Bitmap image = BitmapFactory.decodeStream(new ByteArrayInputStream(memory));
+                // TODO: resize bitmap
                 imageViewMain.setImageBitmap(image);
             }
         });
