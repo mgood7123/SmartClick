@@ -77,19 +77,20 @@ public class ImageAnalysisRecyclerViewAdapter extends
     }
 
     @Override
-    public void onBindViewHolder(ImageAnalysisRecyclerViewAdapter.MyViewHolder holder, int position) {
+    public void onBindViewHolder(ImageAnalysisRecyclerViewAdapter.MyViewHolder holder, final int position) {
         log.logMethodNameWithClassName(this);
         // decompress memory to bitmap
         log.logWithClassName(this, "decompressing image");
 
-        holder.frame.setText((position+1) + "/" + getItemCount());
+        final String text = (position+1) + "/" + getItemCount();
+        holder.frame.setText(text);
 
         final byte[] buf = data.get(position);
 
         holder.imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mClickListener != null) mClickListener.onItemClick(buf);
+                if (mClickListener != null) mClickListener.onItemClick(buf, text);
             }
         });
 
@@ -147,5 +148,5 @@ public class ImageAnalysisRecyclerViewAdapter extends
 
     // parent activity will implement this method to respond to click events
     public interface ItemClickListener {
-        void onItemClick(byte[] memory);
+        void onItemClick(byte[] memory, String text);
     }}

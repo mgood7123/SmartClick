@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -25,7 +26,9 @@ public class ImageAnalysisFloatingView {
     private View collapsedView;
     private View expandedView;
 
+    private TextView textViewMain;
     private ImageView imageViewMain;
+
     private RecyclerView recyclerView;
     private ImageAnalysisRecyclerViewAdapter mAdapter;
     private RecyclerView.LayoutManager layoutManager;
@@ -33,6 +36,22 @@ public class ImageAnalysisFloatingView {
     View analyzerrootLayout;
 
     Variables variables;
+
+    final WindowManager.LayoutParams maximizedLayout = new WindowManager.LayoutParams(
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+            PixelFormat.TRANSLUCENT
+    );
+
+    final WindowManager.LayoutParams minimizedLayout = new WindowManager.LayoutParams(
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+            PixelFormat.TRANSLUCENT
+    );
 
     public ImageAnalysisFloatingView(Variables variables) {
         this.variables = variables;
@@ -50,6 +69,7 @@ public class ImageAnalysisFloatingView {
 
         // get all required view's from the inflated layout
         analyzerrootLayout = mFloatingView.findViewById(R.id.analyzerrootLayout);
+        textViewMain = (TextView) mFloatingView.findViewById(R.id.analyzerTextView);
         imageViewMain = (ImageView) mFloatingView.findViewById(R.id.analyzerSelectedImage);
         recyclerView = (RecyclerView) mFloatingView.findViewById(R.id.analyzerRecyclerView);
         collapsedView = mFloatingView.findViewById(R.id.analyzerLayoutCollapsed);
@@ -62,9 +82,10 @@ public class ImageAnalysisFloatingView {
         mAdapter = new ImageAnalysisRecyclerViewAdapter();
         mAdapter.setClickListener(new ImageAnalysisRecyclerViewAdapter.ItemClickListener() {
             @Override
-            public void onItemClick(byte[] memory) {
+            public void onItemClick(byte[] memory, String text) {
                 Bitmap image = BitmapFactory.decodeStream(new ByteArrayInputStream(memory));
                 // TODO: resize bitmap
+                textViewMain.setText(text);
                 imageViewMain.setImageBitmap(image);
             }
         });
@@ -76,18 +97,10 @@ public class ImageAnalysisFloatingView {
         expandedView.setVisibility(View.GONE);
         analyzerrootLayout.setVisibility(View.GONE);
 
-        final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-                PixelFormat.TRANSLUCENT
-        );
-
         // get window services and adding the floating view to it
 
         mWindowManager = (WindowManager) context.getSystemService(WINDOW_SERVICE);
-        mWindowManager.addView(mFloatingView, params);
+        mWindowManager.addView(mFloatingView, minimizedLayout);
 
         //adding an touchlistener to make drag movement of the floating widget
 
@@ -101,8 +114,8 @@ public class ImageAnalysisFloatingView {
             public boolean onTouch(View v, MotionEvent event) {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        initialX = params.x;
-                        initialY = params.y;
+                        initialX = minimizedLayout.x;
+                        initialY = minimizedLayout.y;
                         initialTouchX = event.getRawX();
                         initialTouchY = event.getRawY();
                         return true;
@@ -117,13 +130,14 @@ public class ImageAnalysisFloatingView {
                         variables.log.logWithClassName(ImageAnalysisFloatingView.this, "expanding view");
                         collapsedView.setVisibility(View.GONE);
                         expandedView.setVisibility(View.VISIBLE);
+                        mWindowManager.updateViewLayout(mFloatingView, maximizedLayout);
                         return true;
 
                     case MotionEvent.ACTION_MOVE:
                         //this code is helping the widget to move around the screen with fingers
-                        params.x = initialX + (int) (event.getRawX() - initialTouchX);
-                        params.y = initialY + (int) (event.getRawY() - initialTouchY);
-                        mWindowManager.updateViewLayout(mFloatingView, params);
+                        minimizedLayout.x = initialX + (int) (event.getRawX() - initialTouchX);
+                        minimizedLayout.y = initialY + (int) (event.getRawY() - initialTouchY);
+                        mWindowManager.updateViewLayout(mFloatingView, minimizedLayout);
                         return true;
                 }
                 return false;
@@ -136,6 +150,7 @@ public class ImageAnalysisFloatingView {
                 variables.log.logWithClassName(ImageAnalysisFloatingView.this, "collapsing view");
                 collapsedView.setVisibility(View.VISIBLE);
                 expandedView.setVisibility(View.GONE);
+                mWindowManager.updateViewLayout(mFloatingView, minimizedLayout);
             }
         });
 
@@ -155,6 +170,7 @@ public class ImageAnalysisFloatingView {
                 analyzerrootLayout.setVisibility(View.GONE);
                 expandedView.setVisibility(View.VISIBLE);
                 collapsedView.setVisibility(View.GONE);
+                mWindowManager.updateViewLayout(mFloatingView, minimizedLayout);
                 // should we erase the video buffer on finish?
             }
         });
@@ -165,6 +181,7 @@ public class ImageAnalysisFloatingView {
         expandedView.setVisibility(View.VISIBLE);
         collapsedView.setVisibility(View.GONE);
         analyzerrootLayout.setVisibility(View.VISIBLE);
+        mWindowManager.updateViewLayout(mFloatingView, maximizedLayout);
         // duplicate the video memory
         mAdapter.setData(variables.videoMemory);
         mAdapter.notifyDataSetChanged();

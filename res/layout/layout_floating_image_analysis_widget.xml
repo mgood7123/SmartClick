@@ -24,8 +24,8 @@
     <!-- this is the expanded layout -->
     <RelativeLayout
         android:id="@+id/analyzerLayoutExpanded"
-        android:layout_width="500dp"
-        android:layout_height="800dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:background="#a0c3d7"
         android:orientation="horizontal"
         android:visibility="visible">
@@ -49,6 +49,17 @@
                 app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
+            <TextView
+                android:id="@+id/analyzerTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0/0"
+                android:textSize="50dp"
+                app:layout_constraintBottom_toTopOf="@id/analyzerSelectedImage"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/analyzerExpandedIcon" />
+
             <ImageView
                 android:id="@+id/analyzerSelectedImage"
                 android:layout_width="0dp"
@@ -56,7 +67,7 @@
                 app:layout_constraintBottom_toTopOf="@id/analyzerRecyclerView"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/analyzerExpandedIcon" />
+                app:layout_constraintTop_toBottomOf="@+id/analyzerTextView" />
 
 
             <androidx.recyclerview.widget.RecyclerView
