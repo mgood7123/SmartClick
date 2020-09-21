@@ -27,11 +27,11 @@ android {
     sourceSets {
         main {
             manifest.srcFile 'AndroidManifest.xml'
-            java.srcDirs = ['src']
-            resources.srcDirs = ['src']
+            java.srcDirs = ['src', 'floatingView/src']
+            resources.srcDirs = ['src', 'floatingView/src']
+            res.srcDirs = ['res', 'floatingView/res']
             aidl.srcDirs = ['src']
             renderscript.srcDirs = ['src']
-            res.srcDirs = ['res']
             assets.srcDirs = ['assets']
         }
     }
