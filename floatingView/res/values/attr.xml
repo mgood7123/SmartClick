@@ -2,9 +2,7 @@
 <resources>
     <declare-styleable name="FloatingView">
         <attr name="expanded" format="boolean" />
-        <attr name="labelPosition" format="enum">
-            <enum name="left" value="0"/>
-            <enum name="right" value="1"/>
-        </attr>
+        <attr name="collapsedLayout" format="reference"/>
+        <attr name="expandedLayout" format="reference"/>
     </declare-styleable>
 </resources>

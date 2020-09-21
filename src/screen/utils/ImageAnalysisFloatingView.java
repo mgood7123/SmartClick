@@ -6,7 +6,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.PixelFormat;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -17,12 +16,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.io.ByteArrayInputStream;
 
 import smallville7123.smartclick.R;
+import smallville7123.widgets.FloatingView;
 
 import static android.content.Context.WINDOW_SERVICE;
 
 public class ImageAnalysisFloatingView {
     private WindowManager mWindowManager;
-    private ViewGroup mFloatingView;
+    private FloatingView mFloatingView;
     private View collapsedView;
     private View expandedView;
 
@@ -37,7 +37,7 @@ public class ImageAnalysisFloatingView {
     private ImageAnalysisRecyclerViewAdapter cachedAdapter;
     private RecyclerView.LayoutManager layoutManager;
 
-    View analyzerrootLayout;
+    View analyzerRootLayout;
 
     Variables variables;
 
@@ -73,18 +73,15 @@ public class ImageAnalysisFloatingView {
 
         refreshUI();
 
-        // set default views
+        // hide by default
 
-        collapsedView.setVisibility(View.GONE);
-        expandedView.setVisibility(View.GONE);
-        analyzerrootLayout.setVisibility(View.GONE);
+        analyzerRootLayout.setVisibility(View.GONE);
     }
 
     public void onStart() {
         variables.log.logMethodNameWithClassName(this);
-        expandedView.setVisibility(View.VISIBLE);
-        collapsedView.setVisibility(View.GONE);
-        analyzerrootLayout.setVisibility(View.VISIBLE);
+        mFloatingView.expand();
+        analyzerRootLayout.setVisibility(View.VISIBLE);
         cachedLayout = maximizedLayout;
         mWindowManager.updateViewLayout(mFloatingView, cachedLayout);
         // duplicate the video memory
@@ -94,41 +91,33 @@ public class ImageAnalysisFloatingView {
 
     public void onDestroy() {
         variables.log.logMethodNameWithClassName(this);
-        analyzerrootLayout.setVisibility(View.GONE);
-        mWindowManager.removeViewImmediate(analyzerrootLayout);
+        analyzerRootLayout.setVisibility(View.GONE);
+        mWindowManager.removeViewImmediate(analyzerRootLayout);
         mWindowManager = null;
-        analyzerrootLayout = null;
-        expandedView.setVisibility(View.GONE);
-        expandedView = null;
-        collapsedView.setVisibility(View.GONE);
-        collapsedView = null;
+        analyzerRootLayout = null;
+        mFloatingView.collapse();
+        mFloatingView = null;
     }
 
     public void refreshUI() {
         // in the Analyser, we need to refresh our UI
 
         // only problem now, is how tf do we refresh a view
-        if (mWindowManager != null) mWindowManager.removeViewImmediate(analyzerrootLayout);
+        if (mWindowManager != null) mWindowManager.removeViewImmediate(analyzerRootLayout);
 
-        // get the widget layout from xml using layout inflater
-        mFloatingView = (ViewGroup) variables.layoutInflater.inflate(R.layout.layout_floating_image_analysis_widget, null);
 
         // cache all view visibilities so we can restore them
 
-        Integer cachedAnalyzerrootLayoutVisibility = View.VISIBLE;
+        boolean expanded = false;
+        Integer cachedAnalyzerRootLayoutVisibility = View.VISIBLE;
         Integer cachedTextViewMainVisibility = View.VISIBLE;
         Integer cachedImageViewMainVisibility = View.VISIBLE;
         Integer cachedRecyclerViewVisibility = View.VISIBLE;
-        Integer cachedCollapsedViewMainVisibility = View.VISIBLE;
-        Integer cachedExpandedViewMainVisibility = View.VISIBLE;
 
-        if (analyzerrootLayout != null)
-            cachedAnalyzerrootLayoutVisibility = analyzerrootLayout.getVisibility();
-        if (collapsedView != null)
-            cachedCollapsedViewMainVisibility = collapsedView.getVisibility();
-        if (expandedView != null)
-            cachedExpandedViewMainVisibility = expandedView.getVisibility();
 
+        if (mFloatingView != null) expanded = mFloatingView.expanded;
+        if (analyzerRootLayout != null)
+            cachedAnalyzerRootLayoutVisibility = analyzerRootLayout.getVisibility();
         if (textViewMain != null)
             cachedTextViewMainVisibility = textViewMain.getVisibility();
         if (imageViewMain != null)
@@ -136,10 +125,11 @@ public class ImageAnalysisFloatingView {
         if (recyclerView != null)
             cachedRecyclerViewVisibility = recyclerView.getVisibility();
 
-        // get all required view's from the inflated layout
-        analyzerrootLayout = mFloatingView.findViewById(R.id.analyzerrootLayout);
-        collapsedView = mFloatingView.findViewById(R.id.analyzerLayoutCollapsed);
-        expandedView = mFloatingView.findViewById(R.id.analyzerLayoutExpanded);
+        // get all required view's
+        mFloatingView = (FloatingView) variables.layoutInflater.inflate(R.layout.layout_floating_image_analysis_widget, null);
+        analyzerRootLayout = variables.log.errorAndThrowIfNull(mFloatingView.findViewById(R.id.analyzerRootLayout));
+        collapsedView = variables.log.errorAndThrowIfNull(mFloatingView.findViewById(R.id.analyzerLayoutCollapsed));
+        expandedView = variables.log.errorAndThrowIfNull(mFloatingView.findViewById(R.id.analyzerLayoutExpanded));
 
         textViewMain = (TextView) mFloatingView.findViewById(R.id.analyzerTextView);
         imageViewMain = (ImageView) mFloatingView.findViewById(R.id.analyzerSelectedImage);
@@ -155,10 +145,8 @@ public class ImageAnalysisFloatingView {
         // the cached adapter must be updated after the new adapter's state has been restored
 
         // restore view states
-        analyzerrootLayout.setVisibility(cachedAnalyzerrootLayoutVisibility);
-        collapsedView.setVisibility(cachedCollapsedViewMainVisibility);
-        expandedView.setVisibility(cachedExpandedViewMainVisibility);
-
+        if (expanded) mFloatingView.expand(); else mFloatingView.collapse();
+        analyzerRootLayout.setVisibility(cachedAnalyzerRootLayoutVisibility);
         textViewMain.setVisibility(cachedTextViewMainVisibility);
         imageViewMain.setVisibility(cachedImageViewMainVisibility);
         recyclerView.setVisibility(cachedRecyclerViewVisibility);
@@ -184,7 +172,7 @@ public class ImageAnalysisFloatingView {
                 imageViewMain.setImageBitmap(cachedBitmap);
             }
         });
-        analyzerrootLayout.setOnTouchListener(new View.OnTouchListener() {
+        analyzerRootLayout.setOnTouchListener(new View.OnTouchListener() {
             private int initialX;
             private int initialY;
             private float initialTouchX;
@@ -250,7 +238,7 @@ public class ImageAnalysisFloatingView {
             @Override
             public void onClick(View v) {
                 variables.log.logWithClassName(ImageAnalysisFloatingView.this, "hiding ImageAnalysisFloatingView");
-                analyzerrootLayout.setVisibility(View.GONE);
+                analyzerRootLayout.setVisibility(View.GONE);
                 expandedView.setVisibility(View.VISIBLE);
                 collapsedView.setVisibility(View.GONE);
                 cachedLayout = minimizedLayout;
