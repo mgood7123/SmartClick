@@ -2,6 +2,7 @@
 <resources>
     <declare-styleable name="FloatingView">
         <attr name="expanded" format="boolean" />
+        <attr name="fullscreenWhenExpanded" format="boolean" />
         <attr name="collapsedLayout" format="reference"/>
         <attr name="expandedLayout" format="reference"/>
     </declare-styleable>
