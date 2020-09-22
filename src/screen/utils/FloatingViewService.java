@@ -213,22 +213,13 @@ public class FloatingViewService extends Service {
         // updated to return resource values matching the new configuration.
 
         SU.variables.log.logMethodNameWithClassName(this);
-        // Checks the orientation of the screen
+        // Check the orientation of the screen
         if (
                 newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE
                 || newConfig.orientation == Configuration.ORIENTATION_PORTRAIT
         ) {
-            refreshUI();
+            // and do nothing, trust the analyzer to set up appropriate callbacks
         }
-    }
-
-    void refreshUI() {
-        SU.variables.log.logMethodNameWithClassName(this);
-
-        // we do not need up update our UI for the floating view
-        // however we do need up update the analyzer's UI
-
-        if (analyzer != null) analyzer.refreshUI();
     }
 
     @Override

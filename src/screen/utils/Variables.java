@@ -19,7 +19,7 @@ import java.util.Vector;
 
 public class Variables {
 
-    public final String TAG = this.getClass().getName();
+    public final String TAG = getClass().getName();
 
     public ImageView imageView;
 
@@ -57,7 +57,7 @@ public class Variables {
     public Service service;
 
     public LogUtils log = new LogUtils(
-            this.TAG, "a bug has occurred, this should not happen"
+            TAG, "a bug has occurred, this should not happen"
     );
 
     public boolean screenshot;
@@ -94,11 +94,11 @@ public class Variables {
 
     Variables.Callback runOnUiThread;
 
-    public void setRunOnUIThread(final Variables.Callback runnable) {
-        this.runOnUiThread = runnable;
+    public void setRunOnUIThread(Variables.Callback runnable) {
+        runOnUiThread = runnable;
     }
 
-    public void runOnUiThread(final Runnable action) {
-        this.runOnUiThread.run(action);
+    public void runOnUiThread(Runnable action) {
+        runOnUiThread.run(action);
     }
 }
