@@ -8,4 +8,5 @@
     app:collapsedLayout="@layout/layout_floating_widget_collapsed"
     app:expandedLayout="@layout/layout_floating_widget_expanded"
     app:expanded="false"
-    app:fullscreenWhenExpanded="false" />
+    app:fullscreenWhenExpanded="false"
+    android:tag="Floating View Service"/>

@@ -76,6 +76,7 @@ public class FloatingViewService extends Service {
         //getting the widget layout from xml using layout inflater
         mFloatingView = (FloatingView) SU.variables.layoutInflater.inflate(R.layout.layout_floating_widget, null);
         mFloatingView.attachToWindowManager();
+
         mFloatingView.setOnSetupExternalViews(new FloatingView.Callback<FloatingView>() {
             @Override
             public void run(FloatingView floatingView) {
@@ -89,6 +90,7 @@ public class FloatingViewService extends Service {
                 SU.variables.imageView.setImageBitmap(SU.variables.lastImage);
             }
         });
+
         mFloatingView.setOnSetupExternalListeners(new FloatingView.Callback<FloatingView>() {
             @Override
             public void run(FloatingView floatingView) {

@@ -110,7 +110,6 @@ public class MediaProjectionHelper {
         variables.mImageReader.setOnImageAvailableListener(new ImageAvailableListener(variables, mWidth, mHeight), variables.mHandler);
     }
 
-
     public void startCapture(int resultCode, Intent data) {
         if (variables.sMediaProjection != null) {
             variables.log.logWithClassName(this, "sMediaProjection already obtained");

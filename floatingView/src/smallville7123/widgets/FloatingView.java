@@ -96,12 +96,18 @@ public class FloatingView extends FrameLayout {
         return attributes;
     }
 
+    String tag() {
+        Object tag = getTag();
+        if (tag != null) return "(" + tag + ") ";
+        else return "";
+    }
+
     public FloatingView(@NonNull final Context context, @Nullable final AttributeSet attrs) {
         super(context, attrs);
 
         windowManager = (WindowManager) context.getSystemService(WINDOW_SERVICE);
 
-        log.logMethodName();
+        log.log("FloatingView constructor called");
 
         attributes = attrs;
 
@@ -240,9 +246,9 @@ public class FloatingView extends FrameLayout {
         boolean cacheexpanded = expanded;
         boolean cachefullscreenWhenExpanded = fullscreenWhenExpanded;
         WindowManager.LayoutParams cachelayout = layout;
-        boolean cacheattachedToWindowManager = attachedToWindowManager;
+//        boolean cacheattachedToWindowManager = attachedToWindowManager;
 
-        detachFromWindowManager();
+//        detachFromWindowManager();
 
         // cache external variables
         Bundle state = new Bundle();
@@ -272,7 +278,7 @@ public class FloatingView extends FrameLayout {
         else
             collapse();
 
-        if (cacheattachedToWindowManager) attachToWindowManager(layout);
+//        if (cacheattachedToWindowManager) attachToWindowManager(layout);
     }
 
     private void setCollapsedViewOnTouchListener() {
@@ -413,11 +419,11 @@ public class FloatingView extends FrameLayout {
         }
 
         public final void log(String message) {
-            Log.i("LogUtils", TAG + ": " + message);
+            Log.i("LogUtils", TAG + ": " + tag() + message);
         }
 
         public void logWithClassName(Object object, String message) {
-            Log.i("LogUtils", TAG + ": " + object.getClass().getName() + ": " + message);
+            Log.i("LogUtils", TAG + ": " + tag() + object.getClass().getName() + ": " + message);
         }
 
         public final Throwable error() {
@@ -426,18 +432,18 @@ public class FloatingView extends FrameLayout {
 
         public final AssertionError error(String message) {
             AssertionError t = new AssertionError(message);
-            Log.e("LogUtils", TAG + ": " + Log.getStackTraceString(t));
+            Log.e("LogUtils", TAG + ": " + tag() + Log.getStackTraceString(t));
             return t;
         }
 
         public void errorWithClassName(Object object, Exception exception) {
             AssertionError t = new AssertionError(Log.getStackTraceString(exception));
-            Log.e("LogUtils", TAG + ": " + object.getClass().getName() + ": " + Log.getStackTraceString(t));
+            Log.e("LogUtils", TAG + ": " + tag() + object.getClass().getName() + ": " + Log.getStackTraceString(t));
         }
 
         public void errorWithClassName(Object object, String message) {
             AssertionError t = new AssertionError(message);
-            Log.e("LogUtils", TAG + ": " + object.getClass().getName() + ": " + Log.getStackTraceString(t));
+            Log.e("LogUtils", TAG + ": " + tag() + object.getClass().getName() + ": " + Log.getStackTraceString(t));
         }
 
         public final void errorNoStackTrace() {
@@ -449,11 +455,11 @@ public class FloatingView extends FrameLayout {
         }
 
         public final void errorNoStackTrace(String message) {
-            Log.e("LogUtils", TAG + ": " + message);
+            Log.e("LogUtils", TAG + ": " + tag() + message);
         }
 
         public final void errorNoStackTraceWithClassName(Object object, String message) {
-            Log.e("LogUtils", TAG + ": " + object.getClass().getName() + ": " + message);
+            Log.e("LogUtils", TAG + ": " + tag() + object.getClass().getName() + ": " + message);
         }
 
         @Nullable
@@ -465,7 +471,7 @@ public class FloatingView extends FrameLayout {
         @Nullable
         @SuppressWarnings("ConstantOnRightSideOfComparison")
         public final <T> T errorIfNull(@Nullable T object, String message) {
-            if (object == null) error(message);
+            if (object == null) error(tag() + message);
             return object;
         }
 
@@ -491,40 +497,40 @@ public class FloatingView extends FrameLayout {
         @Nullable
         @SuppressWarnings("ConstantOnRightSideOfComparison")
         public final <T> T errorAndThrowIfNull(@Nullable T object, String message) {
-            assertNotNull(message, object);
+            assertNotNull(tag() + message, object);
             return object;
         }
 
         @Nullable
         @SuppressWarnings("ConstantOnRightSideOfComparison")
         public final <T> T errorAndThrowIfNullWithClass(Object object_, @Nullable T object, String message) {
-            assertNotNull(object_.getClass().getName() + ": " + message, object);
+            assertNotNull(tag() + object_.getClass().getName() + ": " + message, object);
             return object;
         }
 
         @Nullable
         @SuppressWarnings("ConstantOnRightSideOfComparison")
         public final void errorAndThrow(String message) {
-            assertNotNull(message, null);
+            assertNotNull(tag() + message, null);
         }
 
         @Nullable
         @SuppressWarnings("ConstantOnRightSideOfComparison")
         public final void errorAndThrowWithClass(Object object, String message) {
-            assertNotNull(object.getClass().getName() + ": " + message, null);
+            assertNotNull(tag() + object.getClass().getName() + ": " + message, null);
         }
 
         public void logMethodName() {
-            Log.i("LogUtils", TAG + ": " + Thread.currentThread().getStackTrace()[3].getMethodName() + "() called");
+            Log.i("LogUtils", TAG + ": " + tag() + Thread.currentThread().getStackTrace()[3].getMethodName() + "() called");
         }
 
         public void logParentMethodName() {
-            Log.i("LogUtils", TAG + ": " + Thread.currentThread().getStackTrace()[4].getMethodName() + "() called");
+            Log.i("LogUtils", TAG + ": " + tag() + Thread.currentThread().getStackTrace()[4].getMethodName() + "() called");
         }
 
         public void logMethodNameWithClassName(Object object) {
             Log.i("LogUtils",
-                    TAG + ": " + object.getClass().getName() + ": " +
+                    TAG + ": " + tag() + object.getClass().getName() + ": " +
                             Thread.currentThread().getStackTrace()[3].getMethodName() + "() called");
         }
 
