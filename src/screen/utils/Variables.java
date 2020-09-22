@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.VirtualDisplay;
 import android.media.ImageReader;
@@ -76,6 +77,7 @@ public class Variables {
     // use a ByteArrayOutputStream to eliminate disk io and keep compressed bitmaps in memory
     public Vector<ByteArrayOutputStream> videoMemory = new Vector<>();
     public Context context;
+    public Bitmap lastImage;
 
     public interface Callback<Runnable> {
         /**

@@ -42,7 +42,7 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
                         bitmap.copyPixelsFromBuffer(buffer);
 
                         // copying directly appears to be faster than reading and decoding
-                        Bitmap last = bitmap.copy(bitmap.getConfig(), bitmap.isMutable());
+                        variables.lastImage = bitmap.copy(bitmap.getConfig(), bitmap.isMutable());
 
 //                        bitmapInfo(last, 1L*1024*1024*1024, 60);
 //                        bitmapInfo(last, 4L*1024*1024*1024, 60);
@@ -66,11 +66,10 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
                             variables.videoMemory.add(out);
                         }
 
-                        final Bitmap finalLast = last;
                         variables.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                variables.imageView.setImageBitmap(finalLast);
+                                variables.imageView.setImageBitmap(variables.lastImage);
                             }
                         });
 

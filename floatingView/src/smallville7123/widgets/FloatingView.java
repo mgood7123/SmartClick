@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.graphics.PixelFormat;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -15,6 +16,7 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
 import smallville7123.smartclick.R;
 
@@ -22,6 +24,7 @@ import static android.content.Context.WINDOW_SERVICE;
 import static org.junit.Assert.assertNotNull;
 
 
+@RequiresApi(api = Build.VERSION_CODES.O)
 public class FloatingView extends FrameLayout {
     private View collapsedView;
 
@@ -49,7 +52,8 @@ public class FloatingView extends FrameLayout {
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                    | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM,
             PixelFormat.TRANSLUCENT
     );
 
@@ -57,7 +61,8 @@ public class FloatingView extends FrameLayout {
             ViewGroup.LayoutParams.WRAP_CONTENT,
             ViewGroup.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                    | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM,
             PixelFormat.TRANSLUCENT
     );
 
@@ -138,44 +143,9 @@ public class FloatingView extends FrameLayout {
         }
         collapsedView = log.errorAndThrowIfNull(View.inflate(context, collapsedViewRes, null),  "collapsed view could not be inflated");
 
+        setCollapsedViewOnTouchListener();
+
         addView(collapsedView);
-
-        collapsedView.setOnTouchListener(new View.OnTouchListener() {
-            private int initialX;
-            private int initialY;
-            private float initialTouchX;
-            private float initialTouchY;
-
-            @Override
-            public boolean onTouch(final View v, final MotionEvent event) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        initialX = minimizedLayout.x;
-                        initialY = minimizedLayout.y;
-                        initialTouchX = event.getRawX();
-                        initialTouchY = event.getRawY();
-                        return true;
-
-                    case MotionEvent.ACTION_UP:
-                        //when the drag is ended switching the state of the widget
-                        //
-                        // TODO: do not change visibility when location has changed significantly
-                        //  such as a drag from one area of the screen to another area of the screen
-                        //
-
-                        expand();
-                        return true;
-
-                    case MotionEvent.ACTION_MOVE:
-                        //this code is helping the widget to move around the screen with fingers
-                        minimizedLayout.x = initialX + (int) (event.getRawX() - initialTouchX);
-                        minimizedLayout.y = initialY + (int) (event.getRawY() - initialTouchY);
-                        updateWindowManagerLayout(minimizedLayout);
-                        return true;
-                }
-                return false;
-            }
-        });
     }
 
     public void reloadExpandedView(@NonNull Context context) {
@@ -186,14 +156,9 @@ public class FloatingView extends FrameLayout {
 
         expandedView = log.errorAndThrowIfNull(View.inflate(context, expandedViewRes, null),  "expanded view could not be inflated");
 
-        addView(expandedView);
+        setExpandedViewOnClickListener();
 
-        expandedView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(final View v) {
-                collapse();
-            }
-        });
+        addView(expandedView);
     }
 
     public void collapse() {
@@ -205,10 +170,8 @@ public class FloatingView extends FrameLayout {
 
     public void expand() {
         collapsedView.setVisibility(View.GONE);
-        if (attachedToWindowManager) {
-            if (fullscreenWhenExpanded) updateWindowManagerLayout(maximizedLayout);
-            else updateWindowManagerLayout(minimizedLayout);
-        }
+        if (fullscreenWhenExpanded) updateWindowManagerLayout(maximizedLayout);
+        else updateWindowManagerLayout(minimizedLayout);
         expandedView.setVisibility(View.VISIBLE);
         expanded = true;
     }
@@ -301,7 +264,7 @@ public class FloatingView extends FrameLayout {
         // restore external variables
         onRestoreState.run(state);
         
-        onSetupExternalOnClickListeners.run(this);
+        onSetupExternalListeners.run(this);
 
 
         if (expanded)
@@ -310,6 +273,54 @@ public class FloatingView extends FrameLayout {
             collapse();
 
         if (cacheattachedToWindowManager) attachToWindowManager(layout);
+    }
+
+    private void setCollapsedViewOnTouchListener() {
+        collapsedView.setOnTouchListener(new View.OnTouchListener() {
+            private int initialX;
+            private int initialY;
+            private float initialTouchX;
+            private float initialTouchY;
+
+            @Override
+            public boolean onTouch(final View v, final MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        initialX = minimizedLayout.x;
+                        initialY = minimizedLayout.y;
+                        initialTouchX = event.getRawX();
+                        initialTouchY = event.getRawY();
+                        return true;
+
+                    case MotionEvent.ACTION_UP:
+                        //when the drag is ended switching the state of the widget
+                        //
+                        // TODO: do not change visibility when location has changed significantly
+                        //  such as a drag from one area of the screen to another area of the screen
+                        //
+
+                        expand();
+                        return true;
+
+                    case MotionEvent.ACTION_MOVE:
+                        //this code is helping the widget to move around the screen with fingers
+                        minimizedLayout.x = initialX + (int) (event.getRawX() - initialTouchX);
+                        minimizedLayout.y = initialY + (int) (event.getRawY() - initialTouchY);
+                        updateWindowManagerLayout(minimizedLayout);
+                        return true;
+                }
+                return false;
+            }
+        });
+    }
+
+    private void setExpandedViewOnClickListener() {
+        expandedView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(final View v) {
+                collapse();
+            }
+        });
     }
 
     public interface Callback<T> {
@@ -336,7 +347,7 @@ public class FloatingView extends FrameLayout {
 
     private Callback<FloatingView> stub2 = new Callback<FloatingView>() {
         @Override
-        public void run(FloatingView view) {
+        public void run(FloatingView floatingView) {
             // stub
         }
     };
@@ -359,10 +370,10 @@ public class FloatingView extends FrameLayout {
         onRestoreState = runnable;
     }
 
-    private Callback<FloatingView> onSetupExternalOnClickListeners = stub2;
+    private Callback<FloatingView> onSetupExternalListeners = stub2;
 
-    public void setOnSetupExternalOnClickListeners(Callback<FloatingView> runnable) {
-        onSetupExternalOnClickListeners = runnable;
+    public void setOnSetupExternalListeners(Callback<FloatingView> runnable) {
+        onSetupExternalListeners = runnable;
     }
 
     // embed a copy of LogUtils to make this view fully self contained

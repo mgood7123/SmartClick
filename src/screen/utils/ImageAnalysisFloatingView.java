@@ -3,11 +3,13 @@ package screen.utils;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -49,15 +51,16 @@ public class ImageAnalysisFloatingView {
     final String imageViewMainKey = "3";
     final String recyclerViewKey = "4";
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public void onCreate(Context context) {
         variables.log.logMethodNameWithClassName(this);
 
         mFloatingView = (FloatingView) variables.layoutInflater.inflate(R.layout.layout_floating_image_analysis_widget, null);
         mFloatingView.attachToWindowManager();
 
-        mFloatingView.setOnSetupExternalOnClickListeners(new FloatingView.Callback<FloatingView>() {
+        mFloatingView.setOnSetupExternalListeners(new FloatingView.Callback<FloatingView>() {
             @Override
-            public void run(final FloatingView view) {
+            public void run(final FloatingView floatingView) {
                 // set up on-click listeners
                 currentAdapter.setClickListener(new ImageAnalysisRecyclerViewAdapter.ItemClickListener() {
                     @Override
@@ -70,7 +73,7 @@ public class ImageAnalysisFloatingView {
                     }
                 });
 
-                view.findViewById(R.id.analyzerEraseVideoBufferButton).setOnClickListener(new View.OnClickListener() {
+                floatingView.findViewById(R.id.analyzerEraseVideoBufferButton).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         currentAdapter.clearData();
@@ -79,13 +82,13 @@ public class ImageAnalysisFloatingView {
                 });
 
                 //adding click listener to close button
-                view.findViewById(R.id.analyzerFinishButton).setOnClickListener(new View.OnClickListener() {
+                floatingView.findViewById(R.id.analyzerFinishButton).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         variables.log.logWithClassName(ImageAnalysisFloatingView.this, "hiding ImageAnalysisFloatingView");
                         analyzerRootLayout.setVisibility(View.GONE);
-                        view.collapse();
-                        view.updateWindowManagerLayout(view.minimizedLayout);
+                        floatingView.collapse();
+                        floatingView.updateWindowManagerLayout(floatingView.minimizedLayout);
                         // should we erase the video buffer on finish?
                     }
                 });
@@ -110,15 +113,15 @@ public class ImageAnalysisFloatingView {
 
         mFloatingView.setOnSetupExternalViews(new FloatingView.Callback<FloatingView>() {
             @Override
-            public void run(FloatingView view) {
+            public void run(FloatingView floatingView) {
                 // get all required view's
-                analyzerRootLayout = variables.log.errorAndThrowIfNull(view.findViewById(R.id.analyzerRootLayout));
-                collapsedView = variables.log.errorAndThrowIfNull(view.findViewById(R.id.analyzerLayoutCollapsed));
-                expandedView = variables.log.errorAndThrowIfNull(view.findViewById(R.id.analyzerLayoutExpanded));
+                analyzerRootLayout = variables.log.errorAndThrowIfNull(floatingView.findViewById(R.id.analyzerRootLayout));
+                collapsedView = variables.log.errorAndThrowIfNull(floatingView.findViewById(R.id.analyzerLayoutCollapsed));
+                expandedView = variables.log.errorAndThrowIfNull(floatingView.findViewById(R.id.analyzerLayoutExpanded));
 
-                textViewMain = (TextView) view.findViewById(R.id.analyzerTextView);
-                imageViewMain = (ImageView) view.findViewById(R.id.analyzerSelectedImage);
-                recyclerView = (RecyclerView) view.findViewById(R.id.analyzerRecyclerView);
+                textViewMain = (TextView) floatingView.findViewById(R.id.analyzerTextView);
+                imageViewMain = (ImageView) floatingView.findViewById(R.id.analyzerSelectedImage);
+                recyclerView = (RecyclerView) floatingView.findViewById(R.id.analyzerRecyclerView);
 
                 // set up our RecyclerView
                 layoutManager = new LinearLayoutManager(variables.context, LinearLayoutManager.HORIZONTAL, false);
@@ -168,6 +171,7 @@ public class ImageAnalysisFloatingView {
         analyzerRootLayout.setVisibility(View.GONE);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public void onStart() {
         variables.log.logMethodNameWithClassName(this);
         mFloatingView.expand();
@@ -178,11 +182,13 @@ public class ImageAnalysisFloatingView {
         currentAdapter.notifyDataSetChanged();
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public void onDestroy() {
         variables.log.logMethodNameWithClassName(this);
         mFloatingView.detachFromWindowManager();
-        analyzerRootLayout.setVisibility(View.GONE);
-        mFloatingView = null;
+
+        // destroy references
         analyzerRootLayout = null;
+        mFloatingView = null;
     }
 }
