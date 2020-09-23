@@ -30,7 +30,6 @@ import android.os.Build;
 
 import androidx.annotation.RequiresApi;
 
-import java.nio.ByteBuffer;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -410,31 +409,38 @@ public class BitmapVector
 
     // Bitmap.sameAs can return false positives
     static boolean sameAs(Bitmap o, Bitmap o2) {
-        if (o.getWidth() != o2.getWidth()) return false;
-        if (o.getHeight() != o2.getHeight()) return false;
-        if (o.getAllocationByteCount() != o2.getAllocationByteCount()) return false;
-        if (o.getDensity() != o2.getDensity()) return false;
-        if (o.getGenerationId() != o2.getGenerationId()) return false;
-        Bitmap.Config config = o.getConfig();
-        Bitmap.Config config2 = o2.getConfig();
-        if (!config.name().contentEquals(config2.name())) return false;
-        if (config.ordinal() != config2.ordinal()) return false;
-        ByteBuffer buffer = ByteBuffer.allocateDirect(o.getAllocationByteCount());
-        o.copyPixelsToBuffer(buffer);
-        ByteBuffer buffer2 = ByteBuffer.allocateDirect(o2.getAllocationByteCount());
-        o2.copyPixelsToBuffer(buffer2);
-        if (buffer.hasArray()) {
-            if (buffer2.hasArray()) {
-                if (!BitmapUtils.arraysMatch(buffer.array(), buffer2.array())) return false;
-            }
-        } else {
-            byte[] buf = new byte[o.getAllocationByteCount()];
-            buffer.get(buf);
-            byte[] buf2 = new byte[o.getAllocationByteCount()];
-            buffer2.get(buf2);
-            if (!BitmapUtils.arraysMatch(buf, buf2)) return false;
-        }
-        return true;
+        return o.sameAs(o2);
+
+        // slowish
+//        if (o.getWidth() != o2.getWidth()) return false;
+//        if (o.getHeight() != o2.getHeight()) return false;
+//        if (o.getAllocationByteCount() != o2.getAllocationByteCount()) return false;
+//        if (o.getDensity() != o2.getDensity()) return false;
+//        if (o.getGenerationId() != o2.getGenerationId()) return false;
+//        Bitmap.Config config = o.getConfig();
+//        Bitmap.Config config2 = o2.getConfig();
+//        if (!config.name().contentEquals(config2.name())) return false;
+//        if (config.ordinal() != config2.ordinal()) return false;
+
+        // unfortunately bitmap contents cannot be read directly
+        // and pixel reading is super slow
+
+//        ByteBuffer buffer = ByteBuffer.allocateDirect(o.getAllocationByteCount());
+//        o.copyPixelsToBuffer(buffer);
+//        ByteBuffer buffer2 = ByteBuffer.allocateDirect(o2.getAllocationByteCount());
+//        o2.copyPixelsToBuffer(buffer2);
+//        if (buffer.hasArray()) {
+//            if (buffer2.hasArray()) {
+//                if (!BitmapUtils.arraysMatch(buffer.array(), buffer2.array())) return false;
+//            }
+//        } else {
+//            byte[] buf = new byte[o.getAllocationByteCount()];
+//            buffer.get(buf);
+//            byte[] buf2 = new byte[o.getAllocationByteCount()];
+//            buffer2.get(buf2);
+//            if (!BitmapUtils.arraysMatch(buf, buf2)) return false;
+//        }
+//        return true;
     }
 
     /**

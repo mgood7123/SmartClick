@@ -28,7 +28,7 @@ public class BitmapView extends ImageView {
     }
 
     private void ensureReferencesIfCurrentIsSet() {
-        if (cacheDecompressed != null)
+        if (cacheDecompressed != null && safe)
             if (copies.isEmpty())
                 throw new IllegalStateException(
                     "bitmap is set but there are no references"
@@ -59,7 +59,6 @@ public class BitmapView extends ImageView {
         ensureReferencesIfCurrentIsSet();
         cache = null;
         if (cacheDecompressed != null) {
-            Log.i(TAG, "recycle: recycling bitmap: " + cacheDecompressed);
             if (!cacheDecompressed.isRecycled()) {
                 copies.remove(cacheDecompressed);
                 cacheDecompressed.recycle();
@@ -67,22 +66,21 @@ public class BitmapView extends ImageView {
                 if (internal) throw new RuntimeException("trying to recycle an already recycled bitmap: " + cacheDecompressed);
             }
             cacheDecompressed = null;
-            Log.i(TAG, "recycle: cacheDecompressed: " + cacheDecompressed);
         }
     }
 
     private void set(final Bitmap bm) {
         if (bm == null) {
-            recycle(false);
+            recycle(true);
         } else {
             ensureReferencesIfCurrentIsSet();
             if (cacheDecompressed != null) {
-                if (cacheDecompressed.sameAs(bm)) {
+                if (BitmapVector.sameAs(cacheDecompressed, bm)) {
                     // do nothing if bm matches the currently set image
                     return;
                 }
                 // else recycle
-                recycle(false);
+                recycle(true);
             }
             // by the time we reach here, our current image is guaranteed to be not set
             cacheDecompressed = bm;
@@ -101,13 +99,10 @@ public class BitmapView extends ImageView {
             // check if bm can be located
             int index = copies.indexOf(bm);
             if (index >= 0) {
-                Log.i(TAG, "setIfFoundOtherwiseStoreAndSet: bitmap was found in cache, index returned " + index);
                 Bitmap bitmap = copies.elementAt(index);
-                Log.i(TAG, "setIfFoundOtherwiseStoreAndSet: bitmap: " + bm + ", cache: " + bitmap);
                 // bm was found, set the image to the copy
                 set(bitmap);
             } else {
-                Log.i(TAG, "setIfFoundOtherwiseStoreAndSet: bitmap was not found in cache, index returned " + index);
                 // bm was not found, store a copy
                 storeAndSet(bm);
             }
@@ -143,13 +138,10 @@ public class BitmapView extends ImageView {
             super.setImageBitmap(cacheDecompressed);
             return;
         }
-        Log.i(TAG, "setImageBitmap: compressedBitmap: " + compressedBitmap);
-        if (compressedBitmap == null) recycle(false);
+        if (compressedBitmap == null) recycle(true);
         else {
-            Log.i(TAG, "setImageBitmap: cacheDecompressed: " + cacheDecompressed);
-            Log.i(TAG, "setImageBitmap: cache: " + cache);
             if (cache == null || !BitmapUtils.arraysMatch(cache, compressedBitmap) || cache.length != compressedBitmap.length) {
-                recycle(false);
+                recycle(true);
                 cache = compressedBitmap.clone();
             }
             Bitmap tmp = BitmapUtils.decompress(cache);

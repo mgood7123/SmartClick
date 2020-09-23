@@ -44,6 +44,8 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
 
                     bitmap.copyPixelsFromBuffer(buffer);
 
+                    image.close();
+
                     if (variables.screenRecord) {
 
                         // compress bitmap to memory
@@ -78,9 +80,6 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
                         }.start();
                         single = true;
                     }
-                }
-                if (image != null) {
-                    image.close();
                 }
             }
         }
