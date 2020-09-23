@@ -47,25 +47,16 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
                         // copying directly appears to be faster than reading and decoding
                         variables.lastImage = bitmap.copy(bitmap.getConfig(), bitmap.isMutable());
 
-//                        bitmapInfo(last, 1L*1024*1024*1024, 60);
-//                        bitmapInfo(last, 4L*1024*1024*1024, 60);
-
                         if (variables.screenRecord) {
-                            //
-                            // lower quality increases recording latency
-                            // and thus decreases frame accuracy
-                            // however allows for drastically longer durations of recording
-                            //
+
+                            // seems to only OOM when the screen is recording
 
                             // compress bitmap to memory
-                            int size = variables.videoMemory.size();
-                            if (size == variables.max_bitmaps) {
+                            if (variables.videoMemory.size() == variables.max_bitmaps) {
                                 variables.videoMemory.remove(0);
                             }
                             ByteArrayOutputStream out = new ByteArrayOutputStream();
                             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
-//                            bitmapInfo(out, last.getWidth(), last.getHeight(), 1L*1024*1024*1024, 60);
-//                            bitmapInfo(out, last.getWidth(), last.getHeight(), 4L*1024*1024*1024, 60);
                             variables.videoMemory.add(out);
                         }
 
