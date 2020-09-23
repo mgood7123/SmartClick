@@ -37,8 +37,11 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
                         int rowStride = planes[0].getRowStride();
                         int rowPadding = rowStride - pixelStride * mWidth;
 
+                        variables.videoMemoryWidth = mWidth + rowPadding / pixelStride;
+                        variables.videoMemoryHeight = mHeight;
+
                         // create bitmap
-                        bitmap = Bitmap.createBitmap(mWidth + rowPadding / pixelStride, mHeight, Bitmap.Config.ARGB_8888);
+                        bitmap = Bitmap.createBitmap(variables.videoMemoryWidth, variables.videoMemoryHeight, Bitmap.Config.ARGB_8888);
                         bitmap.copyPixelsFromBuffer(buffer);
 
                         // copying directly appears to be faster than reading and decoding

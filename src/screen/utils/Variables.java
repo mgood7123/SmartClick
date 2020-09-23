@@ -78,6 +78,8 @@ public class Variables {
     public Vector<ByteArrayOutputStream> videoMemory = new Vector<>();
     public Context context;
     public Bitmap lastImage;
+    public int videoMemoryWidth;
+    public int videoMemoryHeight;
 
     public interface Callback<Runnable> {
         /**

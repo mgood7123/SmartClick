@@ -23,6 +23,8 @@ public class ImageAnalysisRecyclerViewAdapter extends
 
     private LogUtils log = new LogUtils(this);
     Vector<byte[]> data = new Vector<>();
+    int dataWidth;
+    int dataHeight;
     private ItemClickListener mClickListener;
 
     public void clearData() {
@@ -32,6 +34,8 @@ public class ImageAnalysisRecyclerViewAdapter extends
     public class MyViewHolder extends RecyclerView.ViewHolder {
         public TextView frame;
         public ImageView imageView;
+        public String text;
+        public byte[] bitmapData;
 
         public MyViewHolder(ConstraintLayout v) {
             super(v);
@@ -40,7 +44,9 @@ public class ImageAnalysisRecyclerViewAdapter extends
         }
     }
 
-    public void setData(final Vector<ByteArrayOutputStream> data) {
+    public void setData(final Vector<ByteArrayOutputStream> data, int width, int height) {
+        dataWidth = width;
+        dataHeight = height;
         // duplicate the video memory
         int bufferSize = data.size();
         log.logWithClassName(this, "data.size(): " + bufferSize);
@@ -50,12 +56,14 @@ public class ImageAnalysisRecyclerViewAdapter extends
             byte[] byteArray = buf.toByteArray();
             this.data.set(i, byteArray);
         }
-        int dataBufferSize = this.data.size();
-        log.logWithClassName(this, "this.data.size(): " + dataBufferSize);
+        int dataSize = this.data.size();
+        log.logWithClassName(this, "this.data.size(): " + dataSize);
     }
 
     public void setData(final ImageAnalysisRecyclerViewAdapter adapter) {
         data = adapter.data;
+        dataWidth = adapter.dataWidth;
+        dataHeight = adapter.dataHeight;
     }
 
     @Override
@@ -81,7 +89,7 @@ public class ImageAnalysisRecyclerViewAdapter extends
     }
 
     @Override
-    public void onBindViewHolder(ImageAnalysisRecyclerViewAdapter.MyViewHolder holder, final int position) {
+    public void onBindViewHolder(final ImageAnalysisRecyclerViewAdapter.MyViewHolder holder, final int position) {
 
         // TODO:
         //  when viewing portrait images in landscape mode
@@ -105,25 +113,42 @@ public class ImageAnalysisRecyclerViewAdapter extends
         // decompress memory to bitmap
         log.logWithClassName(this, "decompressing image");
 
-        final String text = (position+1) + "/" + getItemCount();
-        holder.frame.setText(text);
+        holder.text = (position+1) + "/" + getItemCount();
+        holder.frame.setText(holder.text);
 
-        final byte[] buf = data.get(position);
+        holder.bitmapData = data.get(position);
 
         holder.imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mClickListener != null) mClickListener.onItemClick(buf, text);
+                if (mClickListener != null) mClickListener.onItemClick(holder.bitmapData, holder.text);
             }
         });
 
-        Bitmap image = BitmapFactory.decodeStream(new ByteArrayInputStream(buf));
+        holder.imageView.post(new Runnable() {
+            @Override
+            public void run() {
+                // decompress memory to bitmap
+                log.logWithClassName(ImageAnalysisRecyclerViewAdapter.this, "decompressing image");
+                log.errorAndThrowIfNull(holder.bitmapData);
+                Bitmap bitmap = BitmapFactory.decodeStream(new ByteArrayInputStream(holder.bitmapData));
+                log.errorAndThrowIfNull(bitmap);
+                holder.imageView.setImageBitmap(Bitmap.createScaledBitmap(bitmap, holder.imageView.getWidth(), holder.imageView.getHeight(), false));
+                log.logWithClassName(ImageAnalysisRecyclerViewAdapter.this, "decompressed image");
+            }
+        });
 
-        // TODO: resize bitmap
+        // set image view to a empty bitmap
+        holder.imageView.setImageBitmap(Bitmap.createBitmap(dataWidth, dataHeight, Bitmap.Config.ARGB_8888));
+        log.log("created empty bitmap");
 
-        holder.imageView.setImageBitmap(image);
-
-        log.logWithClassName(this, "decompressed image");
+//        Bitmap image = BitmapFactory.decodeStream(new ByteArrayInputStream(buf));
+//
+//        // TODO: resize bitmap
+//
+//        holder.imageView.setImageBitmap(image);
+//
+//        log.logWithClassName(this, "decompressed image");
     }
 
     @Override

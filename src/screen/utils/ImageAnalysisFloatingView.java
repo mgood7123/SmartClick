@@ -178,7 +178,7 @@ public class ImageAnalysisFloatingView {
 
         analyzerRootLayout.setVisibility(View.VISIBLE);
         // duplicate the video memory
-        currentAdapter.setData(variables.videoMemory);
+        currentAdapter.setData(variables.videoMemory, variables.videoMemoryWidth, variables.videoMemoryHeight);
         currentAdapter.notifyDataSetChanged();
     }
 
