@@ -32,6 +32,7 @@ public class ImageAnalysisRecyclerViewAdapter extends
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
+        public ConstraintLayout mainView;
         public TextView frame;
         public ImageView imageView;
         public String text;
@@ -39,6 +40,7 @@ public class ImageAnalysisRecyclerViewAdapter extends
 
         public MyViewHolder(ConstraintLayout v) {
             super(v);
+            mainView = v;
             frame = v.findViewById(R.id.textView);
             imageView = v.findViewById(R.id.imageView);
         }
@@ -91,24 +93,6 @@ public class ImageAnalysisRecyclerViewAdapter extends
     @Override
     public void onBindViewHolder(final ImageAnalysisRecyclerViewAdapter.MyViewHolder holder, final int position) {
 
-        // TODO:
-        //  when viewing portrait images in landscape mode
-        //  this will occur massive memory consumption due to the width of the images contained in
-        //  the cache, specifically because of the reduced width, the recyclerView is loading
-        //  46 and a half images (47 cus its visible thus the half is loaded fully)
-        //  and as a result, uses 705MB
-        //  in which landscape has 13 images max, thus uses 195 MB max
-        //  and portrait has 8 images max, thus uses 120MB
-        //  (plus of course extra memory for caching, such as the last produced image, and the
-        //  current selected image, so plus 30MB to 45MB to all of that)
-        //  specifically, when taking standard memory consumption into account, this is then
-        //  (via Android Profiler)
-        //  a fresh launch 386 MB max, portrait
-        //  a fresh launch 446 MB max, landscape
-        //  a fresh launch 1 GB max, portrait, rotated to landscape
-        //  a fresh launch 483.3 MB max, landscape, rotated to portrait
-
-
         log.logMethodNameWithClassName(this);
         // decompress memory to bitmap
         log.logWithClassName(this, "decompressing image");
@@ -118,10 +102,11 @@ public class ImageAnalysisRecyclerViewAdapter extends
 
         holder.bitmapData = data.get(position);
 
-        holder.imageView.setOnClickListener(new View.OnClickListener() {
+        holder.mainView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mClickListener != null) mClickListener.onItemClick(holder.bitmapData, holder.text);
+                if (mClickListener != null)
+                    mClickListener.onItemClick(holder.bitmapData, holder.text);
             }
         });
 
@@ -197,4 +182,5 @@ public class ImageAnalysisRecyclerViewAdapter extends
     // parent activity will implement this method to respond to click events
     public interface ItemClickListener {
         void onItemClick(byte[] memory, String text);
-    }}
+    }
+}
