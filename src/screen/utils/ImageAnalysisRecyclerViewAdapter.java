@@ -1,19 +1,16 @@
 package screen.utils;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 import java.util.Vector;
 
 import smallville7123.smartclick.R;
@@ -34,7 +31,7 @@ public class ImageAnalysisRecyclerViewAdapter extends
     public class MyViewHolder extends RecyclerView.ViewHolder {
         public ConstraintLayout mainView;
         public TextView frame;
-        public ImageView imageView;
+        public BitmapView bitmapView;
         public String text;
         public byte[] bitmapData;
 
@@ -42,11 +39,11 @@ public class ImageAnalysisRecyclerViewAdapter extends
             super(v);
             mainView = v;
             frame = v.findViewById(R.id.textView);
-            imageView = v.findViewById(R.id.imageView);
+            bitmapView = v.findViewById(R.id.bitmapView);
         }
     }
 
-    public void setData(final Vector<ByteArrayOutputStream> data, int width, int height) {
+    public void setData(final ArrayList<byte[]> data, int width, int height) {
         dataWidth = width;
         dataHeight = height;
         // duplicate the video memory
@@ -54,9 +51,13 @@ public class ImageAnalysisRecyclerViewAdapter extends
         log.logWithClassName(this, "data.size(): " + bufferSize);
         this.data.setSize(bufferSize);
         for (int i = 0; i < data.size(); i++) {
-            ByteArrayOutputStream buf = log.errorAndThrowIfNullWithClass(this, data.get(i), "data at index " + i + " is null");
-            byte[] byteArray = buf.toByteArray();
-            this.data.set(i, byteArray);
+            this.data.set(
+                    i,
+                    log.errorAndThrowIfNullWithClass(
+                            this,
+                            data.get(i),
+                            "data at index " + i + " is null")
+            );
         }
         int dataSize = this.data.size();
         log.logWithClassName(this, "this.data.size(): " + dataSize);
@@ -110,30 +111,15 @@ public class ImageAnalysisRecyclerViewAdapter extends
             }
         });
 
-        holder.imageView.post(new Runnable() {
+        holder.bitmapView.post(new Runnable() {
             @Override
             public void run() {
-                // decompress memory to bitmap
-                log.logWithClassName(ImageAnalysisRecyclerViewAdapter.this, "decompressing image");
-                log.errorAndThrowIfNull(holder.bitmapData);
-                Bitmap bitmap = BitmapFactory.decodeStream(new ByteArrayInputStream(holder.bitmapData));
-                log.errorAndThrowIfNull(bitmap);
-                holder.imageView.setImageBitmap(Bitmap.createScaledBitmap(bitmap, holder.imageView.getWidth(), holder.imageView.getHeight(), false));
-                log.logWithClassName(ImageAnalysisRecyclerViewAdapter.this, "decompressed image");
+                log.log("setting bitmapView to compressed bitmap: " + holder.bitmapData);
+                holder.bitmapView.setImageBitmap(holder.bitmapData);
             }
         });
 
-        // set image view to a empty bitmap
-        holder.imageView.setImageBitmap(Bitmap.createBitmap(dataWidth, dataHeight, Bitmap.Config.ARGB_8888));
-        log.log("created empty bitmap");
-
-//        Bitmap image = BitmapFactory.decodeStream(new ByteArrayInputStream(buf));
-//
-//        // TODO: resize bitmap
-//
-//        holder.imageView.setImageBitmap(image);
-//
-//        log.logWithClassName(this, "decompressed image");
+        BitmapUtils.setBlankBitmap(holder.bitmapView, dataWidth, dataHeight, Bitmap.Config.ARGB_8888);
     }
 
     @Override

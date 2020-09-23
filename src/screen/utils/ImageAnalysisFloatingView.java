@@ -1,19 +1,14 @@
 package screen.utils;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import java.io.ByteArrayInputStream;
 
 import smallville7123.smartclick.R;
 import smallville7123.widgets.FloatingView;
@@ -24,10 +19,10 @@ public class ImageAnalysisFloatingView {
     private View expandedView;
 
     private TextView textViewMain;
-    private ImageView imageViewMain;
+    private BitmapView bitmapViewMain;
     
     private String cachedText;
-    private Bitmap cachedBitmap;
+    private byte[] cachedCompressedBitmap;
 
     private RecyclerView recyclerView;
     private ImageAnalysisRecyclerViewAdapter currentAdapter;
@@ -48,7 +43,7 @@ public class ImageAnalysisFloatingView {
 
     final String analyzerRootLayoutKey = "1";
     final String textViewMainKey = "2";
-    final String imageViewMainKey = "3";
+    final String bitmapViewMainKey = "3";
     final String recyclerViewKey = "4";
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -66,10 +61,9 @@ public class ImageAnalysisFloatingView {
                     @Override
                     public void onItemClick(byte[] memory, String text) {
                         cachedText = text;
-                        cachedBitmap = BitmapFactory.decodeStream(new ByteArrayInputStream(memory));
-                        // TODO: resize bitmap
+                        cachedCompressedBitmap = memory;
                         textViewMain.setText(cachedText);
-                        imageViewMain.setImageBitmap(cachedBitmap);
+                        bitmapViewMain.setImageBitmap(memory);
                     }
                 });
 
@@ -104,8 +98,8 @@ public class ImageAnalysisFloatingView {
                     state.putInt(analyzerRootLayoutKey, analyzerRootLayout.getVisibility());
                 if (textViewMain != null)
                     state.putInt(textViewMainKey, textViewMain.getVisibility());
-                if (imageViewMain != null)
-                    state.putInt(imageViewMainKey, imageViewMain.getVisibility());
+                if (bitmapViewMain != null)
+                    state.putInt(bitmapViewMainKey, bitmapViewMain.getVisibility());
                 if (recyclerView != null)
                     state.putInt(recyclerViewKey, recyclerView.getVisibility());
             }
@@ -120,7 +114,7 @@ public class ImageAnalysisFloatingView {
                 expandedView = variables.log.errorAndThrowIfNull(floatingView.findViewById(R.id.analyzerLayoutExpanded));
 
                 textViewMain = (TextView) floatingView.findViewById(R.id.analyzerTextView);
-                imageViewMain = (ImageView) floatingView.findViewById(R.id.analyzerSelectedImage);
+                bitmapViewMain = (BitmapView) floatingView.findViewById(R.id.analyzerSelectedImage);
                 recyclerView = (RecyclerView) floatingView.findViewById(R.id.analyzerRecyclerView);
 
                 // set up our RecyclerView
@@ -145,13 +139,13 @@ public class ImageAnalysisFloatingView {
                 analyzerRootLayout.setVisibility(visibility);
                 visibility = state.getInt(textViewMainKey, View.VISIBLE);
                 textViewMain.setVisibility(visibility);
-                visibility = state.getInt(imageViewMainKey, View.VISIBLE);
-                imageViewMain.setVisibility(visibility);
+                visibility = state.getInt(bitmapViewMainKey, View.VISIBLE);
+                bitmapViewMain.setVisibility(visibility);
                 visibility = state.getInt(recyclerViewKey, View.VISIBLE);
                 recyclerView.setVisibility(visibility);
 
                 if (cachedText != null) textViewMain.setText(cachedText);
-                if (cachedBitmap != null) imageViewMain.setImageBitmap(cachedBitmap);
+                if (cachedCompressedBitmap != null) bitmapViewMain.setImageBitmap(cachedCompressedBitmap);
                 
                 // if we previously had an adapter
                 // then we use the previous adapter to restore our current adapter

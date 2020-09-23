@@ -48,6 +48,10 @@ public class ScreenUtils {
         variables.imageView = imageView;
     }
 
+    public void setBitmapView(BitmapView bitmapView) {
+        variables.bitmapView = bitmapView;
+    }
+
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == variables.REQUEST_CODE) {
             if (resultCode == RESULT_OK) {

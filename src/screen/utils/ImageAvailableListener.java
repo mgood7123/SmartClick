@@ -25,75 +25,62 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
     public void onImageAvailable(ImageReader reader) {
         if (!variables.stop) {
             if (!single) {
-                Image image = null;
-                Bitmap bitmap = null;
+                Image image = reader.acquireLatestImage();
+                if (image != null) {
+                    Image.Plane[] planes = image.getPlanes();
+                    final ByteBuffer buffer = planes[0].getBuffer();
+                    int pixelStride = planes[0].getPixelStride();
+                    int rowStride = planes[0].getRowStride();
+                    int rowPadding = rowStride - pixelStride * mWidth;
 
-                try {
-                    image = reader.acquireLatestImage();
-                    if (image != null) {
-                        Image.Plane[] planes = image.getPlanes();
-                        ByteBuffer buffer = planes[0].getBuffer();
-                        int pixelStride = planes[0].getPixelStride();
-                        int rowStride = planes[0].getRowStride();
-                        int rowPadding = rowStride - pixelStride * mWidth;
+                    variables.videoMemoryWidth = mWidth + rowPadding / pixelStride;
+                    variables.videoMemoryHeight = mHeight;
 
-                        variables.videoMemoryWidth = mWidth + rowPadding / pixelStride;
-                        variables.videoMemoryHeight = mHeight;
+                    final Bitmap bitmap = Bitmap.createBitmap(
+                            variables.videoMemoryWidth,
+                            variables.videoMemoryHeight,
+                            Bitmap.Config.ARGB_8888
+                    );
 
-                        // create bitmap
-                        bitmap = Bitmap.createBitmap(variables.videoMemoryWidth, variables.videoMemoryHeight, Bitmap.Config.ARGB_8888);
-                        bitmap.copyPixelsFromBuffer(buffer);
+                    bitmap.copyPixelsFromBuffer(buffer);
 
-                        // copying directly appears to be faster than reading and decoding
-                        variables.lastImage = bitmap.copy(bitmap.getConfig(), bitmap.isMutable());
+                    if (variables.screenRecord) {
 
-                        if (variables.screenRecord) {
-
-                            // seems to only OOM when the screen is recording
-
-                            // compress bitmap to memory
-                            if (variables.videoMemory.size() == variables.max_bitmaps) {
-                                variables.videoMemory.remove(0);
-                            }
-                            ByteArrayOutputStream out = new ByteArrayOutputStream();
-                            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
-                            variables.videoMemory.add(out);
+                        // compress bitmap to memory
+                        if (variables.videoMemory.size() == variables.max_bitmaps) {
+                            variables.videoMemory.remove(0);
                         }
+                        byte[] array = BitmapUtils.compress(bitmap, Bitmap.CompressFormat.JPEG, 40);
+                        variables.log.log("converted stream to an array of length " + array.length);
+                        variables.videoMemory.add(array);
+                    }
 
-                        variables.runOnUiThread(new Runnable() {
+                    variables.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            variables.bitmapView.setImageBitmap(bitmap);
+                            bitmap.recycle();
+                        }
+                    });
+
+                    IMAGES_PRODUCED++;
+                    variables.log.logWithClassName(this, "number of images produced: " + IMAGES_PRODUCED);
+
+                    if (variables.screenshot) {
+                        new Thread() {
                             @Override
                             public void run() {
-                                variables.imageView.setImageBitmap(variables.lastImage);
+                                variables.log.logWithClassName(ImageAvailableListener.this, "took screenshot");
+                                variables.mediaProjectionHelper.stopScreenMirror();
+                                variables.screenshot = false;
+                                single = false;
                             }
-                        });
-
-                        IMAGES_PRODUCED++;
-                        variables.log.logWithClassName(this, "number of images produced: " + IMAGES_PRODUCED);
-
-                        if (variables.screenshot) {
-                            new Thread() {
-                                @Override
-                                public void run() {
-                                    variables.log.logWithClassName(ImageAvailableListener.this, "took screenshot");
-                                    variables.mediaProjectionHelper.stopScreenMirror();
-                                    variables.screenshot = false;
-                                    single = false;
-                                }
-                            }.start();
-                            single = true;
-                        }
+                        }.start();
+                        single = true;
                     }
-
-                } catch (Exception e) {
-                    variables.log.errorWithClassName(this, e);
-                } finally {
-                    if (bitmap != null) {
-                        bitmap.recycle();
-                    }
-
-                    if (image != null) {
-                        image.close();
-                    }
+                }
+                if (image != null) {
+                    image.close();
                 }
             }
         }

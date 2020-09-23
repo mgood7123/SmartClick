@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.VirtualDisplay;
 import android.media.ImageReader;
@@ -15,8 +14,7 @@ import android.view.Display;
 import android.view.LayoutInflater;
 import android.widget.ImageView;
 
-import java.io.ByteArrayOutputStream;
-import java.util.Vector;
+import java.util.ArrayList;
 
 public class Variables {
 
@@ -75,11 +73,13 @@ public class Variables {
     //  https://developer.android.com/topic/performance/graphics/manage-memory
     //
     // use a ByteArrayOutputStream to eliminate disk io and keep compressed bitmaps in memory
-    public Vector<ByteArrayOutputStream> videoMemory = new Vector<>();
+    public ArrayList<byte[]> videoMemory = new ArrayList<>(max_bitmaps);
     public Context context;
-    public Bitmap lastImage;
+    public byte[] lastImageCompressed;
+//    public Bitmap lastImage;
     public int videoMemoryWidth;
     public int videoMemoryHeight;
+    public BitmapView bitmapView;
 
     public interface Callback<Runnable> {
         /**

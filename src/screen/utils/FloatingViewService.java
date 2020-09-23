@@ -80,14 +80,14 @@ public class FloatingViewService extends Service {
         mFloatingView.setOnSetupExternalViews(new FloatingView.Callback<FloatingView>() {
             @Override
             public void run(FloatingView floatingView) {
-                SU.setImageView((ImageView) floatingView.findViewById(R.id.renderedCaptureFloatingWidget));
+                SU.setBitmapView((BitmapView) floatingView.findViewById(R.id.renderedCaptureFloatingWidget));
             }
         });
 
         mFloatingView.setOnRestoreState(new FloatingView.Callback<Bundle>() {
             @Override
             public void run(Bundle argument) {
-                SU.variables.imageView.setImageBitmap(SU.variables.lastImage);
+                SU.variables.bitmapView.setImageBitmap(SU.variables.lastImageCompressed);
             }
         });
 
