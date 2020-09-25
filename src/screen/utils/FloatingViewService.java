@@ -97,7 +97,7 @@ public class FloatingViewService extends Service {
                 floatingView.findViewById(R.id.FloatMirrorStart).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        SU.variables.log.logWithClassName(FloatingViewService.this, "RECORD START");
+                        SU.variables.log.logWithClassName(FloatingViewService.this, "MIRROR START");
                         SU.startScreenMirror();
                     }
                 });
@@ -105,7 +105,7 @@ public class FloatingViewService extends Service {
                 floatingView.findViewById(R.id.FloatMirrorStop).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        SU.variables.log.logWithClassName(FloatingViewService.this, "RECORD STOP");
+                        SU.variables.log.logWithClassName(FloatingViewService.this, "MIRROR STOP");
                         SU.stopScreenMirror();
                     }
                 });
@@ -129,6 +129,10 @@ public class FloatingViewService extends Service {
                 floatingView.findViewById(R.id.buttonAnalyse).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        if (SU.variables.screenRecord) {
+                            SU.variables.log.logWithClassName(FloatingViewService.this, "RECORD STOP");
+                            SU.stopScreenRecord();
+                        }
                         SU.variables.log.logWithClassName(FloatingViewService.this, "ANALYSE");
                         analyzer.onStart();
                     }
@@ -157,6 +161,8 @@ public class FloatingViewService extends Service {
     public void onDestroy() {
         super.onDestroy();
         SU.variables.log.logMethodNameWithClassName(this);
+        SU.variables.log.logWithClassName(this, "RECORD STOP");
+        SU.stopScreenRecord();
         mFloatingView.detachFromWindowManager();
         analyzer.onDestroy();
         analyzer = null;

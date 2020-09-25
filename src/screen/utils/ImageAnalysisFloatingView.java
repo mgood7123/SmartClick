@@ -83,7 +83,6 @@ public class ImageAnalysisFloatingView {
                         analyzerRootLayout.setVisibility(View.GONE);
                         floatingView.collapse();
                         floatingView.updateWindowManagerLayout(floatingView.minimizedLayout);
-                        // should we erase the video buffer on finish?
                     }
                 });
             }
@@ -179,10 +178,13 @@ public class ImageAnalysisFloatingView {
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void onDestroy() {
         variables.log.logMethodNameWithClassName(this);
-        mFloatingView.detachFromWindowManager();
 
-        // destroy references
-        analyzerRootLayout = null;
-        mFloatingView = null;
+        if (mFloatingView != null) {
+            mFloatingView.detachFromWindowManager();
+
+            // destroy references
+            analyzerRootLayout = null;
+            mFloatingView = null;
+        }
     }
 }

@@ -13,7 +13,6 @@ import smallville7123.smartclick.R;
 
 public class ImageAnalysisRecyclerViewAdapter extends
         RecyclerView.Adapter<ImageAnalysisRecyclerViewAdapter.MyViewHolder> {
-
     private LogUtils log = new LogUtils(this);
 
     BitmapView.RecordedFrames data = null;
@@ -21,7 +20,7 @@ public class ImageAnalysisRecyclerViewAdapter extends
     private ItemClickListener mClickListener;
 
     public void clearData() {
-        data.clear();
+        if (data != null) data.clear();
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
@@ -40,7 +39,7 @@ public class ImageAnalysisRecyclerViewAdapter extends
     }
 
     public void setData(final BitmapView.RecordedFrames data) {
-        this.data = data.clone();
+        if (data != null) this.data = data.clone();
     }
 
     public void setData(final ImageAnalysisRecyclerViewAdapter adapter) {
@@ -125,6 +124,10 @@ public class ImageAnalysisRecyclerViewAdapter extends
     // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
+        if (data == null) {
+            log.logWithClassName(this, "data.size(): " + 0);
+            return 0;
+        }
         int bufferSize = data.size();
         log.logWithClassName(this, "data.size(): " + bufferSize);
         return bufferSize;

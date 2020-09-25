@@ -7,7 +7,10 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
+
+import androidx.annotation.NonNull;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -603,14 +606,21 @@ Row        Layout
 
     public void setImageBitmap(Bitmap bm, boolean recycleAfterUse, boolean setImmediately, int scaleMode) {
         Log.i(TAG, "setImageBitmap: begin");
+        cache = null;
         if (bm == null) {
-            Log.i(TAG, "setImageBitmap: cannot draw null bitmap");
+            if (cacheDecompressed != null) {
+                cacheDecompressed.recycle();
+                cacheDecompressed = null;
+                Log.i(TAG, "setImageBitmap: recycled");
+            }
         } else {
-            this.bm = bm;
-            this.recycleAfterUse = recycleAfterUse;
-            this.setImmediately = setImmediately;
-            this.scaleMode = scaleMode;
-            invalidate();
+            if (getWindowVisibility() != GONE) {
+                this.bm = bm;
+                this.recycleAfterUse = recycleAfterUse;
+                this.setImmediately = setImmediately;
+                this.scaleMode = scaleMode;
+                invalidate();
+            }
         }
         Log.i(TAG, "setImageBitmap: end");
     }
@@ -716,6 +726,8 @@ Row        Layout
                 if (sample instanceof byte[]) {
                     RecordedFrames<byte[]> copy = new RecordedFrames();
                     copy.compressRecordedFrames = isCompressed();
+                    copy.width = getWidth();
+                    copy.height = getHeight();
                     copy.frames.ensureCapacity(size);
                     for (int i = 0, framesSize = frames.size(); i < framesSize; i++) {
                         byte[] frame = (byte[]) frames.get(i);
@@ -755,6 +767,7 @@ Row        Layout
                         Bitmap frame = (Bitmap) frames.get(i);
                         if (frame == null) throw nullFrame;
                         frame.recycle();
+                        Log.i(TAG, "clear: recycled");
                     }
                     frames.clear();
                 } else {
@@ -769,7 +782,7 @@ Row        Layout
             }
         }
 
-        public int getWidth(int width) {
+        public int getWidth() {
             synchronized (this.width) {
                 return this.width;
             }
@@ -781,7 +794,7 @@ Row        Layout
             }
         }
 
-        public int getHeight(int height) {
+        public int getHeight() {
             synchronized (this.height) {
                 return this.height;
             }
@@ -811,19 +824,14 @@ Row        Layout
                     //  https://developer.android.com/topic/performance/graphics/manage-memory
                     if (recordedFrames == null) recordedFrames = new RecordedFrames<byte[]>();
                     else {
-                        synchronized (recordedFrames) {
-                            recordedFrames = new RecordedFrames<byte[]>();
-                        }
+                        recordedFrames.clear();
                     }
                 } else {
                     if (recordedFrames == null) {
                         recordedFrames = new RecordedFrames<Bitmap>();
                         recordedFrames.setCompressRecordedFrames(Boolean.FALSE);
                     } else {
-                        synchronized (recordedFrames) {
-                            recordedFrames = new RecordedFrames<Bitmap>();
-                            recordedFrames.setCompressRecordedFrames(Boolean.FALSE);
-                        }
+                        recordedFrames.clear();
                     }
                 }
             }
@@ -849,9 +857,7 @@ Row        Layout
     }
 
     RecordedFrames getRecordedData() {
-        synchronized (recordedFrames) {
-            return recordedFrames;
-        }
+        return recordedFrames;
     }
 
 
@@ -861,6 +867,8 @@ Row        Layout
         Log.i(TAG, "onDraw: begin");
         if (bm == null) {
             Log.i(TAG, "onDraw: cannot draw null bitmap");
+        } else if (bm.isRecycled()) {
+            Log.i(TAG, "onDraw: cannot draw a recycled bitmap");
         } else {
             synchronized (recordingState) {
                 if (recordingState == RecordingState.started) {
@@ -881,14 +889,53 @@ Row        Layout
             }
             final ScaleMode.FlagData flagData = ScaleMode.analyseFlags(scaleMode);
             Pair scaled = scale(bm, canvas, recycleAfterUse, true, flagData);
+            if (scaled.second) bm = scaled.first;
             cacheDecompressed = scaled.first;
             src.right = cacheDecompressed.getWidth();
             src.bottom = cacheDecompressed.getHeight();
             dst.right = canvas.getWidth();
             dst.bottom = canvas.getHeight();
             canvas.drawBitmap(cacheDecompressed, src, dst, paint);
-            if (scaled.second || recycleAfterUse) scaled.first.recycle();
+            if (!scaled.second && recycleAfterUse) scaled.first.recycle();
         }
         Log.i(TAG, "onDraw: end");
+    }
+
+    @Override
+    public boolean willNotDraw() {
+        return cacheDecompressed != null || bm == null;
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        if (cache != null) cache = null;
+        if (cacheDecompressed != null) {
+            cacheDecompressed.recycle();
+            cacheDecompressed = null;
+            Log.i(TAG, "onDetachedFromWindow: recycled");
+        }
+        super.onDetachedFromWindow();
+    }
+
+    @Override
+    protected void onWindowVisibilityChanged(final int visibility) {
+        // this is called when the view is completely removed from the heirarchy
+        // this IS NOT called when the view's visibility changed to, or from, GONE
+        Log.i(TAG, "onWindowVisibilityChanged: changed to " + visibility);
+        if (visibility == GONE) {
+            if (cache != null) cache = null;
+            if (cacheDecompressed != null) {
+                cacheDecompressed.recycle();
+                cacheDecompressed = null;
+                Log.i(TAG, "onWindowVisibilityChanged: recycled");
+            }
+        }
+        super.onWindowVisibilityChanged(visibility);
+    }
+
+    @Override
+    protected void onVisibilityChanged(@NonNull final View changedView, final int visibility) {
+        Log.i(TAG, "onVisibilityChanged: changed to " + visibility);
+        super.onVisibilityChanged(changedView, visibility);
     }
 }
