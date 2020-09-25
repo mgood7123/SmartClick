@@ -26,7 +26,9 @@ public class BitmapUtils {
     @Nullable
     public static Bitmap scaleBitmap(@Nullable final ImageView imageView, @Nullable final Bitmap bitmap, final boolean recycleAfterUse) {
         if (imageView == null || bitmap == null) return null;
-        final Bitmap tmp = Bitmap.createScaledBitmap(bitmap, imageView.getWidth(), imageView.getHeight(), false);
+        int width = imageView.getWidth();
+        int height = imageView.getHeight();
+        final Bitmap tmp = Bitmap.createScaledBitmap(bitmap, width, height, false);
         if (recycleAfterUse) bitmap.recycle();
         return tmp;
     }
@@ -67,9 +69,10 @@ public class BitmapUtils {
 
     /**
      * decompresses imageData into a bitmap
-     * then creates a bitmap that is scaled to imageView width and height, from bitmap
+     * then creates a bitmap that is scaled to imageView width and height
      * and then sets imageView to the created bitmap, and then recycles the created bitmaps
-     *
+     * <br>
+     * <br>
      * does nothing if either imageView or config is null
      *
      * @param imageView the ImageView to contain the contents of imageData
@@ -118,15 +121,39 @@ public class BitmapUtils {
         return BitmapFactory.decodeStream(new ByteArrayInputStream(imageData));
     }
 
-    public static boolean arraysMatch(byte[] a, byte[] a2) {
-        if (a.length != a2.length) {
-            return false;
-        }
-        for (int i = 0; i < a.length; i++)
-            if (a[i] != a2[i]) {
-                return false;
-            }
-        return true;
+    /**
+     * returns the opposite of {@link BitmapUtils#arraysDoNotMatch(byte[], byte[]) arraysDoNotMatch}
+     */
+    public static boolean arraysDoMatch(byte[] a, byte[] a2) {
+        return !arraysDoMatch(a, a2);
     }
 
+    /**
+     *
+     * compares the contents of array 1 with array 2
+     * <br>
+     * does the following, in the order specified:
+     * <br>
+     * 1. if array 1 is null, or if array 2 is null, return true
+     * <br>
+     * 2. the two arrays are not null, if the two arrays do not match in length, return true
+     * <br>
+     * 3. the two arrays are of equal length, if the two arrays do not match in contents, return true
+     * <br>
+     * 4. none of the above was true, return false
+     */
+    public static boolean arraysDoNotMatch(byte[] a, byte[] a2) {
+        // 1. if array 1 is null, or if array 2 is null, return true
+        if (a == null || a2 == null) return true;
+        // 2. the two arrays are not null, if the two arrays do not match in length, return true
+        if (a.length != a2.length) return true;
+        // 3. the two arrays are of equal length, if the two arrays do not match in contents, return true
+        for (int i = 0; i < a.length; i++) {
+            if (a[i] != a2[i]) {
+                return true;
+            }
+        }
+        // 4. none of the above was true, return false
+        return false;
+    }
 }

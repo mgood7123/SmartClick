@@ -407,9 +407,8 @@ public class BitmapVector
         return indexOf(o, 0);
     }
 
-    // Bitmap.sameAs can return false positives
     static boolean sameAs(Bitmap o, Bitmap o2) {
-        return o.sameAs(o2);
+        return o.hashCode() == o2.hashCode() && o.getClass().getName().contentEquals(o2.getClass().getName());
 
         // slowish
 //        if (o.getWidth() != o2.getWidth()) return false;

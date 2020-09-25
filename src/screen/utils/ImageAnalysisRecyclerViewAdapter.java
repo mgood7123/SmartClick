@@ -1,6 +1,5 @@
 package screen.utils;
 
-import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -111,15 +110,17 @@ public class ImageAnalysisRecyclerViewAdapter extends
             }
         });
 
-        holder.bitmapView.post(new Runnable() {
-            @Override
-            public void run() {
-                log.log("setting bitmapView to compressed bitmap: " + holder.bitmapData);
-                holder.bitmapView.setImageBitmap(holder.bitmapData);
-            }
-        });
+//        holder.bitmapView.post(new Runnable() {
+//            @Override
+//            public void run() {
+//                log.log("setting bitmapView to compressed bitmap: " + holder.bitmapData);
+//                holder.bitmapView.setImageBitmap(holder.bitmapData, BitmapView.ScaleMode.SCALE_WIDTH_HEIGHT);
+//            }
+//        });
 
-        BitmapUtils.setBlankBitmap(holder.bitmapView, dataWidth, dataHeight, Bitmap.Config.ARGB_8888);
+        log.log("setting bitmapView to compressed bitmap: " + holder.bitmapData);
+        holder.bitmapView.setImageBitmap(holder.bitmapData);
+//        holder.bitmapView.setImageBitmap(dataWidth, dataHeight, Bitmap.Config.ARGB_8888);
     }
 
     @Override

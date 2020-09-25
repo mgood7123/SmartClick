@@ -53,15 +53,13 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
                             variables.videoMemory.remove(0);
                         }
                         byte[] array = BitmapUtils.compress(bitmap, Bitmap.CompressFormat.JPEG, 40);
-                        variables.log.log("converted stream to an array of length " + array.length);
                         variables.videoMemory.add(array);
                     }
 
                     variables.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            variables.bitmapView.setImageBitmap(bitmap);
-                            bitmap.recycle();
+                            variables.bitmapView.setImageBitmap(bitmap, true, BitmapView.ScaleMode.SCALE_WIDTH_HEIGHT);
                         }
                     });
 
