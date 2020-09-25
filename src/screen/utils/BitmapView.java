@@ -5,14 +5,12 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.media.MediaRecorder;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.util.Pair;
 import android.widget.ImageView;
 
 import java.nio.ByteBuffer;
-import java.util.Objects;
+import java.util.ArrayList;
 import java.util.Vector;
 
 /**
@@ -617,12 +615,270 @@ Row        Layout
         Log.i(TAG, "setImageBitmap: end");
     }
 
+    int maxRecordingFrames = 200;
+
+    class RecordedFrames<Type> {
+        private final String TAG = "RecordedFrames (" + getClass().getName() + "@" + Integer.toHexString(hashCode()) + ")";
+        ArrayList<Type> frames = new ArrayList();
+        Integer width = 0;
+        Integer height = 0;
+
+        static final String typeMismatchStr = "given parameter 'o' must be of type byte[] or of type Bitmap";
+        static final String typeMismatchBitmapStr = "type 'frame' must be of type Bitmap or of type byte[]";
+        static final String typeMismatchByteStr = "type 'frame' must be of type byte[] or of type Bitmap";
+        static final String nullFrameStr = "frame cannot be null";
+        final ClassCastException illegalCast = new ClassCastException(typeMismatchStr);
+        final ClassCastException illegalBitmapCast = new ClassCastException(typeMismatchBitmapStr);
+        final ClassCastException illegalByteCast = new ClassCastException(typeMismatchByteStr);
+        final NullPointerException nullFrame = new NullPointerException(nullFrameStr);
+
+        private Boolean compressRecordedFrames = Boolean.TRUE;
+
+        void add(Type frame) throws ClassCastException, NullPointerException {
+            if (!(frame instanceof byte[]) && !(frame instanceof Bitmap)) throw illegalCast;
+            if (frame == null) throw nullFrame;
+            synchronized (frames) {
+                frames.add(frame);
+            }
+        }
+
+        public Bitmap getBitmap(int index) {
+            Type frame;
+            synchronized (frames) {
+                frame = frames.get(index);
+            }
+            if (!(frame instanceof Bitmap)) throw illegalBitmapCast;
+            if (frame == null) throw nullFrame;
+            return (Bitmap) frame;
+        }
+
+        public byte[] getByte(int index) {
+            Type frame;
+            synchronized (frames) {
+                frame = frames.get(index);
+            }
+            if (!(frame instanceof byte[])) throw illegalByteCast;
+            if (frame == null) throw nullFrame;
+            return (byte[]) frame;
+        }
+
+        void remove(int index) {
+            synchronized (frames) {
+                frames.remove(0);
+            }
+        }
+
+        public boolean isCompressed() {
+            synchronized (compressRecordedFrames) {
+                return compressRecordedFrames;
+            }
+        }
+
+        public void setCompressRecordedFrames(Boolean shouldCompress) {
+            synchronized (compressRecordedFrames) {
+                compressRecordedFrames = shouldCompress;
+            }
+        }
+
+        ArrayList<Type> getFrames() {
+            synchronized (frames) {
+                return frames;
+            }
+        }
+
+        public int size() {
+            synchronized (frames) {
+                return frames.size();
+            }
+        }
+
+        /**
+         * if the frames are not compressed return a reference to this to save memory
+         * otherwise return a copy of this
+         * @return
+         */
+
+        protected RecordedFrames<Type> clone() {
+            synchronized (frames) {
+                if (!compressRecordedFrames) {
+                    return this;
+                }
+
+                int size = frames.size();
+                if (size == 0) {
+                    RecordedFrames<Type> copy = new RecordedFrames();
+                    copy.compressRecordedFrames = isCompressed();
+                    return copy;
+                }
+
+                Object sample = frames.get(0);
+                if (sample == null) throw nullFrame;
+                if (sample instanceof byte[]) {
+                    RecordedFrames<byte[]> copy = new RecordedFrames();
+                    copy.compressRecordedFrames = isCompressed();
+                    copy.frames.ensureCapacity(size);
+                    for (int i = 0, framesSize = frames.size(); i < framesSize; i++) {
+                        byte[] frame = (byte[]) frames.get(i);
+                        if (frame == null) throw nullFrame;
+                        copy.frames.add(frame.clone());
+                    }
+                    return (RecordedFrames<Type>) copy;
+                } else if (sample instanceof Bitmap) {
+                    // TODO: allow this under certain conditions
+                    //  this is currently disabled via if (!compressRecordedFrames) return this;
+                    RecordedFrames<Bitmap> copy = new RecordedFrames();
+                    copy.compressRecordedFrames = isCompressed();
+                    copy.frames.ensureCapacity(size);
+                    for (int i = 0, framesSize = frames.size(); i < framesSize; i++) {
+                        Bitmap frame = (Bitmap) frames.get(i);
+                        if (frame == null) throw nullFrame;
+                        copy.frames.add(frame.copy(frame.getConfig(), frame.isMutable()));
+                    }
+                    return (RecordedFrames<Type>) copy;
+                } else {
+                    throw illegalCast;
+                }
+            }
+        }
+
+        public void clear() {
+            synchronized (frames) {
+                int size = frames.size();
+                if (size == 0) return;
+
+                Object sample = frames.get(0);
+                if (sample == null) throw nullFrame;
+                if (sample instanceof byte[]) {
+                    frames.clear();
+                } else if (sample instanceof Bitmap) {
+                    for (int i = 0, framesSize = frames.size(); i < framesSize; i++) {
+                        Bitmap frame = (Bitmap) frames.get(i);
+                        if (frame == null) throw nullFrame;
+                        frame.recycle();
+                    }
+                    frames.clear();
+                } else {
+                    throw illegalCast;
+                }
+            }
+        }
+
+        public void setWidth(int width) {
+            synchronized (this.width) {
+                this.width = width;
+            }
+        }
+
+        public int getWidth(int width) {
+            synchronized (this.width) {
+                return this.width;
+            }
+        }
+
+        public void setHeight(int height) {
+            synchronized (this.height) {
+                this.height = height;
+            }
+        }
+
+        public int getHeight(int height) {
+            synchronized (this.height) {
+                return this.height;
+            }
+        }
+    }
+
+    RecordedFrames recordedFrames = null;
+
+    static class RecordingState {
+        static final Integer started = 1;
+        static final Integer recording = 2;
+        static final Integer paused = 3;
+        static final Integer stopped = 4;
+    }
+
+    Integer recordingState = RecordingState.stopped;
+
+    Bitmap.CompressFormat compressionFormat = Bitmap.CompressFormat.JPEG;
+    int compressionQuality = 40;
+
+    void beginRecording(boolean compressFrames) {
+        synchronized (recordingState) {
+            if (recordingState == RecordingState.stopped) {
+                recordingState = RecordingState.started;
+                if (compressFrames) {
+                    // TODO: a LruCache could be used for higher performance, see
+                    //  https://developer.android.com/topic/performance/graphics/manage-memory
+                    if (recordedFrames == null) recordedFrames = new RecordedFrames<byte[]>();
+                    else {
+                        synchronized (recordedFrames) {
+                            recordedFrames = new RecordedFrames<byte[]>();
+                        }
+                    }
+                } else {
+                    if (recordedFrames == null) {
+                        recordedFrames = new RecordedFrames<Bitmap>();
+                        recordedFrames.setCompressRecordedFrames(Boolean.FALSE);
+                    } else {
+                        synchronized (recordedFrames) {
+                            recordedFrames = new RecordedFrames<Bitmap>();
+                            recordedFrames.setCompressRecordedFrames(Boolean.FALSE);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    void pauseRecording() {
+        synchronized (recordingState) {
+            recordingState = RecordingState.paused;
+        }
+    }
+
+    void resumeRecording() {
+        synchronized (recordingState) {
+            recordingState = RecordingState.recording;
+        }
+    }
+
+    void endRecording() {
+        synchronized (recordingState) {
+            recordingState = RecordingState.stopped;
+        }
+    }
+
+    RecordedFrames getRecordedData() {
+        synchronized (recordedFrames) {
+            return recordedFrames;
+        }
+    }
+
+
+
     @Override
     protected void onDraw(Canvas canvas) {
         Log.i(TAG, "onDraw: begin");
         if (bm == null) {
             Log.i(TAG, "onDraw: cannot draw null bitmap");
         } else {
+            synchronized (recordingState) {
+                if (recordingState == RecordingState.started) {
+                    getRecordedData().setWidth(bm.getWidth());
+                    getRecordedData().setHeight(bm.getHeight());
+                    recordingState = RecordingState.recording;
+                }
+                if (recordingState == RecordingState.recording) {
+                    synchronized (recordedFrames) {
+                        if (recordedFrames.isCompressed()) {
+                            if (recordedFrames.frames.size() == maxRecordingFrames) {
+                                recordedFrames.remove(0);
+                            }
+                            recordedFrames.add(BitmapUtils.compress(bm, compressionFormat, compressionQuality));
+                        }
+                    }
+                }
+            }
             final ScaleMode.FlagData flagData = ScaleMode.analyseFlags(scaleMode);
             Pair scaled = scale(bm, canvas, recycleAfterUse, true, flagData);
             cacheDecompressed = scaled.first;

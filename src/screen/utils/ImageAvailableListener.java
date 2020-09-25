@@ -33,12 +33,9 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
                     int rowStride = planes[0].getRowStride();
                     int rowPadding = rowStride - pixelStride * mWidth;
 
-                    variables.videoMemoryWidth = mWidth + rowPadding / pixelStride;
-                    variables.videoMemoryHeight = mHeight;
-
                     final Bitmap bitmap = Bitmap.createBitmap(
-                            variables.videoMemoryWidth,
-                            variables.videoMemoryHeight,
+                            mWidth + rowPadding / pixelStride,
+                            mHeight,
                             Bitmap.Config.ARGB_8888
                     );
 
@@ -46,15 +43,8 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
 
                     image.close();
 
-                    if (variables.screenRecord) {
-
-                        // compress bitmap to memory
-                        if (variables.videoMemory.size() == variables.max_bitmaps) {
-                            variables.videoMemory.remove(0);
-                        }
-                        byte[] array = BitmapUtils.compress(bitmap, Bitmap.CompressFormat.JPEG, 40);
-                        variables.videoMemory.add(array);
-                    }
+                    if (variables.screenRecord) variables.bitmapView.beginRecording(true);
+                    else variables.bitmapView.endRecording();
 
                     variables.runOnUiThread(new Runnable() {
                         @Override
@@ -74,12 +64,15 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
                                 variables.mediaProjectionHelper.stopScreenMirror();
                                 variables.screenshot = false;
                                 single = false;
+                                variables.bitmapView.endRecording();
                             }
                         }.start();
                         single = true;
                     }
                 }
             }
+        } else {
+            variables.bitmapView.endRecording();
         }
     }
 

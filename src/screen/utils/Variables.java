@@ -14,8 +14,6 @@ import android.view.Display;
 import android.view.LayoutInflater;
 import android.widget.ImageView;
 
-import java.util.ArrayList;
-
 public class Variables {
 
     public final String TAG = getClass().getName();
@@ -68,17 +66,9 @@ public class Variables {
     public String cacheDir;
     public LayoutInflater layoutInflater;
     public int max_bitmaps = 200;
-    //
-    // TODO: a LruCache could be used for higher performance, see
-    //  https://developer.android.com/topic/performance/graphics/manage-memory
-    //
-    // use a ByteArrayOutputStream to eliminate disk io and keep compressed bitmaps in memory
-    public ArrayList<byte[]> videoMemory = new ArrayList<>(max_bitmaps);
     public Context context;
     public byte[] lastImageCompressed;
 //    public Bitmap lastImage;
-    public int videoMemoryWidth;
-    public int videoMemoryHeight;
     public BitmapView bitmapView;
 
     public interface Callback<Runnable> {

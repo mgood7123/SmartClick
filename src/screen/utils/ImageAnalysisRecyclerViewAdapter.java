@@ -9,18 +9,15 @@ import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.ArrayList;
-import java.util.Vector;
-
 import smallville7123.smartclick.R;
 
 public class ImageAnalysisRecyclerViewAdapter extends
         RecyclerView.Adapter<ImageAnalysisRecyclerViewAdapter.MyViewHolder> {
 
     private LogUtils log = new LogUtils(this);
-    Vector<byte[]> data = new Vector<>();
-    int dataWidth;
-    int dataHeight;
+
+    BitmapView.RecordedFrames data = null;
+
     private ItemClickListener mClickListener;
 
     public void clearData() {
@@ -42,30 +39,12 @@ public class ImageAnalysisRecyclerViewAdapter extends
         }
     }
 
-    public void setData(final ArrayList<byte[]> data, int width, int height) {
-        dataWidth = width;
-        dataHeight = height;
-        // duplicate the video memory
-        int bufferSize = data.size();
-        log.logWithClassName(this, "data.size(): " + bufferSize);
-        this.data.setSize(bufferSize);
-        for (int i = 0; i < data.size(); i++) {
-            this.data.set(
-                    i,
-                    log.errorAndThrowIfNullWithClass(
-                            this,
-                            data.get(i),
-                            "data at index " + i + " is null")
-            );
-        }
-        int dataSize = this.data.size();
-        log.logWithClassName(this, "this.data.size(): " + dataSize);
+    public void setData(final BitmapView.RecordedFrames data) {
+        this.data = data.clone();
     }
 
     public void setData(final ImageAnalysisRecyclerViewAdapter adapter) {
         data = adapter.data;
-        dataWidth = adapter.dataWidth;
-        dataHeight = adapter.dataHeight;
     }
 
     @Override
@@ -100,7 +79,7 @@ public class ImageAnalysisRecyclerViewAdapter extends
         holder.text = (position+1) + "/" + getItemCount();
         holder.frame.setText(holder.text);
 
-        holder.bitmapData = data.get(position);
+        holder.bitmapData = data.getByte(position);
 
         holder.mainView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -110,17 +89,7 @@ public class ImageAnalysisRecyclerViewAdapter extends
             }
         });
 
-//        holder.bitmapView.post(new Runnable() {
-//            @Override
-//            public void run() {
-//                log.log("setting bitmapView to compressed bitmap: " + holder.bitmapData);
-//                holder.bitmapView.setImageBitmap(holder.bitmapData, BitmapView.ScaleMode.SCALE_WIDTH_HEIGHT);
-//            }
-//        });
-
-        log.log("setting bitmapView to compressed bitmap: " + holder.bitmapData);
         holder.bitmapView.setImageBitmap(holder.bitmapData);
-//        holder.bitmapView.setImageBitmap(dataWidth, dataHeight, Bitmap.Config.ARGB_8888);
     }
 
     @Override
