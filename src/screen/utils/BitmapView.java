@@ -5,12 +5,14 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.media.MediaRecorder;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.Pair;
 import android.widget.ImageView;
 
 import java.nio.ByteBuffer;
+import java.util.Objects;
 import java.util.Vector;
 
 /**
@@ -550,7 +552,22 @@ Row        Layout
         return computedHeight;
     }
 
-    private Pair<Bitmap, Boolean> scale(Bitmap bm, Canvas canvas, boolean recycleAfterUse, boolean shouldScale, ScaleMode.FlagData flagData) {
+    public class Pair {
+        public final Bitmap first;
+        public final boolean second;
+        /**
+         * Constructor for a Pair.
+         *
+         * @param first the first object in the Pair
+         * @param second the second object in the pair
+         */
+        public Pair(Bitmap first, boolean second) {
+            this.first = first;
+            this.second = second;
+        }
+    }
+
+    private Pair scale(Bitmap bm, Canvas canvas, boolean recycleAfterUse, boolean shouldScale, ScaleMode.FlagData flagData) {
         if (bm == null) return null;
         if (shouldScale && flagData.hasFlags) {
             int width = computeScaledWidth(bm, canvas, flagData);
@@ -607,7 +624,7 @@ Row        Layout
             Log.i(TAG, "onDraw: cannot draw null bitmap");
         } else {
             final ScaleMode.FlagData flagData = ScaleMode.analyseFlags(scaleMode);
-            Pair<Bitmap, Boolean> scaled = scale(bm, canvas, recycleAfterUse, true, flagData);
+            Pair scaled = scale(bm, canvas, recycleAfterUse, true, flagData);
             cacheDecompressed = scaled.first;
             src.right = cacheDecompressed.getWidth();
             src.bottom = cacheDecompressed.getHeight();
