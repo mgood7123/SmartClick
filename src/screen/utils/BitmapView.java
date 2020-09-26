@@ -790,7 +790,6 @@ Row        Layout
 
     void beginRecording(boolean compressFrames) {
         if (recordingState == RecordingState.stopped) {
-            recordingState = RecordingState.started;
             if (compressFrames) {
                 // TODO: a LruCache could be used for higher performance, see
                 //  https://developer.android.com/topic/performance/graphics/manage-memory
@@ -806,6 +805,7 @@ Row        Layout
                     recordedFrames.clear();
                 }
             }
+            recordingState = RecordingState.started;
         }
     }
 
