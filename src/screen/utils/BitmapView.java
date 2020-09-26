@@ -28,7 +28,7 @@ public class BitmapView extends ImageView {
 
     static Vector<BitmapView> bitmapViews = new Vector();
 
-    private boolean scalingDisallowed = true;
+    private boolean isAllowedToScale = false;
 
     public BitmapView(Context context, @androidx.annotation.Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -36,6 +36,7 @@ public class BitmapView extends ImageView {
     }
 
     private void ensureReferencesIfCurrentIsSet() {
+        // TODO: remove
         if (cacheDecompressed != null && safe)
             if (copies.isEmpty())
                 throw new IllegalStateException(
@@ -46,15 +47,18 @@ public class BitmapView extends ImageView {
     static BitmapVector copies = new BitmapVector();
 
     private Bitmap store(Bitmap bm) {
+        // TODO: remove
         return store(bm, false);
     }
 
 
     private Bitmap store(Bitmap bm, boolean recycleAfterUse) {
+        // TODO: remove
         return store(bm, recycleAfterUse, true);
     }
 
     private Bitmap store(Bitmap bm, boolean recycleAfterUse, boolean makeCopy) {
+        // TODO: remove
         if (bm == null) return null;
         ensureReferencesIfCurrentIsSet();
         Bitmap ref = bm;
@@ -84,6 +88,7 @@ public class BitmapView extends ImageView {
      * recycles the currently set bitmap, does nothing if already recycled
      */
     public void recycle() {
+        // TODO: remove?
         recycleInternal(false, true);
     }
 
@@ -91,6 +96,7 @@ public class BitmapView extends ImageView {
      * recycles the currently set bitmap, does nothing if already recycled
      */
     public void recycle(boolean recycleCache) {
+        // TODO: remove?
         recycleInternal(false, recycleCache);
     }
 
@@ -99,6 +105,7 @@ public class BitmapView extends ImageView {
      * does nothing if already recycled
      */
     void recycleInternal() {
+        // TODO: remove?
         recycleInternal(false, false);
     }
 
@@ -108,6 +115,7 @@ public class BitmapView extends ImageView {
      * does nothing if already recycled
      */
     void recycleInternal(boolean recycleCache) {
+        // TODO: remove?
         recycleInternal(false, recycleCache);
     }
 
@@ -117,6 +125,7 @@ public class BitmapView extends ImageView {
      * does nothing if already recycled
      */
     void recycleInternal(boolean internal, boolean recycleCache) {
+        // TODO: remove?
         ensureReferencesIfCurrentIsSet();
         if (recycleCache) cache = null;
         if (cacheDecompressed != null) {
@@ -131,10 +140,12 @@ public class BitmapView extends ImageView {
     }
 
     private void set(Bitmap bm) {
+        // TODO: remove
         set(bm, false);
     }
 
     private void set(Bitmap bm, boolean recycleCache) {
+        // TODO: remove
         if (bm == null) {
             recycleInternal(recycleCache);
         } else {
@@ -155,22 +166,27 @@ public class BitmapView extends ImageView {
     }
 
     private void storeAndSet(Bitmap bm) {
+        // TODO: remove
         storeAndSet(bm, false);
     }
 
     private void storeAndSet(Bitmap bm, boolean recycleAfterUse) {
+        // TODO: remove
         storeAndSet(bm, recycleAfterUse, true);
     }
 
     private void storeAndSet(Bitmap bm, boolean recycleAfterUse, boolean makeCopy) {
+        // TODO: remove
         set(store(bm, recycleAfterUse, makeCopy));
     }
 
     private void setIfFoundOtherwiseStoreAndSet(Bitmap bm, int scaleMode) {
+        // TODO: remove
         setIfFoundOtherwiseStoreAndSet(bm, false, false, scaleMode);
     }
 
     private void setIfFoundOtherwiseStoreAndSet(Bitmap bm) {
+        // TODO: remove
         setIfFoundOtherwiseStoreAndSet(bm, false, false);
     }
 
@@ -414,10 +430,12 @@ Row        Layout
     }
 
     private void setIfFoundOtherwiseStoreAndSet(final Bitmap bm, final boolean recycleAfterUse, final boolean setImmediately) {
+        // TODO: remove
         setIfFoundOtherwiseStoreAndSet(bm, recycleAfterUse, setImmediately, ScaleMode.KEEP_ORIGINAL_WIDTH_AND_HEIGHT);
     }
 
     private void internalSet(Bitmap bm, boolean internallyAllocated, boolean recycleAfterUse) {
+        // TODO: remove
         // check if bm can be located
         int index = copies.indexOf(bm);
         if (index >= 0) {
@@ -437,23 +455,7 @@ Row        Layout
     }
 
     private void setIfFoundOtherwiseStoreAndSet(final Bitmap bm, final boolean recycleAfterUse, final boolean setImmediately, final int scaleMode) {
-        if (bm == null) {
-            set(null);
-        } else {
-            final ScaleMode.FlagData flagData = ScaleMode.analyseFlags(scaleMode);
-            Runnable r = new Runnable() {
-                @Override
-                public void run() {
-                }
-            };
-            if (setImmediately || scalingDisallowed) {
-                // set even if bitmap would be scaled
-                r.run();
-            } else {
-                if (flagData.hasFlags) post(r);
-                else r.run();
-            }
-        }
+        // TODO: remove
     }
 
     public void setImageBitmap(Bitmap bm, int scaleMode) {
@@ -573,7 +575,8 @@ Row        Layout
         if (shouldScale && flagData.hasFlags) {
             int width = computeScaledWidth(bm, canvas, flagData);
             int height = computeScaledHeight(bm, canvas, flagData);
-            Bitmap scaled = Bitmap.createScaledBitmap(bm, width, height, false);
+            Bitmap scaled = null;
+            scaled = Bitmap.createScaledBitmap(bm, width, height, false);
             if (scaled != null) {
                 // recycle if allowed
                 if (recycleAfterUse) bm.recycle();
@@ -605,7 +608,6 @@ Row        Layout
     }
 
     public void setImageBitmap(Bitmap bm, boolean recycleAfterUse, boolean setImmediately, int scaleMode) {
-        Log.i(TAG, "setImageBitmap: begin");
         cache = null;
         if (bm == null) {
             if (cacheDecompressed != null) {
@@ -622,7 +624,6 @@ Row        Layout
                 invalidate();
             }
         }
-        Log.i(TAG, "setImageBitmap: end");
     }
 
     int maxRecordingFrames = 200;
@@ -647,16 +648,12 @@ Row        Layout
         void add(Type frame) throws ClassCastException, NullPointerException {
             if (!(frame instanceof byte[]) && !(frame instanceof Bitmap)) throw illegalCast;
             if (frame == null) throw nullFrame;
-            synchronized (frames) {
-                frames.add(frame);
-            }
+            frames.add(frame);
         }
 
         public Bitmap getBitmap(int index) {
             Type frame;
-            synchronized (frames) {
-                frame = frames.get(index);
-            }
+            frame = frames.get(index);
             if (!(frame instanceof Bitmap)) throw illegalBitmapCast;
             if (frame == null) throw nullFrame;
             return (Bitmap) frame;
@@ -664,42 +661,30 @@ Row        Layout
 
         public byte[] getByte(int index) {
             Type frame;
-            synchronized (frames) {
-                frame = frames.get(index);
-            }
+            frame = frames.get(index);
             if (!(frame instanceof byte[])) throw illegalByteCast;
             if (frame == null) throw nullFrame;
             return (byte[]) frame;
         }
 
         void remove(int index) {
-            synchronized (frames) {
-                frames.remove(0);
-            }
+            frames.remove(0);
         }
 
         public boolean isCompressed() {
-            synchronized (compressRecordedFrames) {
-                return compressRecordedFrames;
-            }
+            return compressRecordedFrames;
         }
 
         public void setCompressRecordedFrames(Boolean shouldCompress) {
-            synchronized (compressRecordedFrames) {
-                compressRecordedFrames = shouldCompress;
-            }
+            compressRecordedFrames = shouldCompress;
         }
 
         ArrayList<Type> getFrames() {
-            synchronized (frames) {
-                return frames;
-            }
+            return frames;
         }
 
         public int size() {
-            synchronized (frames) {
-                return frames.size();
-            }
+            return frames.size();
         }
 
         /**
@@ -709,95 +694,83 @@ Row        Layout
          */
 
         protected RecordedFrames<Type> clone() {
-            synchronized (frames) {
-                if (!compressRecordedFrames) {
-                    return this;
-                }
+            if (!compressRecordedFrames) {
+                return this;
+            }
 
-                int size = frames.size();
-                if (size == 0) {
-                    RecordedFrames<Type> copy = new RecordedFrames();
-                    copy.compressRecordedFrames = isCompressed();
-                    return copy;
-                }
+            int size = frames.size();
+            if (size == 0) {
+                RecordedFrames<Type> copy = new RecordedFrames();
+                copy.compressRecordedFrames = isCompressed();
+                return copy;
+            }
 
-                Object sample = frames.get(0);
-                if (sample == null) throw nullFrame;
-                if (sample instanceof byte[]) {
-                    RecordedFrames<byte[]> copy = new RecordedFrames();
-                    copy.compressRecordedFrames = isCompressed();
-                    copy.width = getWidth();
-                    copy.height = getHeight();
-                    copy.frames.ensureCapacity(size);
-                    for (int i = 0, framesSize = frames.size(); i < framesSize; i++) {
-                        byte[] frame = (byte[]) frames.get(i);
-                        if (frame == null) throw nullFrame;
-                        copy.frames.add(frame.clone());
-                    }
-                    return (RecordedFrames<Type>) copy;
-                } else if (sample instanceof Bitmap) {
-                    // TODO: allow this under certain conditions
-                    //  this is currently disabled via if (!compressRecordedFrames) return this;
-                    RecordedFrames<Bitmap> copy = new RecordedFrames();
-                    copy.compressRecordedFrames = isCompressed();
-                    copy.frames.ensureCapacity(size);
-                    for (int i = 0, framesSize = frames.size(); i < framesSize; i++) {
-                        Bitmap frame = (Bitmap) frames.get(i);
-                        if (frame == null) throw nullFrame;
-                        copy.frames.add(frame.copy(frame.getConfig(), frame.isMutable()));
-                    }
-                    return (RecordedFrames<Type>) copy;
-                } else {
-                    throw illegalCast;
+            Object sample = frames.get(0);
+            if (sample == null) throw nullFrame;
+            if (sample instanceof byte[]) {
+                RecordedFrames<byte[]> copy = new RecordedFrames();
+                copy.compressRecordedFrames = isCompressed();
+                copy.width = getWidth();
+                copy.height = getHeight();
+                copy.frames.ensureCapacity(size);
+                for (int i = 0, framesSize = frames.size(); i < framesSize; i++) {
+                    byte[] frame = (byte[]) frames.get(i);
+                    if (frame == null) throw nullFrame;
+                    copy.frames.add(frame.clone());
                 }
+                return (RecordedFrames<Type>) copy;
+            } else if (sample instanceof Bitmap) {
+                // TODO: allow this under certain conditions
+                //  this is currently disabled via if (!compressRecordedFrames) return this;
+                RecordedFrames<Bitmap> copy = new RecordedFrames();
+                copy.compressRecordedFrames = isCompressed();
+                copy.frames.ensureCapacity(size);
+                for (int i = 0, framesSize = frames.size(); i < framesSize; i++) {
+                    Bitmap frame = (Bitmap) frames.get(i);
+                    if (frame == null) throw nullFrame;
+                    copy.frames.add(frame.copy(frame.getConfig(), frame.isMutable()));
+                }
+                return (RecordedFrames<Type>) copy;
+            } else {
+                throw illegalCast;
             }
         }
 
         public void clear() {
-            synchronized (frames) {
-                int size = frames.size();
-                if (size == 0) return;
+            int size = frames.size();
+            if (size == 0) return;
 
-                Object sample = frames.get(0);
-                if (sample == null) throw nullFrame;
-                if (sample instanceof byte[]) {
-                    frames.clear();
-                } else if (sample instanceof Bitmap) {
-                    for (int i = 0, framesSize = frames.size(); i < framesSize; i++) {
-                        Bitmap frame = (Bitmap) frames.get(i);
-                        if (frame == null) throw nullFrame;
-                        frame.recycle();
-                        Log.i(TAG, "clear: recycled");
-                    }
-                    frames.clear();
-                } else {
-                    throw illegalCast;
+            Object sample = frames.get(0);
+            if (sample == null) throw nullFrame;
+            if (sample instanceof byte[]) {
+                frames.clear();
+            } else if (sample instanceof Bitmap) {
+                for (int i = 0, framesSize = frames.size(); i < framesSize; i++) {
+                    Bitmap frame = (Bitmap) frames.get(i);
+                    if (frame == null) throw nullFrame;
+                    frame.recycle();
+                    Log.i(TAG, "clear: recycled");
                 }
+                frames.clear();
+            } else {
+                throw illegalCast;
             }
         }
 
         public void setWidth(int width) {
-            synchronized (this.width) {
-                this.width = width;
-            }
+            this.width = width;
         }
 
         public int getWidth() {
-            synchronized (this.width) {
-                return this.width;
-            }
+            return this.width;
         }
 
         public void setHeight(int height) {
-            synchronized (this.height) {
-                this.height = height;
-            }
+            this.height = height;
         }
 
         public int getHeight() {
-            synchronized (this.height) {
-                return this.height;
-            }
+            return this.height;
         }
     }
 
@@ -816,89 +789,77 @@ Row        Layout
     int compressionQuality = 40;
 
     void beginRecording(boolean compressFrames) {
-        synchronized (recordingState) {
-            if (recordingState == RecordingState.stopped) {
-                recordingState = RecordingState.started;
-                if (compressFrames) {
-                    // TODO: a LruCache could be used for higher performance, see
-                    //  https://developer.android.com/topic/performance/graphics/manage-memory
-                    if (recordedFrames == null) recordedFrames = new RecordedFrames<byte[]>();
-                    else {
-                        recordedFrames.clear();
-                    }
+        if (recordingState == RecordingState.stopped) {
+            recordingState = RecordingState.started;
+            if (compressFrames) {
+                // TODO: a LruCache could be used for higher performance, see
+                //  https://developer.android.com/topic/performance/graphics/manage-memory
+                if (recordedFrames == null) recordedFrames = new RecordedFrames<byte[]>();
+                else {
+                    recordedFrames.clear();
+                }
+            } else {
+                if (recordedFrames == null) {
+                    recordedFrames = new RecordedFrames<Bitmap>();
+                    recordedFrames.setCompressRecordedFrames(Boolean.FALSE);
                 } else {
-                    if (recordedFrames == null) {
-                        recordedFrames = new RecordedFrames<Bitmap>();
-                        recordedFrames.setCompressRecordedFrames(Boolean.FALSE);
-                    } else {
-                        recordedFrames.clear();
-                    }
+                    recordedFrames.clear();
                 }
             }
         }
     }
 
     void pauseRecording() {
-        synchronized (recordingState) {
-            recordingState = RecordingState.paused;
-        }
+        recordingState = RecordingState.paused;
     }
 
     void resumeRecording() {
-        synchronized (recordingState) {
-            recordingState = RecordingState.recording;
-        }
+        recordingState = RecordingState.recording;
     }
 
     void endRecording() {
-        synchronized (recordingState) {
-            recordingState = RecordingState.stopped;
-        }
+        recordingState = RecordingState.stopped;
     }
 
     RecordedFrames getRecordedData() {
         return recordedFrames;
     }
 
-
-
     @Override
     protected void onDraw(Canvas canvas) {
-        Log.i(TAG, "onDraw: begin");
         if (bm == null) {
             Log.i(TAG, "onDraw: cannot draw null bitmap");
         } else if (bm.isRecycled()) {
             Log.i(TAG, "onDraw: cannot draw a recycled bitmap");
         } else {
-            synchronized (recordingState) {
-                if (recordingState == RecordingState.started) {
-                    getRecordedData().setWidth(bm.getWidth());
-                    getRecordedData().setHeight(bm.getHeight());
-                    recordingState = RecordingState.recording;
-                }
-                if (recordingState == RecordingState.recording) {
-                    synchronized (recordedFrames) {
-                        if (recordedFrames.isCompressed()) {
-                            if (recordedFrames.frames.size() == maxRecordingFrames) {
-                                recordedFrames.remove(0);
-                            }
-                            recordedFrames.add(BitmapUtils.compress(bm, compressionFormat, compressionQuality));
-                        }
+            if (recordingState == RecordingState.started) {
+                recordedFrames.setWidth(bm.getWidth());
+                recordedFrames.setHeight(bm.getHeight());
+                recordingState = RecordingState.recording;
+            }
+            if (recordingState == RecordingState.recording) {
+                if (recordedFrames.isCompressed()) {
+                    if (recordedFrames.frames.size() == maxRecordingFrames) {
+                        recordedFrames.remove(0);
                     }
+                    recordedFrames.add(BitmapUtils.compress(bm, compressionFormat, compressionQuality));
                 }
             }
-            final ScaleMode.FlagData flagData = ScaleMode.analyseFlags(scaleMode);
-            Pair scaled = scale(bm, canvas, recycleAfterUse, true, flagData);
-            if (scaled.second) bm = scaled.first;
-            cacheDecompressed = scaled.first;
+            Pair scaled = null;
+            if (isAllowedToScale) {
+                final ScaleMode.FlagData flagData = ScaleMode.analyseFlags(scaleMode);
+                scaled = scale(bm, canvas, recycleAfterUse, true, flagData);
+                if (scaled.second) bm = scaled.first;
+                cacheDecompressed = scaled.first;
+            } else {
+                cacheDecompressed = bm;
+            }
             src.right = cacheDecompressed.getWidth();
             src.bottom = cacheDecompressed.getHeight();
             dst.right = canvas.getWidth();
             dst.bottom = canvas.getHeight();
             canvas.drawBitmap(cacheDecompressed, src, dst, paint);
-            if (!scaled.second && recycleAfterUse) scaled.first.recycle();
         }
-        Log.i(TAG, "onDraw: end");
     }
 
     @Override
