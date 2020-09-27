@@ -43,7 +43,29 @@ import java.util.List;
 
 /**
  * A mapping from String keys to various {@link Parcelable} values.
+ * <br>
+ * This variant will automatically parcel, and unparcel, given Parcelables.
+ * <br>
+ * this can also be achieved by doing:
+ * <br>
+ * <br>
+ * <pre>
+ * Bundle tmp = new Bundle();
  *
+ * // write Parcelable stuff to tmp1
+ * Parcel parcel = Parcel.obtain();
+ *
+ * // invoke any writeToParcel methods from the parcelable objects
+ * parcel.writeBundle(tmp);
+ * parcel.setDataPosition(0);
+ *
+ * // invoking any CREATOR.createFromParcel methods from the parcelable objects
+ * tmp = parcel.readBundle(getClass().getClassLoader());
+ *
+ * parcel.recycle();
+ * </pre>
+ *
+ * @see Bundle
  * @see PersistableBundle
  */
 public final class ParcelableBundle extends BaseParcelableBundle implements Cloneable, Parcelable {
@@ -278,14 +300,15 @@ public final class ParcelableBundle extends BaseParcelableBundle implements Clon
     /**
      * Make a deep copy of the given parcelableBundle.  Traverses into inner containers and copies
      * them as well, so they are not shared across parcelableBundles.  Will traverse in to
-     * {@link ParcelableBundle}, {@link PersistableBundle}, {@link ArrayList}, and all types of
-     * primitive arrays.  Other types of objects (such as Parcelable or Serializable)
-     * are referenced as-is and not copied in any way.
+     * {@link ParcelableBundle}, {@link Bundle}, {@link PersistableBundle}, {@link ArrayList},
+     * and all types of primitive arrays.  Other types of objects
+     * (such as Parcelable or Serializable) are referenced as-is and not copied in any way.
      */
     @RequiresApi(api = Build.VERSION_CODES.O)
     public ParcelableBundle deepCopy() {
         ParcelableBundle b = new ParcelableBundle(false);
         b.copyInternal(this, true);
+        b.mParcelledData.appendFrom(info, 0, info.dataSize());
         return b;
     }
 
@@ -564,67 +587,13 @@ public final class ParcelableBundle extends BaseParcelableBundle implements Clon
      */
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void putParcelable(@Nullable String key, @Nullable Parcelable value) {
-        Log.i(TAG, "putParcelable");
         unparcel();
         mFlags &= ~FLAG_HAS_FDS_KNOWN;
         synchronized (internalParcel) {
             info.writeString(key);
-            // the current write position must be stored before actually doing the write
-            // as it marks where the start of the data being written is
             info.writeInt(internalParcel.dataPosition());
             internalParcel.writeParcelable(value, mFlags);
-
         }
-    }
-
-    /**
-     * Returns the value associated with the given key, or null if
-     * no mapping of the desired type exists for the given key or a null
-     * value is explicitly associated with the key.
-     *
-     * @param key a String, or null
-     * @return a Parcelable value, or null
-     */
-    @Nullable
-    public <T extends Parcelable> T getParcelable(@Nullable String key) {
-        Log.i(TAG, "getParcelable");
-        unparcel();
-        Object o;
-        synchronized (internalParcel) {
-            // save the current write position of info and set to start
-            int oldInfoPosition = info.dataPosition();
-            info.setDataPosition(0);
-            // create an offset index and increment it
-            while(info.dataAvail() != 0) {
-                // search for a key
-                String k = info.readString();
-                int p = info.readInt();
-                if (k.contentEquals(key)) {
-                    // a key match was found
-                    // restore write position of info
-                    info.setDataPosition(oldInfoPosition);
-                    // save current write position of data
-                    int oldInternalPosition = internalParcel.dataPosition();
-                    // read offset as new read position of data
-                    internalParcel.setDataPosition(p);
-                    // read data
-                    o = internalParcel.readParcelable(mClassLoader);
-                    // reset write position of data
-                    internalParcel.setDataPosition(oldInternalPosition);
-                    try {
-                        return (T) o;
-                    } catch (ClassCastException e) {
-                        typeWarning(key, o, "Parcelable", e);
-                        return null;
-                    }
-                }
-            }
-            // no keys where matched, restore write position of keys
-            // this may not actually be needed since if dataAvail is 0 then it should be at the end
-            // however the actual position returned could have been be past this point
-            info.setDataPosition(oldInfoPosition);
-        }
-        return null;
     }
 
     /**
@@ -660,10 +629,13 @@ public final class ParcelableBundle extends BaseParcelableBundle implements Clon
      * @param value an array of Parcelable objects, or null
      */
     public void putParcelableArray(@Nullable String key, @Nullable Parcelable[] value) {
-        Log.i(TAG, "putParcelableArray");
         unparcel();
-        mMap.put(key, value);
         mFlags &= ~FLAG_HAS_FDS_KNOWN;
+        synchronized (internalParcel) {
+            info.writeString(key);
+            info.writeInt(internalParcel.dataPosition());
+            internalParcel.writeParcelableArray(value, mFlags);
+        }
     }
 
     /**
@@ -676,18 +648,24 @@ public final class ParcelableBundle extends BaseParcelableBundle implements Clon
      */
     public void putParcelableArrayList(@Nullable String key,
                                        @Nullable ArrayList<? extends Parcelable> value) {
-        Log.i(TAG, "putParcelableArrayList");
         unparcel();
-        mMap.put(key, value);
         mFlags &= ~FLAG_HAS_FDS_KNOWN;
+        synchronized (internalParcel) {
+            info.writeString(key);
+            info.writeInt(internalParcel.dataPosition());
+            internalParcel.writeList(value);
+        }
     }
 
     /** {@hide} */
     public void putParcelableList(String key, List<? extends Parcelable> value) {
-        Log.i(TAG, "putParcelableList");
         unparcel();
-        mMap.put(key, value);
         mFlags &= ~FLAG_HAS_FDS_KNOWN;
+        synchronized (internalParcel) {
+            info.writeString(key);
+            info.writeInt(internalParcel.dataPosition());
+            internalParcel.writeList(value);
+        }
     }
 
     /**
@@ -700,10 +678,24 @@ public final class ParcelableBundle extends BaseParcelableBundle implements Clon
      */
     public void putSparseParcelableArray(@Nullable String key,
                                          @Nullable SparseArray<? extends Parcelable> value) {
-        Log.i(TAG, "putSparseParcelableArray");
         unparcel();
-        mMap.put(key, value);
         mFlags &= ~FLAG_HAS_FDS_KNOWN;
+        synchronized (internalParcel) {
+            info.writeString(key);
+            info.writeInt(internalParcel.dataPosition());
+            if (value == null) {
+                internalParcel.writeInt(-1);
+                return;
+            }
+            int N = value.size();
+            internalParcel.writeInt(N);
+            int i=0;
+            while (i < N) {
+                internalParcel.writeInt(value.keyAt(i));
+                internalParcel.writeParcelable(value.valueAt(i), 0);
+                i++;
+            }
+        }
     }
 
     /**
@@ -822,10 +814,15 @@ public final class ParcelableBundle extends BaseParcelableBundle implements Clon
      * @param key a String, or null
      * @param value a ParcelableBundle object, or null
      */
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public void putParcelableBundle(@Nullable String key, @Nullable ParcelableBundle value) {
-        Log.i(TAG, "putParcelableBundle");
         unparcel();
-        mMap.put(key, value);
+        synchronized (internalParcel) {
+            info.writeString(key);
+            info.writeInt(internalParcel.dataPosition());
+            if (value != null) internalParcel.writeBundle(value.toBundle());
+            else internalParcel.writeBundle(null);
+        }
     }
 
     /**
@@ -844,7 +841,11 @@ public final class ParcelableBundle extends BaseParcelableBundle implements Clon
      */
     public void putBinder(@Nullable String key, @Nullable IBinder value) {
         unparcel();
-        mMap.put(key, value);
+        synchronized (internalParcel) {
+            info.writeString(key);
+            info.writeInt(internalParcel.dataPosition());
+            internalParcel.writeStrongBinder(value);
+        }
     }
 
     /**
@@ -860,7 +861,11 @@ public final class ParcelableBundle extends BaseParcelableBundle implements Clon
     @Deprecated
     public void putIBinder(@Nullable String key, @Nullable IBinder value) {
         unparcel();
-        mMap.put(key, value);
+        synchronized (internalParcel) {
+            info.writeString(key);
+            info.writeInt(internalParcel.dataPosition());
+            internalParcel.writeStrongBinder(value);
+        }
     }
 
     /**
@@ -1039,22 +1044,73 @@ public final class ParcelableBundle extends BaseParcelableBundle implements Clon
      * value is explicitly associated with the key.
      *
      * @param key a String, or null
-     * @return a ParcelableBundle value, or null
+     * @return a Parcelable value, or null
      */
     @Nullable
-    public ParcelableBundle getParcelableBundle(@Nullable String key) {
-        Log.i(TAG, "getParcelableBundle");
+    public <T extends Parcelable> T getParcelable(@Nullable String key) {
         unparcel();
-        Object o = mMap.get(key);
-        if (o == null) {
-            return null;
+        Object o;
+        synchronized (internalParcel) {
+            int oldInfoPosition = info.dataPosition();
+            info.setDataPosition(0);
+            while(info.dataAvail() != 0) {
+                String k = info.readString();
+                int p = info.readInt();
+                if (k.contentEquals(key)) {
+                    info.setDataPosition(oldInfoPosition);
+                    int oldInternalPosition = internalParcel.dataPosition();
+                    internalParcel.setDataPosition(p);
+                    o = internalParcel.readParcelable(mClassLoader);
+                    internalParcel.setDataPosition(oldInternalPosition);
+                    try {
+                        return (T) o;
+                    } catch (ClassCastException e) {
+                        typeWarning(key, o, "Parcelable", e);
+                        return null;
+                    }
+                }
+            }
+            info.setDataPosition(oldInfoPosition);
         }
-        try {
-            return (ParcelableBundle) o;
-        } catch (ClassCastException e) {
-            typeWarning(key, o, "ParcelableBundle", e);
-            return null;
+        return null;
+    }
+
+    /**
+     * Returns the value associated with the given key, or null if
+     * no mapping of the desired type exists for the given key or a null
+     * value is explicitly associated with the key.
+     *
+     * @param key a String, or null
+     * @return a ParcelableBundle value, or null
+     */
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    @Nullable
+    public ParcelableBundle getParcelableBundle(@Nullable String key) {
+        unparcel();
+        Object o;
+        synchronized (internalParcel) {
+            int oldInfoPosition = info.dataPosition();
+            info.setDataPosition(0);
+            while(info.dataAvail() != 0) {
+                String k = info.readString();
+                int p = info.readInt();
+                if (k.contentEquals(key)) {
+                    info.setDataPosition(oldInfoPosition);
+                    int oldInternalPosition = internalParcel.dataPosition();
+                    internalParcel.setDataPosition(p);
+                    o = new ParcelableBundle(internalParcel.readBundle(mClassLoader));
+                    internalParcel.setDataPosition(oldInternalPosition);
+                    try {
+                        return (ParcelableBundle) o;
+                    } catch (ClassCastException e) {
+                        typeWarning(key, o, "ParcelableBundle", e);
+                        return null;
+                    }
+                }
+            }
+            info.setDataPosition(oldInfoPosition);
         }
+        return null;
     }
 
     /**
@@ -1067,18 +1123,31 @@ public final class ParcelableBundle extends BaseParcelableBundle implements Clon
      */
     @Nullable
     public Parcelable[] getParcelableArray(@Nullable String key) {
-        Log.i(TAG, "getParcelableArray");
         unparcel();
-        Object o = mMap.get(key);
-        if (o == null) {
-            return null;
+        Object o;
+        synchronized (internalParcel) {
+            int oldInfoPosition = info.dataPosition();
+            info.setDataPosition(0);
+            while(info.dataAvail() != 0) {
+                String k = info.readString();
+                int p = info.readInt();
+                if (k.contentEquals(key)) {
+                    info.setDataPosition(oldInfoPosition);
+                    int oldInternalPosition = internalParcel.dataPosition();
+                    internalParcel.setDataPosition(p);
+                    o = internalParcel.readParcelableArray(mClassLoader);
+                    internalParcel.setDataPosition(oldInternalPosition);
+                    try {
+                        return (Parcelable[]) o;
+                    } catch (ClassCastException e) {
+                        typeWarning(key, o, "Parcelable[]", e);
+                        return null;
+                    }
+                }
+            }
+            info.setDataPosition(oldInfoPosition);
         }
-        try {
-            return (Parcelable[]) o;
-        } catch (ClassCastException e) {
-            typeWarning(key, o, "Parcelable[]", e);
-            return null;
-        }
+        return null;
     }
 
     /**
@@ -1091,18 +1160,26 @@ public final class ParcelableBundle extends BaseParcelableBundle implements Clon
      */
     @Nullable
     public <T extends Parcelable> ArrayList<T> getParcelableArrayList(@Nullable String key) {
-        Log.i(TAG, "getParcelableArrayList");
         unparcel();
-        Object o = mMap.get(key);
-        if (o == null) {
-            return null;
+        synchronized (internalParcel) {
+            int oldInfoPosition = info.dataPosition();
+            info.setDataPosition(0);
+            while(info.dataAvail() != 0) {
+                String k = info.readString();
+                int p = info.readInt();
+                if (k.contentEquals(key)) {
+                    info.setDataPosition(oldInfoPosition);
+                    int oldInternalPosition = internalParcel.dataPosition();
+                    internalParcel.setDataPosition(p);
+                    ArrayList<T> o = new ArrayList();
+                    internalParcel.readList(o, mClassLoader);
+                    internalParcel.setDataPosition(oldInternalPosition);
+                    return o;
+                }
+            }
+            info.setDataPosition(oldInfoPosition);
         }
-        try {
-            return (ArrayList<T>) o;
-        } catch (ClassCastException e) {
-            typeWarning(key, o, "ArrayList", e);
-            return null;
-        }
+        return null;
     }
 
     /**
@@ -1116,18 +1193,38 @@ public final class ParcelableBundle extends BaseParcelableBundle implements Clon
      */
     @Nullable
     public <T extends Parcelable> SparseArray<T> getSparseParcelableArray(@Nullable String key) {
-        Log.i(TAG, "getSparseParcelableArray");
         unparcel();
-        Object o = mMap.get(key);
-        if (o == null) {
-            return null;
+        synchronized (internalParcel) {
+            int oldInfoPosition = info.dataPosition();
+            info.setDataPosition(0);
+            while(info.dataAvail() != 0) {
+                String k = info.readString();
+                int p = info.readInt();
+                if (k.contentEquals(key)) {
+                    info.setDataPosition(oldInfoPosition);
+                    int oldInternalPosition = internalParcel.dataPosition();
+                    internalParcel.setDataPosition(p);
+                    int N = internalParcel.readInt();
+                    SparseArray<T> o = new SparseArray<>(N);
+                    while (N > 0) {
+                        o.append(
+                                internalParcel.readInt(),
+                                (T) internalParcel.readParcelable(mClassLoader)
+                        );
+                        N--;
+                    }
+                    internalParcel.setDataPosition(oldInternalPosition);
+                    try {
+                        return (SparseArray<T>) o;
+                    } catch (ClassCastException e) {
+                        typeWarning(key, o, "SparseArray", e);
+                        return null;
+                    }
+                }
+            }
+            info.setDataPosition(oldInfoPosition);
         }
-        try {
-            return (SparseArray<T>) o;
-        } catch (ClassCastException e) {
-            typeWarning(key, o, "SparseArray", e);
-            return null;
-        }
+        return null;
     }
 
     /**
@@ -1267,16 +1364,24 @@ public final class ParcelableBundle extends BaseParcelableBundle implements Clon
     @Nullable
     public IBinder getBinder(@Nullable String key) {
         unparcel();
-        Object o = mMap.get(key);
-        if (o == null) {
-            return null;
+        synchronized (internalParcel) {
+            int oldInfoPosition = info.dataPosition();
+            info.setDataPosition(0);
+            while(info.dataAvail() != 0) {
+                String k = info.readString();
+                int p = info.readInt();
+                if (k.contentEquals(key)) {
+                    info.setDataPosition(oldInfoPosition);
+                    int oldInternalPosition = internalParcel.dataPosition();
+                    internalParcel.setDataPosition(p);
+                    IBinder o = internalParcel.readStrongBinder();
+                    internalParcel.setDataPosition(oldInternalPosition);
+                    return o;
+                }
+            }
+            info.setDataPosition(oldInfoPosition);
         }
-        try {
-            return (IBinder) o;
-        } catch (ClassCastException e) {
-            typeWarning(key, o, "IBinder", e);
-            return null;
-        }
+        return null;
     }
 
     /**
@@ -1294,16 +1399,24 @@ public final class ParcelableBundle extends BaseParcelableBundle implements Clon
     @Nullable
     public IBinder getIBinder(@Nullable String key) {
         unparcel();
-        Object o = mMap.get(key);
-        if (o == null) {
-            return null;
+        synchronized (internalParcel) {
+            int oldInfoPosition = info.dataPosition();
+            info.setDataPosition(0);
+            while(info.dataAvail() != 0) {
+                String k = info.readString();
+                int p = info.readInt();
+                if (k.contentEquals(key)) {
+                    info.setDataPosition(oldInfoPosition);
+                    int oldInternalPosition = internalParcel.dataPosition();
+                    internalParcel.setDataPosition(p);
+                    IBinder o = internalParcel.readStrongBinder();
+                    internalParcel.setDataPosition(oldInternalPosition);
+                    return o;
+                }
+            }
+            info.setDataPosition(oldInfoPosition);
         }
-        try {
-            return (IBinder) o;
-        } catch (ClassCastException e) {
-            typeWarning(key, o, "IBinder", e);
-            return null;
-        }
+        return null;
     }
 
     public static final Parcelable.Creator<ParcelableBundle> CREATOR =
@@ -1311,7 +1424,6 @@ public final class ParcelableBundle extends BaseParcelableBundle implements Clon
                 @RequiresApi(api = Build.VERSION_CODES.O)
                 @Override
                 public ParcelableBundle createFromParcel(Parcel in) {
-                    Log.i(TAG, "createFromParcel");
                     return new ParcelableBundle(in.readBundle());
                 }
 
@@ -1394,7 +1506,6 @@ public final class ParcelableBundle extends BaseParcelableBundle implements Clon
      */
     @Override
     public void writeToParcel(Parcel parcel, int flags) {
-        Log.i(TAG, "writeToParcel");
         final boolean oldAllowFds = pushAllowFds(parcel, (mFlags & FLAG_ALLOW_FDS) != 0);
         try {
             super.writeToParcelInner(parcel, flags);
@@ -1471,5 +1582,93 @@ public final class ParcelableBundle extends BaseParcelableBundle implements Clon
             }
         }
         return 0;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    @Override
+    Bundle toBundle() {
+        synchronized (this) {
+            Bundle bundle = super.toBundle();
+            final Parcel parcelledData = getParcelledData(bundle);
+            parcelledData.appendFrom(info, 0, info.dataSize());
+            parcelledData.setDataPosition(0);
+            return bundle;
+        }
+    }
+
+    boolean recycleCalled;
+
+    /**
+     * Put a Parcel object back into the pool.  You must not touch
+     * the object after this call.
+     * <br>
+     * <br>
+     * this method is called on finalization.
+     * <br>
+     * subsequent calls have no effect
+     */
+    @Override
+    public void recycle() {
+        if (!recycleCalled) {
+            info.recycle();
+            recycleCalled = true;
+        }
+        super.recycle();
+    }
+
+    /**
+     * Called by the garbage collector on an object when garbage collection
+     * determines that there are no more references to the object.
+     * A subclass overrides the {@code finalize} method to dispose of
+     * system resources or to perform other cleanup.
+     * <p>
+     * The general contract of {@code finalize} is that it is invoked
+     * if and when the Java&trade; virtual
+     * machine has determined that there is no longer any
+     * means by which this object can be accessed by any thread that has
+     * not yet died, except as a result of an action taken by the
+     * finalization of some other object or class which is ready to be
+     * finalized. The {@code finalize} method may take any action, including
+     * making this object available again to other threads; the usual purpose
+     * of {@code finalize}, however, is to perform cleanup actions before
+     * the object is irrevocably discarded. For example, the finalize method
+     * for an object that represents an input/output connection might perform
+     * explicit I/O transactions to break the connection before the object is
+     * permanently discarded.
+     * <p>
+     * The {@code finalize} method of class {@code Object} performs no
+     * special action; it simply returns normally. Subclasses of
+     * {@code Object} may override this definition.
+     * <p>
+     * The Java programming language does not guarantee which thread will
+     * invoke the {@code finalize} method for any given object. It is
+     * guaranteed, however, that the thread that invokes finalize will not
+     * be holding any user-visible synchronization locks when finalize is
+     * invoked. If an uncaught exception is thrown by the finalize method,
+     * the exception is ignored and finalization of that object terminates.
+     * <p>
+     * After the {@code finalize} method has been invoked for an object, no
+     * further action is taken until the Java virtual machine has again
+     * determined that there is no longer any means by which this object can
+     * be accessed by any thread that has not yet died, including possible
+     * actions by other objects or classes which are ready to be finalized,
+     * at which point the object may be discarded.
+     * <p>
+     * The {@code finalize} method is never invoked more than once by a Java
+     * virtual machine for any given object.
+     * <p>
+     * Any exception thrown by the {@code finalize} method causes
+     * the finalization of this object to be halted, but is otherwise
+     * ignored.
+     *
+     * @throws Throwable the {@code Exception} raised by this method
+     * @jls 12.6 Finalization of Class Instances
+     * @see WeakReference
+     * @see PhantomReference
+     */
+    @Override
+    protected void finalize() throws Throwable {
+        if (!recycleCalled) info.recycle();
+        super.finalize();
     }
 }
