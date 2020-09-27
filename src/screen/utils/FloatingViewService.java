@@ -2,8 +2,9 @@ package screen.utils;
 
 import android.app.Service;
 import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.view.View;
@@ -13,6 +14,7 @@ import androidx.annotation.RequiresApi;
 
 import smallville7123.smartclick.R;
 import smallville7123.widgets.FloatingView;
+import smallville7123.widgets.ParcelableBundle;
 
 public class FloatingViewService extends Service {
 
@@ -24,6 +26,7 @@ public class FloatingViewService extends Service {
 
     private Handler mHandler = new Handler();
     private Thread mUiThread = Thread.currentThread();
+    private BitmapView bitmapView;
 
 
     // start of android.app.Activity.runOnUiThread
@@ -57,6 +60,32 @@ public class FloatingViewService extends Service {
 
     ImageView cache;
 
+    View mirrorStartButton;
+    String mirrorStartButtonKey = "a";
+    View mirrorStopButton;
+    String mirrorStopButtonKey = "b";
+    View recordStartButton;
+    String recordStartButtonKey = "c";
+    View recordStopButton;
+    String recordStopButtonKey = "d";
+    View analyseButton;
+    String analyseButtonKey = "e";
+    View closeButton;
+    String closeButtonKey = "f";
+
+    private final void saveViewColor(ParcelableBundle bundle, String key, View view) {
+        if (view != null) {
+            bundle.putParcelable(key, view.getBackgroundTintList());
+        }
+    }
+
+    private final void restoreViewColor(ParcelableBundle bundle, String key, View view) {
+        if (view != null) {
+            ColorStateList colorStateList = bundle.getParcelable(key);
+            if (colorStateList != null) view.setBackgroundTintList(colorStateList);
+        }
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onCreate() {
@@ -80,66 +109,119 @@ public class FloatingViewService extends Service {
         mFloatingView.setOnSetupExternalViews(new FloatingView.Callback<FloatingView>() {
             @Override
             public void run(FloatingView floatingView) {
-                SU.setBitmapView((BitmapView) floatingView.findViewById(R.id.renderedCaptureFloatingWidget));
+                mirrorStartButton = floatingView.findViewById(R.id.FloatMirrorStart);
+                mirrorStopButton = floatingView.findViewById(R.id.FloatMirrorStop);
+                recordStartButton = floatingView.findViewById(R.id.FloatRecordStart);
+                recordStopButton = floatingView.findViewById(R.id.FloatRecordEnd);
+                analyseButton = floatingView.findViewById(R.id.buttonAnalyse);
+                closeButton = floatingView.findViewById(R.id.buttonClose);
+                bitmapView = (BitmapView) floatingView.findViewById(R.id.renderedCaptureFloatingWidget);
+                SU.setBitmapView(bitmapView);
+
+                mirrorStartButton.setBackgroundTintList(ColorStateList.valueOf(Color.RED));
+                mirrorStopButton.setBackgroundTintList(ColorStateList.valueOf(Color.GREEN));
+                recordStartButton.setBackgroundTintList(ColorStateList.valueOf(Color.RED));
+                recordStopButton.setBackgroundTintList(ColorStateList.valueOf(Color.GREEN));
+                analyseButton.setBackgroundTintList(ColorStateList.valueOf(Color.RED));
+                closeButton.setBackgroundTintList(ColorStateList.valueOf(Color.RED));
+            }
+        });
+        
+        mFloatingView.setOnSaveState(new FloatingView.Callback<ParcelableBundle>() {
+            @Override
+            public void run(ParcelableBundle state) {
+                saveViewColor(state, mirrorStartButtonKey, mirrorStartButton);
+                saveViewColor(state, mirrorStopButtonKey, mirrorStopButton);
+                saveViewColor(state, recordStartButtonKey, recordStartButton);
+                saveViewColor(state, recordStopButtonKey, recordStopButton);
+                saveViewColor(state, analyseButtonKey, analyseButton);
+                saveViewColor(state, closeButtonKey, closeButton);
+                BitmapView.saveState(bitmapView, state, "bitmapView");
             }
         });
 
-        mFloatingView.setOnRestoreState(new FloatingView.Callback<Bundle>() {
+        mFloatingView.setOnRestoreState(new FloatingView.Callback<ParcelableBundle>() {
             @Override
-            public void run(Bundle argument) {
-                SU.variables.bitmapView.setImageBitmap(SU.variables.lastImageCompressed);
+            public void run(ParcelableBundle state) {
+                restoreViewColor(state, mirrorStartButtonKey, mirrorStartButton);
+                restoreViewColor(state, mirrorStopButtonKey, mirrorStopButton);
+                restoreViewColor(state, recordStartButtonKey, recordStartButton);
+                restoreViewColor(state, recordStopButtonKey, recordStopButton);
+                restoreViewColor(state, analyseButtonKey, analyseButton);
+                restoreViewColor(state, closeButtonKey, closeButton);
+                BitmapView.restoreState(bitmapView, state, "bitmapView");
             }
         });
 
         mFloatingView.setOnSetupExternalListeners(new FloatingView.Callback<FloatingView>() {
             @Override
             public void run(FloatingView floatingView) {
-                floatingView.findViewById(R.id.FloatMirrorStart).setOnClickListener(new View.OnClickListener() {
+                mirrorStartButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        mirrorStartButton.setBackgroundTintList(ColorStateList.valueOf(Color.GREEN));
+                        mirrorStopButton.setBackgroundTintList(ColorStateList.valueOf(Color.RED));
+                        recordStartButton.setBackgroundTintList(ColorStateList.valueOf(Color.RED));
+                        recordStopButton.setBackgroundTintList(ColorStateList.valueOf(Color.RED));
                         SU.variables.log.logWithClassName(FloatingViewService.this, "MIRROR START");
                         SU.startScreenMirror();
                     }
                 });
 
-                floatingView.findViewById(R.id.FloatMirrorStop).setOnClickListener(new View.OnClickListener() {
+                mirrorStopButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        mirrorStartButton.setBackgroundTintList(ColorStateList.valueOf(Color.RED));
+                        mirrorStopButton.setBackgroundTintList(ColorStateList.valueOf(Color.GREEN));
+                        recordStartButton.setBackgroundTintList(ColorStateList.valueOf(Color.RED));
+                        recordStopButton.setBackgroundTintList(ColorStateList.valueOf(Color.GREEN));
                         SU.variables.log.logWithClassName(FloatingViewService.this, "MIRROR STOP");
                         SU.stopScreenMirror();
                     }
                 });
 
-                floatingView.findViewById(R.id.FloatRecordStart).setOnClickListener(new View.OnClickListener() {
+                recordStartButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        mirrorStartButton.setBackgroundTintList(ColorStateList.valueOf(Color.RED));
+                        mirrorStopButton.setBackgroundTintList(ColorStateList.valueOf(Color.RED));
+                        recordStartButton.setBackgroundTintList(ColorStateList.valueOf(Color.GREEN));
+                        recordStopButton.setBackgroundTintList(ColorStateList.valueOf(Color.RED));
                         SU.variables.log.logWithClassName(FloatingViewService.this, "RECORD START");
                         SU.startScreenRecord();
                     }
                 });
 
-                floatingView.findViewById(R.id.FloatRecordEnd).setOnClickListener(new View.OnClickListener() {
+                recordStopButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        mirrorStartButton.setBackgroundTintList(ColorStateList.valueOf(Color.RED));
+                        mirrorStopButton.setBackgroundTintList(ColorStateList.valueOf(Color.GREEN));
+                        recordStartButton.setBackgroundTintList(ColorStateList.valueOf(Color.RED));
+                        recordStopButton.setBackgroundTintList(ColorStateList.valueOf(Color.GREEN));
                         SU.variables.log.logWithClassName(FloatingViewService.this, "RECORD STOP");
                         SU.stopScreenRecord();
                     }
                 });
 
-                floatingView.findViewById(R.id.buttonAnalyse).setOnClickListener(new View.OnClickListener() {
+                analyseButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         if (SU.variables.screenRecord) {
+                            mirrorStartButton.setBackgroundTintList(ColorStateList.valueOf(Color.RED));
+                            mirrorStopButton.setBackgroundTintList(ColorStateList.valueOf(Color.GREEN));
+                            recordStartButton.setBackgroundTintList(ColorStateList.valueOf(Color.RED));
+                            recordStopButton.setBackgroundTintList(ColorStateList.valueOf(Color.GREEN));
                             SU.variables.log.logWithClassName(FloatingViewService.this, "RECORD STOP");
                             SU.stopScreenRecord();
                         }
+                        analyseButton.setBackgroundTintList(ColorStateList.valueOf(Color.GREEN));
                         SU.variables.log.logWithClassName(FloatingViewService.this, "ANALYSE");
-                        analyzer.onStart();
+                        analyzer.onStart(analyseButton);
                     }
                 });
 
-                //adding click listener to close button
-                floatingView.findViewById(R.id.buttonClose).setOnClickListener(new View.OnClickListener() {
+                closeButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         SU.variables.log.logWithClassName(FloatingViewService.this, "killing FLOATING VIEW SERVICE");

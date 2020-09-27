@@ -15,7 +15,7 @@ public class ImageAnalysisRecyclerViewAdapter extends
         RecyclerView.Adapter<ImageAnalysisRecyclerViewAdapter.MyViewHolder> {
     private LogUtils log = new LogUtils(this);
 
-    BitmapView.RecordedFrames data = null;
+    RecordedFrames data = null;
 
     private ItemClickListener mClickListener;
 
@@ -38,7 +38,7 @@ public class ImageAnalysisRecyclerViewAdapter extends
         }
     }
 
-    public void setData(final BitmapView.RecordedFrames data) {
+    public void setData(final RecordedFrames data) {
         if (data != null) this.data = data.clone();
     }
 

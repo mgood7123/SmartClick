@@ -5,7 +5,6 @@ import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.graphics.PixelFormat;
 import android.os.Build;
-import android.os.Bundle;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -251,7 +250,8 @@ public class FloatingView extends FrameLayout {
 //        detachFromWindowManager();
 
         // cache external variables
-        Bundle state = new Bundle();
+        // create a bundle and pass it to onSaveState
+        ParcelableBundle state = new ParcelableBundle();
         onSaveState.run(state);
 
         // get all required view's
@@ -269,6 +269,8 @@ public class FloatingView extends FrameLayout {
 
         // restore external variables
         onRestoreState.run(state);
+
+        state.recycle();
         
         onSetupExternalListeners.run(this);
 
@@ -277,8 +279,6 @@ public class FloatingView extends FrameLayout {
             expand();
         else
             collapse();
-
-//        if (cacheattachedToWindowManager) attachToWindowManager(layout);
     }
 
     private void setCollapsedViewOnTouchListener() {
@@ -344,9 +344,9 @@ public class FloatingView extends FrameLayout {
         void run(T argument);
     }
 
-    private Callback<Bundle> stub = new Callback<Bundle>() {
+    private Callback<ParcelableBundle> stub = new Callback<ParcelableBundle>() {
         @Override
-        public void run(Bundle bundle) {
+        public void run(ParcelableBundle bundle) {
             // stub
         }
     };
@@ -358,9 +358,9 @@ public class FloatingView extends FrameLayout {
         }
     };
 
-    private Callback<Bundle> onSaveState = stub;
+    private Callback<ParcelableBundle> onSaveState = stub;
 
-    public void setOnSaveState(Callback<Bundle> runnable) {
+    public void setOnSaveState(Callback<ParcelableBundle> runnable) {
         onSaveState = runnable;
     }
 
@@ -370,9 +370,9 @@ public class FloatingView extends FrameLayout {
         onSetupExternalViews = runnable;
     }
 
-    private Callback<Bundle> onRestoreState = stub;
+    private Callback<ParcelableBundle> onRestoreState = stub;
 
-    public void setOnRestoreState(Callback<Bundle> runnable) {
+    public void setOnRestoreState(Callback<ParcelableBundle> runnable) {
         onRestoreState = runnable;
     }
 

@@ -1,6 +1,8 @@
 package screen.utils;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -12,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import smallville7123.smartclick.R;
 import smallville7123.widgets.FloatingView;
+import smallville7123.widgets.ParcelableBundle;
 
 public class ImageAnalysisFloatingView {
     private FloatingView mFloatingView;
@@ -32,6 +35,7 @@ public class ImageAnalysisFloatingView {
     View analyzerRootLayout;
 
     Variables variables;
+    private View sourceButton;
 
     public ImageAnalysisFloatingView(Variables variables) {
         this.variables = variables;
@@ -79,6 +83,7 @@ public class ImageAnalysisFloatingView {
                 floatingView.findViewById(R.id.analyzerFinishButton).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        if (sourceButton != null) sourceButton.setBackgroundTintList(ColorStateList.valueOf(Color.RED));
                         variables.log.logWithClassName(ImageAnalysisFloatingView.this, "hiding ImageAnalysisFloatingView");
                         analyzerRootLayout.setVisibility(View.GONE);
                         floatingView.collapse();
@@ -88,9 +93,9 @@ public class ImageAnalysisFloatingView {
             }
         });
 
-        mFloatingView.setOnSaveState(new FloatingView.Callback<Bundle>() {
+        mFloatingView.setOnSaveState(new FloatingView.Callback<ParcelableBundle>() {
             @Override
-            public void run(Bundle state) {
+            public void run(ParcelableBundle state) {
                 // cache all view visibilities so we can restore them
 
                 if (analyzerRootLayout != null)
@@ -130,9 +135,9 @@ public class ImageAnalysisFloatingView {
             }
         });
 
-        mFloatingView.setOnRestoreState(new FloatingView.Callback<Bundle>() {
+        mFloatingView.setOnRestoreState(new FloatingView.Callback<ParcelableBundle>() {
             @Override
-            public void run(Bundle state) {
+            public void run(ParcelableBundle state) {
                 // restore view states
                 int visibility = state.getInt(analyzerRootLayoutKey, View.VISIBLE);
                 analyzerRootLayout.setVisibility(visibility);
@@ -166,6 +171,12 @@ public class ImageAnalysisFloatingView {
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void onStart() {
+        onStart(null);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public void onStart(View analyseButton) {
+        if (analyseButton != null) sourceButton = analyseButton;
         variables.log.logMethodNameWithClassName(this);
         mFloatingView.expand();
 
