@@ -531,6 +531,30 @@ public final class ParcelableBundle extends BaseParcelableBundle implements Clon
         super.putCharSequence(key, value);
     }
 
+    // to be able to write, and read, on a per-key basis
+    // we need to encode the parcelable such that it is indexable
+
+    // this allows parcel's to be written to, and read from, in any order
+
+    // the best way to do this, would be to have two parcelables
+    // one to store keys and data offset's
+    // another to store the data itself
+    //
+    // the reason why we split the parcelable into two separate parcelables is for speed
+    // if none of the keys match then we will have only read the keys and the indexes
+    // and we would not have also read the data
+    // data is internal to BaseParcelableBundle
+    //
+    // NOTE: we cannot split the keys and offsets into separate parcels
+    //       because setDataPosition takes an absolute byte position similar to a file offset
+    //       and we have no idea what the internal structure of the data
+    //       also it would waste space
+    //       looks like
+    //       for example the data might be padded, it might contain markers,
+    //       it might contain extra information, who knows
+
+    Parcel info = Parcel.obtain();
+
     /**
      * Inserts a Parcelable value into the mapping of this ParcelableBundle, replacing
      * any existing value for the given key.  Either key or value may be null.
@@ -544,17 +568,14 @@ public final class ParcelableBundle extends BaseParcelableBundle implements Clon
         unparcel();
         mFlags &= ~FLAG_HAS_FDS_KNOWN;
         synchronized (internalParcel) {
-            internalParcel.setDataPosition(parcelWritePos);
-            // to be able to write, and read, on a per-key basis
-            // we need to encode the parcelable such that it is indexable
-
+            info.writeString(key);
+            // the current write position must be stored before actually doing the write
+            // as it marks where the start of the data being written is
+            info.writeInt(internalParcel.dataPosition());
             internalParcel.writeParcelable(value, mFlags);
-            parcelWritePos = internalParcel.dataPosition();
+
         }
     }
-
-    int parcelWritePos = 0;
-    int parcelReadPos = 0;
 
     /**
      * Returns the value associated with the given key, or null if
@@ -570,16 +591,40 @@ public final class ParcelableBundle extends BaseParcelableBundle implements Clon
         unparcel();
         Object o;
         synchronized (internalParcel) {
-            internalParcel.setDataPosition(parcelReadPos);
-            o = internalParcel.readParcelable(mClassLoader);
-            parcelReadPos = internalParcel.dataPosition();
+            // save the current write position of info and set to start
+            int oldInfoPosition = info.dataPosition();
+            info.setDataPosition(0);
+            // create an offset index and increment it
+            while(info.dataAvail() != 0) {
+                // search for a key
+                String k = info.readString();
+                int p = info.readInt();
+                if (k.contentEquals(key)) {
+                    // a key match was found
+                    // restore write position of info
+                    info.setDataPosition(oldInfoPosition);
+                    // save current write position of data
+                    int oldInternalPosition = internalParcel.dataPosition();
+                    // read offset as new read position of data
+                    internalParcel.setDataPosition(p);
+                    // read data
+                    o = internalParcel.readParcelable(mClassLoader);
+                    // reset write position of data
+                    internalParcel.setDataPosition(oldInternalPosition);
+                    try {
+                        return (T) o;
+                    } catch (ClassCastException e) {
+                        typeWarning(key, o, "Parcelable", e);
+                        return null;
+                    }
+                }
+            }
+            // no keys where matched, restore write position of keys
+            // this may not actually be needed since if dataAvail is 0 then it should be at the end
+            // however the actual position returned could have been be past this point
+            info.setDataPosition(oldInfoPosition);
         }
-        try {
-            return (T) o;
-        } catch (ClassCastException e) {
-            typeWarning(key, o, "Parcelable", e);
-            return null;
-        }
+        return null;
     }
 
     /**
