@@ -1675,29 +1675,9 @@ public final class ParcelableBundle extends BaseParcelableBundle implements Clon
         super.finalize();
     }
 
-    /**
-     * @param parcel the parcel to read from
-     * @param length
-     */
     @Override
-    void readParcels(Parcel parcel, int length) {
-        ParcelReader parcelReader = createParcelReader(parcel, length);
-        // our info parcel is written first, so read it first
-        if (parcelReader.hasNext()) {
-            info = parcelReader.read();
-        } else throw new IllegalStateException("Bad magic number for Bundle: 0x"
-                + Integer.toHexString(parcelReader.getMagic()));
-        super.readParcels(parcel, length);
-    }
-
-    /**
-     * @param parcel a parcel to write to
-     * @return true if the caller should return, false otherwise
-     */
-    @Override
-    boolean writeParcels(Parcel parcel) {
-        // our info parcel is read first, so write it first
-        writeParcel(parcel, info);
-        return super.writeParcels(parcel);
+    void queryParcel(ArrayList<Parcel> parcels) {
+        parcels.add(info);
+        super.queryParcel(parcels);
     }
 }

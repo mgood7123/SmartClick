@@ -24,6 +24,7 @@ import android.os.PersistableBundle;
 import android.util.Log;
 import android.util.SparseArray;
 
+import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -46,7 +47,7 @@ import java.util.Set;
  */
 public class BaseParcelableBundle {
     static final String TAG = "ParcelableBundle";
-    static final boolean DEBUG = false;
+    static final boolean DEBUG = true;
 
     // Keep them in sync with frameworks/native/libs/binder/PersistableBundle.cpp.
     static final int BUNDLE_MAGIC = 0x4C444E42; // 'B' 'N' 'D' 'L'
@@ -2198,9 +2199,20 @@ return hasData() && magicIsValid(getMagic())
         }
 
         /**
-         * advances the data position, does not restore after read
+         * reads into a new parcel, advancing the data position, does not restore after read
+         * <br>
+         * returns the new parcel for convenience, can return null
          */
         Parcel read() {
+            return read(null);
+        }
+
+        /**
+         * reads into the given parcel, advancing the data position, does not restore after read
+         * <br>
+         * returns the given parcel for convenience, can return null
+         */
+        Parcel read(Parcel parcelToReadInto) {
             // read magic
             readMagic();
             if (hasReadWriteHelper(parcel)) {
@@ -2217,14 +2229,20 @@ return hasData() && magicIsValid(getMagic())
             int offset = parcel.dataPosition();
             parcel.setDataPosition(MathUtils.addOrThrow(offset, length));
 
-            Parcel p = Parcel.obtain();
+            Parcel p;
+            if (parcelToReadInto == null) {
+                p = Parcel.obtain();
+            } else {
+                parcelToReadInto.setDataSize(0);
+                p = parcelToReadInto;
+            }
+
             p.setDataPosition(0);
             p.appendFrom(parcel, offset, length);
             adoptClassCookies(p, parcel);
             if (DEBUG) Log.d(TAG, "Retrieving "  + Integer.toHexString(System.identityHashCode(this))
                     + ": " + length + " bundle bytes starting at " + offset);
             p.setDataPosition(0);
-
             return p;
         }
 
@@ -2261,21 +2279,21 @@ return hasData() && magicIsValid(getMagic())
      * @param parcel the parcel to read from
      * @param length
      */
-    void readParcels(Parcel parcel, int length) {
+    private void readParcels(Parcel parcel, int length) {
+        if (DEBUG) Log.i(TAG, "readParcels: reading parcels");
         ParcelReader parcelReader = createParcelReader(parcel, length);
-        // expect two parcels
-        // the first parcel is an internal parcel
-        if (parcelReader.hasNext()) {
-            internalParcel = parcelReader.read();
-        } else throw new IllegalStateException("Bad magic number for Bundle: 0x"
-            + Integer.toHexString(parcelReader.getMagic()));
+        ArrayList<Parcel> parcels = new ArrayList(0);
+        queryParcel(parcels);
+        for (Parcel value : parcels) {
+            if (parcelReader.hasNext()) {
+                parcelReader.read(value);
+            } else throw new IllegalStateException("Bad magic number for Bundle: 0x"
+                    + Integer.toHexString(parcelReader.getMagic()));
+        }
 
-        // the second parcel is our mParcelledData
-        if (parcelReader.hasNext()) {
-            mParcelledData = parcelReader.read();
-            mParcelledByNative = parcelReader.isNativeBundle;
-        } else throw new IllegalStateException("Bad magic number for Bundle: 0x"
-                + Integer.toHexString(parcelReader.getMagic()));
+        // our mParcelledData is always read last
+
+        mParcelledByNative = parcelReader.isNativeBundle;
     }
 
     void renewParcels() {
@@ -2305,7 +2323,7 @@ return hasData() && magicIsValid(getMagic())
      * @param parcelFrom the parcel to write to parcel
      * @return true if parcel is not initially null, otherwise false
      */
-    boolean writeParcel(Parcel parcel, Parcel parcelFrom) {
+    final boolean writeParcel(Parcel parcel, Parcel parcelFrom) {
         if (parcelFrom != null) {
             if (parcelFrom == NoImagePreloadHolder.EMPTY_PARCEL) {
                 parcel.writeInt(0);
@@ -2322,12 +2340,40 @@ return hasData() && magicIsValid(getMagic())
     }
 
     /**
+     * query's parcels for reading and writing
+     * <br>
+     * parcels are written, and read, in the order they are added
+     * <br>
+     * Overriding methods should call super as follows
+     * <pre>
+&#064;Override
+void queryParcel(ArrayList<Parcel> parcels) {
+    parcels.add(info);
+    super.queryParcel(parcels);
+}
+     * </pre>
+     * @param parcels add your parcels to this array
+     */
+    @CallSuper
+    void queryParcel(ArrayList<Parcel> parcels) {
+        parcels.add(internalParcel);
+        parcels.add(mParcelledData);
+    }
+
+    /**
      * @param parcel a parcel to write to
      * @return true if the caller should return, false otherwise
      */
-    boolean writeParcels(Parcel parcel) {
-        writeParcel(parcel, internalParcel);
-        return writeParcel(parcel, mParcelledData);
+    private boolean writeParcels(Parcel parcel) {
+        if (DEBUG) Log.i(TAG, "writeParcels: writing parcels");
+        ArrayList<Parcel> parcels = new ArrayList(0);
+        queryParcel(parcels);
+        boolean written = true;
+        for (Parcel value : parcels) {
+            if (!writeParcel(parcel, value))
+                if (written) written = false;
+        }
+        return written;
     }
 
     /**
