@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package smallville7123.widgets;
+package smallville7123.annotations;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

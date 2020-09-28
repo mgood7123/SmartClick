@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
-package smallville7123.widgets;
+package smallville7123.parcelablebundle;
 
 import android.graphics.Rect;
+
+import smallville7123.annotations.UnsupportedAppUsage;
 
 /**
  * A class that contains utility methods related to numbers.

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package smallville7123.widgets;
+package smallville7123.annotations;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -27,19 +27,21 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.TYPE;
 
 /**
- * Indicates an API is part of a contract within the "core" set of libraries, some of which may
- * be mmodules.
+ * Indicates that an API is hidden by default, in a similar fashion to the
+ * <pre>@hide</pre> javadoc tag.
  *
- * <p>This annotation should only appear on either (a) classes that are hidden by <pre>@hide</pre>
- * javadoc tags or equivalent annotations, or (b) members of such classes. It is for use with
- * metalava's {@code --show-single-annotation} option and so must be applied at the class level and
- * applied again each member that is to be made part of the API. Members that are not part of the
- * API do not have to be explicitly hidden.
+ * <p>Note that, in order for this to work, metalava has to be invoked with
+ * the flag {@code --hide-annotation smallville7123.annotations.Hide}.
+ *
+ * <p>This annotation should be used in {@code .annotated.java} stub files which
+ * contain API inclusion information about {@code libcore/ojluni} classes, to
+ * avoid patching the source files with <pre>@hide</pre> javadoc tags. All
+ * build targets which consume these stub files should also apply the above
+ * metalava flag.
  *
  * @hide
  */
-@IntraCoreApi // @IntraCoreApi is itself part of the intra-core API
 @Target({TYPE, FIELD, METHOD, CONSTRUCTOR, ANNOTATION_TYPE})
 @Retention(RetentionPolicy.SOURCE)
-public @interface IntraCoreApi {
+public @interface Hide {
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package smallville7123.widgets;
+package smallville7123.annotations;
 
 import android.os.Build;
 
@@ -22,6 +22,8 @@ import androidx.annotation.RequiresApi;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+
+import smallville7123.parcelablebundle.VersionCodes;
 
 import static java.lang.annotation.ElementType.CONSTRUCTOR;
 import static java.lang.annotation.ElementType.FIELD;

@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package smallville7123.widgets;
+package smallville7123.parcelablebundle;
+
+import smallville7123.annotations.CorePlatformApi;
+import smallville7123.annotations.IntraCoreApi;
 
 /**
  * Version code constants for Android releases.

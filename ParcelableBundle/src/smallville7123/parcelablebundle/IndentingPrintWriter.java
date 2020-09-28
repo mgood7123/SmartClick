@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-package smallville7123.widgets;
+package smallville7123.parcelablebundle;
 
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.Arrays;
+
+import smallville7123.annotations.UnsupportedAppUsage;
 
 /**
  * Lightweight wrapper around {@link PrintWriter} that automatically indents

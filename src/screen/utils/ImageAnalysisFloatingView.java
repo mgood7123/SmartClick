@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import smallville7123.smartclick.R;
 import smallville7123.widgets.FloatingView;
-import smallville7123.widgets.ParcelableBundle;
+import smallville7123.parcelablebundle.ParcelableBundle;
 
 public class ImageAnalysisFloatingView {
     private FloatingView mFloatingView;

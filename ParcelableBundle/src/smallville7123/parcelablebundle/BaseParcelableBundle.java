@@ -1,4 +1,4 @@
-package smallville7123.widgets;
+package smallville7123.parcelablebundle;
 
 /*
  * Copyright (C) 2014 The Android Open Source Project

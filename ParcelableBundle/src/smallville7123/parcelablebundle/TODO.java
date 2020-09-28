@@ -1,4 +1,4 @@
-package smallville7123.widgets;
+package smallville7123.parcelablebundle;
 
 import org.jetbrains.annotations.Contract;
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package smallville7123.widgets;
+package smallville7123.parcelablebundle;
 
 import android.util.Log;
 

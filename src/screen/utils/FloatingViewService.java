@@ -14,7 +14,7 @@ import androidx.annotation.RequiresApi;
 
 import smallville7123.smartclick.R;
 import smallville7123.widgets.FloatingView;
-import smallville7123.widgets.ParcelableBundle;
+import smallville7123.parcelablebundle.ParcelableBundle;
 
 public class FloatingViewService extends Service {
 

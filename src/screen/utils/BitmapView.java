@@ -15,7 +15,7 @@ import androidx.annotation.NonNull;
 import java.nio.ByteBuffer;
 import java.util.Vector;
 
-import smallville7123.widgets.ParcelableBundle;
+import smallville7123.parcelablebundle.ParcelableBundle;
 
 /**
  * a special variant of ImageView designed specifically for bitmaps

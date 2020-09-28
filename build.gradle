@@ -27,9 +27,9 @@ android {
     sourceSets {
         main {
             manifest.srcFile 'AndroidManifest.xml'
-            java.srcDirs = ['src', 'floatingView/src']
-            resources.srcDirs = ['src', 'floatingView/src']
-            res.srcDirs = ['res', 'floatingView/res']
+            java.srcDirs = ['src', 'FloatingView/src', 'ParcelableBundle/src']
+            resources.srcDirs = ['src', 'FloatingView/src']
+            res.srcDirs = ['res', 'FloatingView/res']
             aidl.srcDirs = ['src']
             renderscript.srcDirs = ['src']
             assets.srcDirs = ['assets']
@@ -44,7 +44,6 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'com.intuit.sdp:sdp-android:1.0.6'
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.1'
     implementation 'junit:junit:4.13'
@@ -56,4 +55,5 @@ dependencies {
     testImplementation 'junit:junit:4.13'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+    testImplementation "org.robolectric:robolectric:4.4"
 }

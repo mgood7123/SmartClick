@@ -17,6 +17,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
+import smallville7123.parcelablebundle.ParcelableBundle;
 import smallville7123.smartclick.R;
 
 import static android.content.Context.WINDOW_SERVICE;
