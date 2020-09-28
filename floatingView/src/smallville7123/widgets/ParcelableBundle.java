@@ -33,6 +33,8 @@ import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
 
 import java.io.Serializable;
+import java.lang.ref.PhantomReference;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -1508,7 +1510,7 @@ public final class ParcelableBundle extends BaseParcelableBundle implements Clon
     public void writeToParcel(Parcel parcel, int flags) {
         final boolean oldAllowFds = pushAllowFds(parcel, (mFlags & FLAG_ALLOW_FDS) != 0);
         try {
-            super.writeToParcelInner(parcel, flags);
+            writeToParcelInner(parcel, flags);
         } finally {
             restoreAllowFds(parcel, oldAllowFds);
         }
@@ -1520,7 +1522,7 @@ public final class ParcelableBundle extends BaseParcelableBundle implements Clon
      * @param parcel The parcel to overwrite this parcelableBundle from.
      */
     public void readFromParcel(Parcel parcel) {
-        super.readFromParcelInner(parcel);
+        readFromParcelInner(parcel);
         mFlags = FLAG_ALLOW_FDS;
         maybePrefillHasFds();
     }
@@ -1588,6 +1590,7 @@ public final class ParcelableBundle extends BaseParcelableBundle implements Clon
     @Override
     Bundle toBundle() {
         synchronized (this) {
+            TODO.TODO(); // verify that this is appending in an expected order
             Bundle bundle = super.toBundle();
             final Parcel parcelledData = getParcelledData(bundle);
             parcelledData.appendFrom(info, 0, info.dataSize());
@@ -1670,5 +1673,31 @@ public final class ParcelableBundle extends BaseParcelableBundle implements Clon
     protected void finalize() throws Throwable {
         if (!recycleCalled) info.recycle();
         super.finalize();
+    }
+
+    /**
+     * @param parcel the parcel to read from
+     * @param length
+     */
+    @Override
+    void readParcels(Parcel parcel, int length) {
+        ParcelReader parcelReader = createParcelReader(parcel, length);
+        // our info parcel is written first, so read it first
+        if (parcelReader.hasNext()) {
+            info = parcelReader.read();
+        } else throw new IllegalStateException("Bad magic number for Bundle: 0x"
+                + Integer.toHexString(parcelReader.getMagic()));
+        super.readParcels(parcel, length);
+    }
+
+    /**
+     * @param parcel a parcel to write to
+     * @return true if the caller should return, false otherwise
+     */
+    @Override
+    boolean writeParcels(Parcel parcel) {
+        // our info parcel is read first, so write it first
+        writeParcel(parcel, info);
+        return super.writeParcels(parcel);
     }
 }

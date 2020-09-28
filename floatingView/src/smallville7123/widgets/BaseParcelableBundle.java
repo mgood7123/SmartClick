@@ -427,11 +427,17 @@ public class BaseParcelableBundle {
             if (parcelledByNative) {
                 // If it was parcelled by native code, then the array map keys aren't sorted
                 // by their hash codes, so use the safe (slow) one.
-                readArrayMapSafelyInternal(parcelledData, map.toAndroidDotUtilDotArrayMap(), count, mClassLoader);
+                android.util.ArrayMap<String, Object> x = map.toAndroidDotUtilDotArrayMap();
+                readArrayMapSafelyInternal(parcelledData, x, count, mClassLoader);
+                map.clear();
+                map.putAll(x);
             } else {
                 // If parcelled by Java, we know the contents are sorted properly,
                 // so we can use ArrayMap.append().
-                readArrayMapInternal(parcelledData, map.toAndroidDotUtilDotArrayMap(), count, mClassLoader);
+                android.util.ArrayMap<String, Object> x = map.toAndroidDotUtilDotArrayMap();
+                readArrayMapInternal(parcelledData, x, count, mClassLoader);
+                map.clear();
+                map.putAll(x);
             }
         } catch (BadParcelableException e) {
             if (sShouldDefuse) {
@@ -475,10 +481,12 @@ public class BaseParcelableBundle {
         return p == NoImagePreloadHolder.EMPTY_PARCEL;
     }
 
-    private static void recycleParcel(Parcel p) {
+    private static boolean recycleParcel(Parcel p) {
         if (p != null && !isEmptyParcel(p)) {
             p.recycle();
+            return true;
         }
+        return false;
     }
 
     /** @hide */
@@ -548,10 +556,10 @@ public class BaseParcelableBundle {
             return false;
         } else if (isParcelled()) {
             {
+//            return mParcelledData.compareData(other.mParcelledData) == 0;
                 TODO.TODO();
                 return false; // not reached
             }
-//            return mParcelledData.compareData(other.mParcelledData) == 0;
         } else {
             return mMap.equals(other.mMap);
         }
@@ -2133,6 +2141,207 @@ public class BaseParcelableBundle {
         }
     }
 
+    class ParcelReader {
+        Parcel parcel;
+        int length;
+        int magic;
+        boolean isJavaBundle;
+        boolean isNativeBundle;
+
+        int dataPosition = 0;
+
+        public ParcelReader(Parcel parcel, int length) {
+            this.parcel = parcel;
+            this.length = length;
+        }
+
+        void saveDataPosition() {
+            dataPosition = parcel.dataPosition();
+        }
+
+        void restoreDataPosition() {
+            parcel.setDataPosition(dataPosition);
+        }
+
+        boolean magicIsValid(int magic) {
+            return isJavaBundle || isNativeBundle;
+        }
+
+        /**
+         * returns true if the magic is valid, false otherwise
+         * <br>
+         * equivalent to
+         * <pre>
+return hasData() && magicIsValid(getMagic())
+// the above return statement is functionally equivalent to:
+//
+// if (hasData() == false) return false;
+// int magic = getMagic();
+// return magicIsValid(magic);
+//
+         * </pre>
+         * <br>
+         * advances the data position, restores after read
+         */
+        public boolean hasNext() {
+            return hasData() && magicIsValid(getMagic());
+        }
+
+        /**
+         * advances the data position, restores after read
+         */
+        Parcel get() {
+            saveDataPosition();
+            Parcel x = read();
+            restoreDataPosition();
+            return x;
+        }
+
+        /**
+         * advances the data position, does not restore after read
+         */
+        Parcel read() {
+            // read magic
+            readMagic();
+            if (hasReadWriteHelper(parcel)) {
+                // If the parcel has a read-write helper, then we can't lazily-unparcel it, so just
+                // unparcel right away.
+                synchronized (this) {
+                    TODO.TODO(); // allow this to work with the parcel reader
+                    initializeFromParcelLocked(parcel, /*recycleParcel=*/ false, isNativeBundle);
+                }
+                return null;
+            }
+
+            // Advance within this Parcel
+            int offset = parcel.dataPosition();
+            parcel.setDataPosition(MathUtils.addOrThrow(offset, length));
+
+            Parcel p = Parcel.obtain();
+            p.setDataPosition(0);
+            p.appendFrom(parcel, offset, length);
+            adoptClassCookies(p, parcel);
+            if (DEBUG) Log.d(TAG, "Retrieving "  + Integer.toHexString(System.identityHashCode(this))
+                    + ": " + length + " bundle bytes starting at " + offset);
+            p.setDataPosition(0);
+
+            return p;
+        }
+
+        public boolean hasData() {
+            return parcel.dataAvail() != 0;
+        }
+
+        /**
+         * advances the data position, restores after read
+         */
+        public int getMagic() {
+            saveDataPosition();
+            readMagic();
+            restoreDataPosition();
+            return magic;
+        }
+
+        /**
+         * advances the data position, does not restore after read
+         */
+        public int readMagic() {
+            magic = parcel.readInt();
+            isJavaBundle = magic == BUNDLE_MAGIC;
+            isNativeBundle = magic == BUNDLE_MAGIC_NATIVE;
+            return magic;
+        }
+    }
+
+    ParcelReader createParcelReader(Parcel parcel, int length) {
+        return new ParcelReader(parcel, length);
+    }
+
+    /**
+     * @param parcel the parcel to read from
+     * @param length
+     */
+    void readParcels(Parcel parcel, int length) {
+        ParcelReader parcelReader = createParcelReader(parcel, length);
+        // expect two parcels
+        // the first parcel is an internal parcel
+        if (parcelReader.hasNext()) {
+            internalParcel = parcelReader.read();
+        } else throw new IllegalStateException("Bad magic number for Bundle: 0x"
+            + Integer.toHexString(parcelReader.getMagic()));
+
+        // the second parcel is our mParcelledData
+        if (parcelReader.hasNext()) {
+            mParcelledData = parcelReader.read();
+            mParcelledByNative = parcelReader.isNativeBundle;
+        } else throw new IllegalStateException("Bad magic number for Bundle: 0x"
+                + Integer.toHexString(parcelReader.getMagic()));
+    }
+
+    void renewParcels() {
+        internalParcel = NoImagePreloadHolder.EMPTY_PARCEL;
+        mParcelledData = NoImagePreloadHolder.EMPTY_PARCEL;
+    }
+
+    private void readFromParcelInner(Parcel parcel, int length) {
+        // TODO: write and read multiple parcels
+        TODO.TODO();
+        if (length < 0) {
+            throw new RuntimeException("Bad length in parcel: " + length);
+
+        } else if (length == 0) {
+            // Empty Bundle or end of data.
+            renewParcels();
+            mParcelledByNative = false;
+            return;
+        }
+
+        readParcels(parcel, length);
+    }
+
+    /**
+     * appends parcelFrom to parcel
+     * @param parcel a parcel
+     * @param parcelFrom the parcel to write to parcel
+     * @return true if parcel is not initially null, otherwise false
+     */
+    boolean writeParcel(Parcel parcel, Parcel parcelFrom) {
+        if (parcelFrom != null) {
+            if (parcelFrom == NoImagePreloadHolder.EMPTY_PARCEL) {
+                parcel.writeInt(0);
+            } else {
+                int length_ = parcelFrom.dataSize();
+                parcel.writeInt(length_);
+                // TODO: mParcelledByNative for other parcels
+                parcel.writeInt(mParcelledByNative ? BUNDLE_MAGIC_NATIVE : BUNDLE_MAGIC);
+                parcel.appendFrom(parcelFrom, 0, length_);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @param parcel a parcel to write to
+     * @return true if the caller should return, false otherwise
+     */
+    boolean writeParcels(Parcel parcel) {
+        writeParcel(parcel, internalParcel);
+        return writeParcel(parcel, mParcelledData);
+    }
+
+    /**
+     * Reads the Parcel contents into this Bundle, typically in order for
+     * it to be passed through an IBinder connection.
+     * @param parcel The parcel to overwrite this bundle from.
+     */
+    void readFromParcelInner(Parcel parcel) {
+        // Keep implementation in sync with readFromParcel() in
+        // frameworks/native/libs/binder/PersistableBundle.cpp.
+        int length = parcel.readInt();
+        readFromParcelInner(parcel, length);
+    }
+
     /**
      * Writes the Bundle contents to a Parcel, typically in order for
      * it to be passed through an IBinder connection.
@@ -2151,29 +2360,7 @@ public class BaseParcelableBundle {
         synchronized (this) {
             // unparcel() can race with this method and cause the parcel to recycle
             // at the wrong time. So synchronize access the mParcelledData's content.
-            // TODO: write and read multiple parcels
-            TODO.TODO();
-            if (internalParcel != null) {
-                if (internalParcel == NoImagePreloadHolder.EMPTY_PARCEL) {
-                    parcel.writeInt(0);
-                } else {
-                    int length_ = internalParcel.dataSize();
-                    parcel.writeInt(length_);
-                    parcel.writeInt(mParcelledByNative ? BUNDLE_MAGIC_NATIVE : BUNDLE_MAGIC);
-                    parcel.appendFrom(internalParcel, 0, length_);
-                }
-            }
-            if (mParcelledData != null) {
-                if (mParcelledData == NoImagePreloadHolder.EMPTY_PARCEL) {
-                    parcel.writeInt(0);
-                } else {
-                    int length = mParcelledData.dataSize();
-                    parcel.writeInt(length);
-                    parcel.writeInt(mParcelledByNative ? BUNDLE_MAGIC_NATIVE : BUNDLE_MAGIC);
-                    parcel.appendFrom(mParcelledData, 0, length);
-                }
-                return;
-            }
+            if (writeParcels(parcel)) return;
             map = mMap;
         }
 
@@ -2195,18 +2382,6 @@ public class BaseParcelableBundle {
         int length = endPos - startPos;
         parcel.writeInt(length);
         parcel.setDataPosition(endPos);
-    }
-
-    /**
-     * Reads the Parcel contents into this Bundle, typically in order for
-     * it to be passed through an IBinder connection.
-     * @param parcel The parcel to overwrite this bundle from.
-     */
-    void readFromParcelInner(Parcel parcel) {
-        // Keep implementation in sync with readFromParcel() in
-        // frameworks/native/libs/binder/PersistableBundle.cpp.
-        int length = parcel.readInt();
-        readFromParcelInner(parcel, length);
     }
 
     private static Field sGetParcelClassCookiesField;
@@ -2289,54 +2464,6 @@ public class BaseParcelableBundle {
                 sGetParcelClassCookiesField = null;
             }
         }
-    }
-
-    private void readFromParcelInner(Parcel parcel, int length) {
-        // TODO: write and read multiple parcels
-        TODO.TODO();
-        if (length < 0) {
-            throw new RuntimeException("Bad length in parcel: " + length);
-
-        } else if (length == 0) {
-            // Empty Bundle or end of data.
-            if (!recycleCalled) internalParcel.recycle();
-            internalParcel = Parcel.obtain();
-            mParcelledData = NoImagePreloadHolder.EMPTY_PARCEL;
-            mParcelledByNative = false;
-            return;
-        }
-
-        final int magic = parcel.readInt();
-        final boolean isJavaBundle = magic == BUNDLE_MAGIC;
-        final boolean isNativeBundle = magic == BUNDLE_MAGIC_NATIVE;
-        if (!isJavaBundle && !isNativeBundle) {
-            throw new IllegalStateException("Bad magic number for Bundle: 0x"
-                    + Integer.toHexString(magic));
-        }
-
-        if (hasReadWriteHelper(parcel)) {
-            // If the parcel has a read-write helper, then we can't lazily-unparcel it, so just
-            // unparcel right away.
-            synchronized (this) {
-                initializeFromParcelLocked(parcel, /*recycleParcel=*/ false, isNativeBundle);
-            }
-            return;
-        }
-
-        // Advance within this Parcel
-        int offset = parcel.dataPosition();
-        parcel.setDataPosition(MathUtils.addOrThrow(offset, length));
-
-        Parcel p = Parcel.obtain();
-        p.setDataPosition(0);
-        p.appendFrom(parcel, offset, length);
-        adoptClassCookies(p, parcel);
-        if (DEBUG) Log.d(TAG, "Retrieving "  + Integer.toHexString(System.identityHashCode(this))
-                + ": " + length + " bundle bytes starting at " + offset);
-        p.setDataPosition(0);
-
-        mParcelledData = p;
-        mParcelledByNative = isNativeBundle;
     }
 
     /** {@hide} */
