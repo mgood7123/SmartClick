@@ -1,0 +1,4 @@
+include ':FloatingView'
+include ':LibParcelableBundle'
+include ':app'
+rootProject.name = "SmartClick"

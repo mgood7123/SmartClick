@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<smallville7123.floatingview.FloatingView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:expanded="false"
+    app:fullscreenWhenExpanded="true"
+    app:collapsedLayout="@layout/layout_floating_image_analysis_widget_collapsed"
+    app:expandedLayout="@layout/layout_floating_image_analysis_widget_expanded"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:id="@+id/analyzerRootLayout"
+    android:tag="Floating View Image Analysis" />

@@ -2,8 +2,10 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/AndroidStudioProjects-MediaProjectionDemo.iml" filepath="$PROJECT_DIR$/.idea/modules/AndroidStudioProjects-MediaProjectionDemo.iml" group="MediaProjectionDemo" />
-      <module fileurl="file://$PROJECT_DIR$/MediaProjectionDemo.iml" filepath="$PROJECT_DIR$/MediaProjectionDemo.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/FloatingView/FloatingView.iml" filepath="$PROJECT_DIR$/.idea/modules/FloatingView/FloatingView.iml" group="SmartClick/FloatingView" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/LibParcelableBundle/LibParcelableBundle.iml" filepath="$PROJECT_DIR$/.idea/modules/LibParcelableBundle/LibParcelableBundle.iml" group="SmartClick/LibParcelableBundle" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/SmartClick.iml" filepath="$PROJECT_DIR$/.idea/modules/SmartClick.iml" group="SmartClick" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/app.iml" group="SmartClick/app" />
     </modules>
   </component>
 </project>
