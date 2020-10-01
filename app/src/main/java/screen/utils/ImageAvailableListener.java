@@ -27,6 +27,7 @@ public class ImageAvailableListener implements ImageReader.OnImageAvailableListe
             if (!single) {
                 Image image = reader.acquireLatestImage();
                 if (image != null) {
+                    single = true;
                     Image.Plane[] planes = image.getPlanes();
                     final ByteBuffer buffer = planes[0].getBuffer();
                     int pixelStride = planes[0].getPixelStride();

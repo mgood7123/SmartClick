@@ -355,10 +355,10 @@ Row        Layout
     }
 
 
-    private int computeScaledWidth(Bitmap bm, Canvas canvas, ScaleMode.FlagData flagData) {
+    private int computeScaledWidth(Bitmap bm, ScaleMode.FlagData flagData) {
         int computedWidth = bm.getWidth();
         if (flagData.hasWidthFlag) {
-            int viewWidth = canvas.getWidth();
+            int viewWidth = getMeasuredWidth();
             return
                     flagData.hasScaleWidthIfLargerThanViewWidthFlag ?
                             (
@@ -379,10 +379,10 @@ Row        Layout
         return computedWidth;
     }
 
-    private int computeScaledHeight(Bitmap bm, Canvas canvas, ScaleMode.FlagData flagData) {
+    private int computeScaledHeight(Bitmap bm, ScaleMode.FlagData flagData) {
         int computedHeight = bm.getHeight();
         if (flagData.hasHeightFlag) {
-            int viewHeight = canvas.getHeight();
+            int viewHeight = getMeasuredHeight();
             return
                     flagData.hasScaleHeightIfLargerThanViewHeightFlag ?
                             (
@@ -418,11 +418,11 @@ Row        Layout
         }
     }
 
-    private Pair scale(Bitmap bm, Canvas canvas, boolean recycleAfterUse, boolean shouldScale, ScaleMode.FlagData flagData) {
+    private Pair scale(Bitmap bm, boolean recycleAfterUse, boolean shouldScale, ScaleMode.FlagData flagData) {
         if (bm == null) return null;
         if (shouldScale && flagData.hasFlags) {
-            int width = computeScaledWidth(bm, canvas, flagData);
-            int height = computeScaledHeight(bm, canvas, flagData);
+            int width = computeScaledWidth(bm, flagData);
+            int height = computeScaledHeight(bm, flagData);
             Bitmap scaled = Bitmap.createScaledBitmap(bm, width, height, false);
             if (scaled != null) {
                 // recycle if allowed
@@ -585,6 +585,9 @@ Row        Layout
             state.scaleMode = scaleMode;
             if (getWindowVisibility() != GONE) {
                 Log.i(TAG, "setImageBitmap: drawing because view is not gone");
+                Log.i(TAG, "setImageBitmap: measuring");
+                measure(MeasureSpec.AT_MOST, MeasureSpec.AT_MOST);
+                Log.i(TAG, "setImageBitmap: measured");
                 invalidate();
             } else {
                 Log.i(TAG, "setImageBitmap: not drawing because view is gone");
@@ -636,7 +639,7 @@ Row        Layout
             Pair scaled = null;
             if (state.isAllowedToScale) {
                 final ScaleMode.FlagData flagData = ScaleMode.analyseFlags(state.scaleMode);
-                scaled = scale(state.bm, canvas, state.recycleAfterUse, true, flagData);
+                scaled = scale(state.bm, state.recycleAfterUse, true, flagData);
                 if (scaled.second) state.bm = scaled.first;
                 state.cacheDecompressed = scaled.first;
             } else {
@@ -644,8 +647,8 @@ Row        Layout
             }
             state.src.right = state.cacheDecompressed.getWidth();
             state.src.bottom = state.cacheDecompressed.getHeight();
-            state.dst.right = canvas.getWidth();
-            state.dst.bottom = canvas.getHeight();
+            state.dst.right = getMeasuredWidth();
+            state.dst.bottom = getMeasuredHeight();
             canvas.drawBitmap(state.cacheDecompressed, state.src, state.dst, null);
         }
     }
@@ -654,7 +657,7 @@ Row        Layout
     int mDrawableHeight;
 
     @UnsupportedAppUsage
-    private boolean mAdjustViewBounds = false;
+    private boolean mAdjustViewBounds = true;
 
     /**
      * True when ImageView is adjusting its bounds
@@ -708,66 +711,62 @@ Row        Layout
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        int w;
-        int h;
-
-        // Desired aspect ratio of the view's contents (not including padding)
-        float desiredAspect = 0.0f;
-
-        // We are allowed to change the view's width
-        boolean resizeWidth = false;
-
-        // We are allowed to change the view's height
-        boolean resizeHeight = false;
-
-        final int widthSpecMode = MeasureSpec.getMode(widthMeasureSpec);
-        final int heightSpecMode = MeasureSpec.getMode(heightMeasureSpec);
+        Log.i(TAG, "onMeasure: called");
+        int widthSize = 0;
+        int heightSize = 0;
+        mPaddingLeft = getPaddingLeft();
+        mPaddingRight = getPaddingRight();
+        mPaddingTop = getPaddingTop();
+        mPaddingBottom = getPaddingBottom();
 
         if (state.bm == null) {
-            // If no drawable, its intrinsic size is 0.
-            mDrawableWidth = -1;
-            mDrawableHeight = -1;
-            w = h = 0;
+            Log.i(TAG, "onMeasure: bitmap is null");
+            widthSize = resolveSizeAndState(0, widthMeasureSpec, 0);
+            heightSize = resolveSizeAndState(0, heightMeasureSpec, 0);
+            mMaxWidth = widthSize;
+            mMaxHeight = heightSize;
+            Log.i(TAG, "onMeasure: setting to " + widthSize + "x" + heightSize);
+            setMeasuredDimension(widthSize, heightSize);
         } else {
-            w = state.bm.getWidth();
-            h = state.bm.getHeight();
+            Log.i(TAG, "onMeasure: bitmap is not null");
+            int w = state.bm.getWidth();
+            int h = state.bm.getHeight();
             if (w <= 0) w = 1;
             if (h <= 0) h = 1;
+            Log.i(TAG, "onMeasure: bitmap  size: " + w + "x" + h);
+            Log.i(TAG, "onMeasure: maximum size: " + mMaxWidth + "x" + mMaxHeight);
 
-            // We are supposed to adjust view bounds to match the aspect
-            // ratio of our drawable. See if that is possible.
-            if (mAdjustViewBounds) {
-                resizeWidth = widthSpecMode != MeasureSpec.EXACTLY;
-                resizeHeight = heightSpecMode != MeasureSpec.EXACTLY;
-
-                desiredAspect = (float) w / (float) h;
-            }
-        }
-
-        final int pleft = mPaddingLeft;
-        final int pright = mPaddingRight;
-        final int ptop = mPaddingTop;
-        final int pbottom = mPaddingBottom;
-
-        int widthSize;
-        int heightSize;
-
-        if (resizeWidth || resizeHeight) {
-            /* If we get here, it means we want to resize to match the
-                drawables aspect ratio, and we have the freedom to change at
-                least one dimension.
-            */
+            final int pleft = mPaddingLeft;
+            final int pright = mPaddingRight;
+            final int ptop = mPaddingTop;
+            final int pbottom = mPaddingBottom;
 
             // Get the max possible width given our constraints
             widthSize = resolveAdjustedSize(w + pleft + pright, mMaxWidth, widthMeasureSpec);
+            Log.i(TAG, "onMeasure: widthSize: " + widthSize);
 
             // Get the max possible height given our constraints
             heightSize = resolveAdjustedSize(h + ptop + pbottom, mMaxHeight, heightMeasureSpec);
+            Log.i(TAG, "onMeasure: heightSize: " + heightSize);
+
+            // Desired aspect ratio of the view's contents (not including padding)
+            float desiredAspect = 0.0f;
+
+            // We are allowed to change the view's width
+            boolean resizeWidth = true;
+
+            // We are allowed to change the view's height
+            boolean resizeHeight = true;;
+
+            // We are supposed to adjust view bounds to match the aspect
+            // ratio of our drawable. See if that is possible.
+            if (mAdjustViewBounds) desiredAspect = (float) w / (float) h;
 
             if (desiredAspect != 0.0f) {
                 // See what our actual aspect ratio is
-                final float actualAspect = (float)(widthSize - pleft - pright) /
+                final float actualAspect = (float) (widthSize - pleft - pright) /
                         (heightSize - ptop - pbottom);
+                Log.i(TAG, "onMeasure: actualAspect: " + actualAspect);
 
                 if (Math.abs(actualAspect - desiredAspect) > 0.0000001) {
 
@@ -775,53 +774,65 @@ Row        Layout
 
                     // Try adjusting width to be proportional to height
                     if (resizeWidth) {
-                        int newWidth = (int)(desiredAspect * (heightSize - ptop - pbottom)) +
+                        int newWidth = (int) (desiredAspect * (heightSize - ptop - pbottom)) +
                                 pleft + pright;
+                        Log.i(TAG, "onMeasure: newWidth: " + newWidth);
 
                         // Allow the width to outgrow its original estimate if height is fixed.
                         if (!resizeHeight && !(targetSdkVersion <= Build.VERSION_CODES.JELLY_BEAN_MR1)) {
                             widthSize = resolveAdjustedSize(newWidth, mMaxWidth, widthMeasureSpec);
+                            Log.i(TAG, "onMeasure: widthSize: " + widthSize);
                         }
 
                         if (newWidth <= widthSize) {
                             widthSize = newWidth;
+                            Log.i(TAG, "onMeasure: widthSize: " + widthSize);
                             done = true;
+                        } else {
+                            Log.i(
+                                    TAG,
+                                    "onMeasure: newWidth ("
+                                            + newWidth
+                                            + ") cannot be greater then widthSize ("
+                                            + widthSize
+                                            + ")"
+                            );
                         }
                     }
 
                     // Try adjusting height to be proportional to width
                     if (!done && resizeHeight) {
-                        int newHeight = (int)((widthSize - pleft - pright) / desiredAspect) +
+                        int newHeight = (int) ((widthSize - pleft - pright) / desiredAspect) +
                                 ptop + pbottom;
+                        Log.i(TAG, "onMeasure: newHeight: " + newHeight);
 
                         // Allow the height to outgrow its original estimate if width is fixed.
                         if (!resizeWidth && !(targetSdkVersion <= Build.VERSION_CODES.JELLY_BEAN_MR1)) {
                             heightSize = resolveAdjustedSize(newHeight, mMaxHeight,
                                     heightMeasureSpec);
+                            Log.i(TAG, "onMeasure: heightSize: " + heightSize);
                         }
 
                         if (newHeight <= heightSize) {
                             heightSize = newHeight;
+                            Log.i(TAG, "onMeasure: heightSize: " + heightSize);
+                        } else {
+                            Log.i(
+                                    TAG,
+                                    "onMeasure: newHeight ("
+                                            + newHeight
+                                            + ") cannot be greater then heightSize ("
+                                            + heightSize
+                                            + ")"
+                            );
                         }
                     }
                 }
             }
-        } else {
-            /* We are either don't want to preserve the drawables aspect ratio,
-               or we are not allowed to change view dimensions. Just measure in
-               the normal way.
-            */
-            w += pleft + pright;
-            h += ptop + pbottom;
 
-            w = Math.max(w, getSuggestedMinimumWidth());
-            h = Math.max(h, getSuggestedMinimumHeight());
-
-            widthSize = resolveSizeAndState(w, widthMeasureSpec, 0);
-            heightSize = resolveSizeAndState(h, heightMeasureSpec, 0);
+            Log.i(TAG, "onMeasure: setting to " + widthSize + "x" + heightSize);
+            setMeasuredDimension(widthSize, heightSize);
         }
-
-        setMeasuredDimension(widthSize, heightSize);
     }
 
     private int resolveAdjustedSize(int desiredSize, int maxSize,
@@ -840,7 +851,8 @@ Row        Layout
                 // Parent says we can be as big as we want, up to specSize.
                 // Don't be larger than specSize, and don't be larger than
                 // the max size imposed on ourselves.
-                result = Math.min(Math.min(desiredSize, specSize), maxSize);
+                if (specSize == 0) result = Math.min(desiredSize, maxSize);
+                else result = Math.min(Math.min(desiredSize, specSize), maxSize);
                 break;
             case MeasureSpec.EXACTLY:
                 // No choice. Do what we are told.
