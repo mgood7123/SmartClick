@@ -20,8 +20,14 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = {Build.VERSION_CODES.O_MR1}, manifest=Config.NONE)
-public class ExampleUnitTest {
-    LogWriter log = new LogWriter("logWriter").toSystemOut();
+public class ParcelableBundleTests {
+    static LogWriter log = new LogWriter("logWriter").toSystemOut();
+
+    @Test
+    public void creation_and_destruction_01() {
+        new ParcelableBundle();
+        System.gc();
+    }
 
     @Test
     public void addition_isCorrect() {

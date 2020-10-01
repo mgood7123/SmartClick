@@ -74,6 +74,7 @@ import smallville7123.libparcelablebundle.tools.TODO;
  * @see PersistableBundle
  */
 public final class ParcelableBundle extends BaseParcelableBundle implements Cloneable, Parcelable {
+
     @VisibleForTesting
     static final int FLAG_HAS_FDS = 1 << 8;
 

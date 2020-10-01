@@ -35,6 +35,7 @@ public class ImageAnalysisRecyclerViewAdapter extends
             mainView = v;
             frame = v.findViewById(R.id.textView);
             bitmapView = v.findViewById(R.id.bitmapView);
+            bitmapView.automaticRecycleOnVisibilityChange = false;
         }
     }
 
@@ -112,6 +113,7 @@ public class ImageAnalysisRecyclerViewAdapter extends
     @Override
     public void onViewRecycled(@NonNull final ImageAnalysisRecyclerViewAdapter.MyViewHolder holder) {
         log.logMethodNameWithClassName(this);
+        holder.bitmapView.recycle();
         super.onViewRecycled(holder);
     }
 

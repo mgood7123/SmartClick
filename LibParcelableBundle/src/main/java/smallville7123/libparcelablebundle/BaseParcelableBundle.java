@@ -42,6 +42,7 @@ import java.util.Set;
 
 import smallville7123.libparcelablebundle.tools.ArrayMap;
 import smallville7123.libparcelablebundle.tools.IndentingPrintWriter;
+import smallville7123.libparcelablebundle.tools.LogWriter;
 import smallville7123.libparcelablebundle.tools.MathUtils;
 import smallville7123.libparcelablebundle.tools.Slog;
 import smallville7123.libparcelablebundle.tools.TODO;
@@ -54,6 +55,7 @@ import smallville7123.libparcelablebundle.tools.TODO;
 public class BaseParcelableBundle {
     static final String TAG = "ParcelableBundle";
     static final boolean DEBUG = true;
+    static LogWriter log = new LogWriter("logWriter").toSystemOut();
 
     // Keep them in sync with frameworks/native/libs/binder/PersistableBundle.cpp.
     static final int BUNDLE_MAGIC = 0x4C444E42; // 'B' 'N' 'D' 'L'
