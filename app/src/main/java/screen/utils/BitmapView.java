@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -649,7 +650,7 @@ Row        Layout
             state.src.bottom = state.cacheDecompressed.getHeight();
             state.dst.right = getMeasuredWidth();
             state.dst.bottom = getMeasuredHeight();
-            canvas.drawBitmap(state.cacheDecompressed, state.src, state.dst, null);
+            canvas.drawBitmap(state.cacheDecompressed, state.src, ratio.toRect(), null);
         }
     }
 
@@ -709,6 +710,28 @@ Row        Layout
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
     private int mMaxHeight = Integer.MAX_VALUE;
 
+    static public class AspectRatio {
+        int x;
+        int y;
+        int w;
+        int h;
+        AspectRatio() {
+            w = 0;
+            h = 0;
+        }
+        AspectRatio(int w, int h) {
+            this.w = w;
+            this.h = h;
+        }
+        static public float ratio(int w, int h) { return (float) w / (float) h; }
+        public float ratio() { return (float) w / (float) h; }
+        public Rect toRect() { return new Rect(x, y, w, h); }
+        @Override public String toString() { return "[(" + x + "," + y + ") to (" + w + "," + h + ")]"; }
+    }
+
+    // should this become part of the state?
+    AspectRatio ratio = new AspectRatio();
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         Log.i(TAG, "onMeasure: called");
@@ -733,8 +756,10 @@ Row        Layout
             int h = state.bm.getHeight();
             if (w <= 0) w = 1;
             if (h <= 0) h = 1;
-            Log.i(TAG, "onMeasure: bitmap  size: " + w + "x" + h);
-            Log.i(TAG, "onMeasure: maximum size: " + mMaxWidth + "x" + mMaxHeight);
+            AspectRatio bitmapDimensions = new AspectRatio(w, h);
+            AspectRatio targetDimensions = new AspectRatio(mMaxWidth, mMaxHeight);
+            Log.i(TAG, "onMeasure: bitmap dimensions: " + bitmapDimensions);
+            Log.i(TAG, "onMeasure: target dimensions: " + targetDimensions);
 
             final int pleft = mPaddingLeft;
             final int pright = mPaddingRight;
@@ -760,16 +785,64 @@ Row        Layout
 
             // We are supposed to adjust view bounds to match the aspect
             // ratio of our drawable. See if that is possible.
-            if (mAdjustViewBounds) desiredAspect = (float) w / (float) h;
+            if (mAdjustViewBounds) desiredAspect = bitmapDimensions.ratio();
 
             if (desiredAspect != 0.0f) {
                 // See what our actual aspect ratio is
-                final float actualAspect = (float) (widthSize - pleft - pright) /
-                        (heightSize - ptop - pbottom);
+                int aw = widthSize - pleft - pright;
+                int ah = heightSize - ptop - pbottom;
+                final float actualAspect = AspectRatio.ratio(aw, ah);
+                Log.i(TAG, "onMeasure: desiredAspect: " + desiredAspect);
                 Log.i(TAG, "onMeasure: actualAspect: " + actualAspect);
 
                 if (Math.abs(actualAspect - desiredAspect) > 0.0000001) {
+                    Log.i(
+                            TAG,
+                            "onMeasure: scaling from " + bitmapDimensions
+                                    + " to " + targetDimensions
+                    );
 
+                    float oldRatio = bitmapDimensions.ratio();
+                    float newRatio = targetDimensions.ratio();
+                    Log.i(TAG, "onMeasure: old ratio: " + oldRatio);
+                    Log.i(TAG, "onMeasure: new ratio: " + newRatio);
+
+//                    int original_width = bitmapDimensions.w;
+//                    int original_height = bitmapDimensions.h;
+//                    int bound_width = targetDimensions.w;
+//                    int bound_height = targetDimensions.h;
+//                    int new_width = original_width;
+//                    int new_height = original_height;
+//
+//                    // first check if we need to scale width
+//                    if (original_width > bound_width) {
+//                        //scale width to fit
+//                        new_width = bound_width;
+//                        //scale height to maintain aspect ratio
+//                        new_height = (new_width * original_height) / original_width;
+//                    }
+//
+//                    // then check if we need to scale even with the new height
+//                    if (new_height > bound_height) {
+//                        //scale height to fit instead
+//                        new_height = bound_height;
+//                        //scale width to maintain aspect ratio
+//                        new_width = (new_height * original_width) / original_height;
+//                    }
+//
+//                    ratio = new AspectRatio(new_width, new_height);
+//
+//                    float or = bitmapDimensions.ratio();
+//                    float nr = ratio.ratio();
+
+//                    if (nr != or) {
+//                        throw new RuntimeException(
+//                                "ratio mismatch: old: " + bitmapDimensions + ", [ratio: " + or + "]"
+//                                        + ", new: " + ratio + ", [ratio: " + nr + "]"
+//                        );
+//                    }
+
+//                    Log.i(TAG, "onMeasure: new dimension: " + ratio);
                     boolean done = false;
 
                     // Try adjusting width to be proportional to height
@@ -827,6 +900,31 @@ Row        Layout
                             );
                         }
                     }
+                    ratio = new AspectRatio(widthSize, heightSize);
+                    Log.i(TAG, "onMeasure: target dimensions: " + targetDimensions);
+                    Log.i(TAG, "onMeasure: new dimensions: " + ratio);
+                    if (targetDimensions.w != Integer.MAX_VALUE)  {
+                        ratio.x = ratio.w;
+                        ratio.w = ratio.w + ratio.w;
+//                        int result = targetDimensions.w - ratio.w;
+//                        Log.i(TAG, "onMeasure: targetDimensions.w - ratio.w is " + result);
+//                        result = result/2;
+//                        Log.i(TAG, "onMeasure: result / 2 is " + result);
+//                        ratio.x = result;
+                    }
+                    if (targetDimensions.h != Integer.MAX_VALUE)  {
+                        int result = targetDimensions.h - ratio.h;
+                        Log.i(TAG, "onMeasure: targetDimensions.h - ratio.h is " + result);
+                        result = result/2;
+                        Log.i(TAG, "onMeasure: result / 2 is " + result);
+                        ratio.y = result;
+                    }
+                    Log.i(TAG, "onMeasure: old dimensions: " + bitmapDimensions);
+                    Log.i(TAG, "onMeasure: old ratio: " + bitmapDimensions.ratio());
+                    Log.i(TAG, "onMeasure: target dimensions: " + targetDimensions);
+                    Log.i(TAG, "onMeasure: target ratio: " + targetDimensions.ratio());
+                    Log.i(TAG, "onMeasure: new dimensions: " + ratio);
+                    Log.i(TAG, "onMeasure: new ratio: " + ratio.ratio());
                 }
             }
 
