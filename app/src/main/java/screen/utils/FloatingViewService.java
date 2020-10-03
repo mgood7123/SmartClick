@@ -17,6 +17,18 @@ import smallville7123.libparcelablebundle.ParcelableBundle;
 import smallville7123.smartclick.R;
 
 public class FloatingViewService extends Service {
+    // Media projections require a foreground service of type ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
+    // solved by putting
+    //
+    // android:foregroundServiceType="mediaProjection"
+    //
+    // in the service manifest
+    //
+    // and adding the
+    //
+    // android.permission.FOREGROUND_SERVICE
+    //
+    // permission to the manifest
 
     private FloatingView mFloatingView;
     private View collapsedView;

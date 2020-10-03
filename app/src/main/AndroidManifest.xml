@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="smallville7123.smartclick">
 
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
     <application
         android:allowBackup="true"
         android:icon="@drawable/icon"
@@ -18,6 +20,7 @@
         </activity>
 
         <service
+            android:foregroundServiceType="mediaProjection"
             android:name="screen.utils.FloatingViewService"
             android:label="Smart Click Service"
             android:enabled="true"

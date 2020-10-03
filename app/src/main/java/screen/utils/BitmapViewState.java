@@ -19,6 +19,8 @@ class BitmapViewState implements Parcelable {
     Bitmap cacheDecompressed;
     @Nullable
     Bitmap bm;
+    int bmw;
+    int bmh;
     Rect src = new Rect(0,0,0,0);
     Rect dst = new Rect(0,0,0, 0);
     boolean recycleAfterUse;
