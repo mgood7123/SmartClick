@@ -787,13 +787,11 @@ Row        Layout
             // height is known
             h = to.h;
             float X = from.ratio();
-            float value = ratio();
-            Log.i(TAG, "bruteForceKnownHeight: from: " + from + ", to: " + to);
+            float value;
             while (true) {
                 if (computeOffset) x++;
                 w--;
                 value = ratio();
-                Log.i(TAG, "bruteForceKnownHeight: value: " + value + ", X: " + X);
                 if (w == 0 || value < X) break;
             }
             int xB = x;
@@ -881,7 +879,7 @@ Row        Layout
             boolean resizeWidth = true;
 
             // We are allowed to change the view's height
-            boolean resizeHeight = true;;
+            boolean resizeHeight = true;
 
             // We are supposed to adjust view bounds to match the aspect
             // ratio of our drawable. See if that is possible.
@@ -920,6 +918,11 @@ Row        Layout
                                 new AspectRatio(0, heightSize),
                                 boundaryDimensions.h != Integer.MAX_VALUE
                         );
+                        if (ratio.w > widthSize) {
+                            Log.i(TAG, "onMeasure: computed width exceeds widthSize");
+                            ratio.x = 0;
+                            ratio.w = widthSize;
+                        }
                     }
                     Log.i(TAG, "onMeasure: new dimensions: " + ratio);
                     Log.i(TAG, "onMeasure: new ratio: " + ratio.ratio());
