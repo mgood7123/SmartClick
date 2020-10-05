@@ -110,8 +110,10 @@ public class MediaProjectionHelper {
         int mHeight = size.y;
 
         // start capture reader
-        // TODO: ImageFormat.JPEG could be accepted, this, if accepted, can be used to tell the
-        //  image reader to internally output JPEG encoded images instead of raw bitmap images
+        //
+        // unfortunately, using ImageFormat.JPEG produces
+        // A/AndroidMediaUtils: RGBA override BLOB format buffer should have height == width
+        //
         variables.mImageReader = ImageReader.newInstance(mWidth, mHeight, PixelFormat.RGBA_8888, 2);
         variables.mVirtualDisplay = variables.sMediaProjection.createVirtualDisplay(
                 variables.SCREENCAP_NAME,

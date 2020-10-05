@@ -746,7 +746,7 @@ Row        Layout
         }
 
         /* brute force the width, preserving aspect ratio */
-        public void bruteForceKnownWidth(AspectRatio from, AspectRatio to, boolean computeOffset) {
+        public void bruteForceKnownWidth(AspectRatio from, AspectRatio to) {
             Log.i(TAG, "brute-forcing with known width");
             // width is known
             w = to.w;
@@ -755,55 +755,25 @@ Row        Layout
             float X = from.ratio();
             float value;
             while (true) {
-                if (computeOffset) y++;
                 h--;
                 value = ratio();
                 if (h == 0 || value > X) break;
             }
-            Log.i(TAG, "bruteForceKnownHeight: ratio reached");
             int yB = y;
             int hB = h;
             float valueB = ratio();
-            // canvas.h is 1018
-            // imageCenter = canvas.h/2; // 509
-            // image.h is initially 245
-            // imageHeight = image.h/2; // 122.5 // rounded to 122
-            // image.y is initially 0;
-            // image.y = imageCenter - imageHeight; // 509 - 122 = 387
-            // image.h = image.y + image.h; // 387 + 245 = 632
-            //
-            // if i have a canvas of 0, 0, 480, 1018 (x, y, w, h)
-            // and i calculate a scaled image of 0, 0, 480, 245 (x, y, w,h)
-            // then my centered image would be 0, 387, 480, 632 (x, y, w, h), right?
-            //
-            Log.i(TAG, "bruteForceKnownHeight: this: " + this + ", to: " + to + ", value: " + value + ", X: " + X);
-            if (computeOffset) y--;
             h++;
             int yA = y;
             int hA = h;
             float valueA = ratio();
-            Log.i(TAG, "bruteForceKnownHeight: this: " + this + ", to: " + to + ", value: " + value + ", X: " + X);
             float rA = Math.abs(valueA-X);
             float rB = Math.abs(X-valueB);
-            if (rA < rB) {
-                if (computeOffset) {
-                    Log.i(TAG, "bruteForceKnownWidth: computing offset");
-                    Log.i(TAG, "bruteForceKnownWidth: yA: " + yA);
-                    y = (yA/2);
-                    h = hA + (yA/2);
-                } else h = hA;
-            } else {
-                if (computeOffset) {
-                    Log.i(TAG, "bruteForceKnownWidth: computing offset");
-                    Log.i(TAG, "bruteForceKnownWidth: yB: " + yB);
-                    y = (yB/2);
-                    h = hB + (yB/2);
-                } else h = hB;
-            }
+            if (rA < rB) h = hA;
+            else h = hB;
         }
 
         /* brute force the width, preserving aspect ratio */
-        void bruteForceKnownHeight(AspectRatio from, AspectRatio to, boolean computeOffset) {
+        void bruteForceKnownHeight(AspectRatio from, AspectRatio to) {
             Log.i(TAG, "brute-forcing with known height");
             // width is unknown
             w = from.w;
@@ -812,7 +782,6 @@ Row        Layout
             float X = from.ratio();
             float value;
             while (true) {
-                if (computeOffset) x++;
                 w--;
                 value = ratio();
                 if (w == 0 || value < X) break;
@@ -820,28 +789,14 @@ Row        Layout
             int xB = x;
             int wB = w;
             float valueB = ratio();
-            if (computeOffset) x--;
             w++;
             int xA = x;
             int wA = w;
             float valueA = ratio();
             float rA = Math.abs(valueA-X);
             float rB = Math.abs(X-valueB);
-            if (rA < rB) {
-                if (computeOffset) {
-                    Log.i(TAG, "bruteForceKnownHeight: computing offset");
-                    Log.i(TAG, "bruteForceKnownHeight: xA: " + xA);
-                    x = (xA/2);
-                    w = wA + (xA/2);
-                } else w = wA;
-            } else {
-                if (computeOffset) {
-                    Log.i(TAG, "bruteForceKnownHeight: computing offset");
-                    Log.i(TAG, "bruteForceKnownHeight: xB: " + xB);
-                    x = (xB/2);
-                    w = wB + (xB/2);
-                } else w = wB;
-            }
+            if (rA < rB) w = wA;
+            else w = wB;
         }
 
         @Override
@@ -873,8 +828,8 @@ Row        Layout
             setMeasuredDimension(widthSize, heightSize);
         } else {
             Log.i(TAG, "onMeasure: bitmap is not null");
-            int w = state.bmw;
-            int h = state.bmh;
+            int w = state.bm.getWidth();
+            int h = state.bm.getHeight();
             if (w <= 0) w = 1;
             if (h <= 0) h = 1;
             AspectRatio bitmapDimensions = new AspectRatio(w, h);
@@ -935,26 +890,41 @@ Row        Layout
                     if (heightSize != Integer.MAX_VALUE)  {
                         ratio.bruteForceKnownHeight(
                                 bitmapDimensions,
-                                new AspectRatio(0, heightSize),
-                                boundaryDimensions.h != Integer.MAX_VALUE
+                                new AspectRatio(0, heightSize)
                         );
                         if (ratio.w > widthSize) {
                             Log.i(TAG, "onMeasure: computed width (" + ratio.w + ") exceeds widthSize (" + widthSize + ")");
-                            ratio.x = 0;
                             ratio.w = widthSize;
+                        }
+                        if (boundaryDimensions.w != Integer.MAX_VALUE) {
+                            int canvasCenter = widthSize / 2;
+                            int imageWidth = ratio.w / 2;
+                            if (canvasCenter > imageWidth) ratio.x = canvasCenter - imageWidth;
+                            else ratio.x = imageWidth - canvasCenter;
+                            ratio.w = ratio.x + ratio.w;
                         }
                     }
                     if (widthSize != Integer.MAX_VALUE) {
                         ratio.bruteForceKnownWidth(
-                                bitmapDimensions,
-                                new AspectRatio(ratio.w, 0),
-                                boundaryDimensions.w != Integer.MAX_VALUE
+                                bitmapDimensions, new AspectRatio(ratio.w, 0)
                         );
                         if (ratio.h > heightSize) {
                             Log.i(TAG, "onMeasure: computed height (" + ratio.h + ") exceeds heightSize (" + heightSize + ")");
-                            ratio.y = 0;
                             ratio.h = heightSize;
                         }
+                        if (boundaryDimensions.h != Integer.MAX_VALUE) {
+                            int canvasCenter = heightSize / 2;
+                            int imageHeight = ratio.h / 2;
+                            if (canvasCenter > imageHeight) ratio.y = canvasCenter - imageHeight;
+                            else ratio.y = imageHeight - canvasCenter;
+                            ratio.h = ratio.y + ratio.h;
+                        }
+                    }
+                    if (ratio.w == 0 && ratio.h == 0) {
+                        // this can occur during an orientation change
+                        Log.i(TAG, "onMeasure: invalid ratio, resetting");
+                        ratio.w = widthSize;
+                        ratio.h = heightSize;
                     }
                     Log.i(TAG, "onMeasure: new dimensions: " + ratio);
                     Log.i(TAG, "onMeasure: new ratio: " + ratio.ratio());
