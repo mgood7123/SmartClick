@@ -1,12 +1,16 @@
 package screen.utils;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.Notification;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ServiceInfo;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.media.ImageReader;
 import android.media.projection.MediaProjectionManager;
+import android.os.Build;
 import android.os.Looper;
 import android.util.DisplayMetrics;
 
@@ -97,6 +101,7 @@ public class MediaProjectionHelper {
         }
     }
 
+    @SuppressLint("WrongConstant") // PixelFormat.RGBA_8888
     public void createVirtualDisplay() {
         // get width and height
         Point size = new Point();
@@ -105,8 +110,19 @@ public class MediaProjectionHelper {
         int mHeight = size.y;
 
         // start capture reader
+        // TODO: ImageFormat.JPEG could be accepted, this, if accepted, can be used to tell the
+        //  image reader to internally output JPEG encoded images instead of raw bitmap images
         variables.mImageReader = ImageReader.newInstance(mWidth, mHeight, PixelFormat.RGBA_8888, 2);
-        variables.mVirtualDisplay = variables.sMediaProjection.createVirtualDisplay(variables.SCREENCAP_NAME, mWidth, mHeight, variables.mDensity, variables.VIRTUAL_DISPLAY_FLAGS, variables.mImageReader.getSurface(), null, variables.mHandler);
+        variables.mVirtualDisplay = variables.sMediaProjection.createVirtualDisplay(
+                variables.SCREENCAP_NAME,
+                mWidth,
+                mHeight,
+                variables.mDensity,
+                variables.VIRTUAL_DISPLAY_FLAGS,
+                variables.mImageReader.getSurface(),
+                null,
+                variables.mHandler
+        );
         variables.mImageReader.setOnImageAvailableListener(new ImageAvailableListener(variables, mWidth, mHeight), variables.mHandler);
     }
 

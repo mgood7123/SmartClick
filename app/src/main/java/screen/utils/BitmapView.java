@@ -760,14 +760,29 @@ Row        Layout
                 value = ratio();
                 if (h == 0 || value > X) break;
             }
+            Log.i(TAG, "bruteForceKnownHeight: ratio reached");
             int yB = y;
             int hB = h;
             float valueB = ratio();
+            // canvas.h is 1018
+            // imageCenter = canvas.h/2; // 509
+            // image.h is initially 245
+            // imageHeight = image.h/2; // 122.5 // rounded to 122
+            // image.y is initially 0;
+            // image.y = imageCenter - imageHeight; // 509 - 122 = 387
+            // image.h = image.y + image.h; // 387 + 245 = 632
+            //
+            // if i have a canvas of 0, 0, 480, 1018 (x, y, w, h)
+            // and i calculate a scaled image of 0, 0, 480, 245 (x, y, w,h)
+            // then my centered image would be 0, 387, 480, 632 (x, y, w, h), right?
+            //
+            Log.i(TAG, "bruteForceKnownHeight: this: " + this + ", to: " + to + ", value: " + value + ", X: " + X);
             if (computeOffset) y--;
             h++;
             int yA = y;
             int hA = h;
             float valueA = ratio();
+            Log.i(TAG, "bruteForceKnownHeight: this: " + this + ", to: " + to + ", value: " + value + ", X: " + X);
             float rA = Math.abs(valueA-X);
             float rB = Math.abs(X-valueB);
             if (rA < rB) {
