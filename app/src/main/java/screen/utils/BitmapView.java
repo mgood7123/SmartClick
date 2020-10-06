@@ -405,43 +405,33 @@ Row        Layout
         return computedHeight;
     }
 
-    public class Pair {
-        public final Bitmap first;
-        public final boolean second;
-        /**
-         * Constructor for a Pair.
-         *
-         * @param first the first object in the Pair
-         * @param second the second object in the pair
-         */
-        public Pair(Bitmap first, boolean second) {
-            this.first = first;
-            this.second = second;
-        }
-    }
-
-    private Pair scale(Bitmap bm, boolean recycleAfterUse, boolean shouldScale, ScaleMode.FlagData flagData) {
+    @Nullable private Bitmap scale(Bitmap bm, boolean recycleAfterUse, boolean shouldScale, ScaleMode.FlagData flagData) {
         if (bm == null) return null;
         if (shouldScale && flagData.hasFlags) {
             int width = computeScaledWidth(bm, flagData);
             int height = computeScaledHeight(bm, flagData);
+            Log.i(TAG, "scale: scaling bitmap from " + bm.getWidth() + "x" + bm.getHeight() + " to " + width + "x" + height);
             Bitmap scaled = Bitmap.createScaledBitmap(bm, width, height, false);
             if (scaled != null) {
                 // recycle if allowed
                 if (recycleAfterUse) bm.recycle();
-                return new Pair(scaled, true);
+                return scaled;
             }
         }
-        return new Pair(bm, false);
+        return null;
     }
 
     public void setImageBitmap(byte[] compressedBitmap, int scaleMode) {
         if (compressedBitmap == null) {
-            state.cache = null;
+            recycle();
         } else {
             state.cache = compressedBitmap.clone();
+            if (state.cacheDecompressed != null) {
+                state.cacheDecompressed.recycle();
+                state.cacheDecompressed = null;
+            }
             state.cacheDecompressed = BitmapUtils.decompress(state.cache);
-            setImageBitmap(state.cacheDecompressed, false, false, scaleMode);
+            setImageBitmap(state.cacheDecompressed, true, false, false, scaleMode);
         }
     }
 
@@ -521,7 +511,7 @@ Row        Layout
     }
 
     /**
-     * visibility changes include deteching a view from a window, and window visibility changes.
+     * visibility changes include detaching a view from a window, and window visibility changes.
      * <br>
      * <br>
      * normally, an assigned bitmap is recycled when:
@@ -582,12 +572,17 @@ Row        Layout
     }
 
     public void setImageBitmap(Bitmap bm, boolean recycleAfterUse, boolean setImmediately, int scaleMode) {
-        state.cache = null;
+        setImageBitmap(bm, recycleAfterUse, setImmediately, true, scaleMode);
+    }
+
+    public void setImageBitmap(Bitmap bm, boolean recycleAfterUse, boolean setImmediately, boolean clearCache, int scaleMode) {
+        if (clearCache) state.cache = null;
         if (bm == null) {
             recycle();
         } else {
             Log.i(TAG, "setImageBitmap: setting");
             Log.i(TAG, "setImageBitmap: state is " + state);
+            if (state.bm != null) state.bm.recycle();
             state.bm = bm;
             state.bmw = bm.getWidth();
             state.bmh = bm.getHeight();
@@ -622,7 +617,9 @@ Row        Layout
     protected void onDraw(Canvas canvas) {
         Log.i(TAG, "onDraw: called");
         Log.i(TAG, "onDraw: state is " + state);
+        Log.i(TAG, "onDraw: state.cache is " + state.cache);
         Log.i(TAG, "onDraw: state.bm is " + state.bm);
+        Log.i(TAG, "onDraw: state.cacheDecompressed is " + state.cacheDecompressed);
         Log.i(TAG, "onDraw: state.scaledbm is " + state.scaledbm);
         if (state.bm == null) {
             // TODO: cache bitmap so recorder still has something to record
@@ -649,27 +646,63 @@ Row        Layout
                 }
             }
             if (shouldRecord) internalRecord();
-            Pair scaled = null;
             if (state.scaledbm != null) {
                 state.scaledbm.recycle();
+                Log.i(TAG, "onDraw: recycled scaledbm");
                 state.scaledbm = null;
             }
+            Bitmap scaled = null;
             if (state.isAllowedToScale) {
                 final ScaleMode.FlagData flagData = ScaleMode.analyseFlags(state.scaleMode);
                 // the original bitmap must be kept in order to correctly handle orientation changes
                 // as the bitmap will need to be re-scaled
                 scaled = scale(state.bm, false, true, flagData);
-//                if (state.recycleAfterUse) state.bm = null;
-                if (scaled.second) state.scaledbm = scaled.first;
-                state.cacheDecompressed = scaled.first;
-            } else {
-                state.cacheDecompressed = state.bm;
+                if (scaled != null) {
+                    if (state.scaledbm != null) state.scaledbm.recycle();
+                    state.scaledbm = scaled;
+                }
             }
-            state.src.right = state.cacheDecompressed.getWidth();
-            state.src.bottom = state.cacheDecompressed.getHeight();
+            if (scaled == null) {
+                if (!BitmapVector.sameAs(state.cacheDecompressed, state.bm)) {
+                    state.cacheDecompressed.recycle();
+                    Log.i(TAG, "onDraw: recycled cacheDecompressed");
+                }
+                state.cacheDecompressed = state.bm;
+            } else {
+                if (BitmapVector.sameAs(state.cacheDecompressed, state.scaledbm)) {
+                    state.cacheDecompressed.recycle();
+                    Log.i(TAG, "onDraw: recycled cacheDecompressed");
+                }
+                state.cacheDecompressed = state.scaledbm;
+            }
+            int w = state.cacheDecompressed.getWidth();
+            int h = state.cacheDecompressed.getHeight();
+            state.src.right = w;
+            state.src.bottom = h;
+            Log.i(TAG, "onDraw: drawing a bitmap with size " + w + "x" + h);
             state.dst.right = getMeasuredWidth();
             state.dst.bottom = getMeasuredHeight();
             canvas.drawBitmap(state.cacheDecompressed, state.src, ratio.toRect(), null);
+            if (state.recycleAfterUse) {
+                // only recycle if we can restore from compressed cache
+                if (state.cache != null) {
+                    if (BitmapVector.sameAs(state.cacheDecompressed, state.bm)) {
+                        state.bm.recycle();
+                        state.bm = null;
+                        Log.i(TAG, "onDraw: recycled bm");
+                    } else if (BitmapVector.sameAs(state.cacheDecompressed, state.scaledbm)) {
+                        state.scaledbm.recycle();
+                        state.scaledbm = null;
+                        Log.i(TAG, "onDraw: recycled scaledbm");
+                    } else {
+                        state.cacheDecompressed.recycle();
+                        Log.i(TAG, "onDraw: recycled cacheDecompressed");
+                    }
+                    state.cacheDecompressed = null;
+                } else {
+                    Log.i(TAG, "onDraw: not recycling due to cache unavailable");
+                }
+            }
         }
     }
 

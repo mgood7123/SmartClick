@@ -408,7 +408,7 @@ public class BitmapVector
     }
 
     static boolean sameAs(Bitmap o, Bitmap o2) {
-        return o.hashCode() == o2.hashCode() && o.getClass().getName().contentEquals(o2.getClass().getName());
+        return (o == null && o2 == null) || (o != null && o2 != null && o.hashCode() == o2.hashCode() && o.getClass().getName().contentEquals(o2.getClass().getName()));
 
         // slowish
 //        if (o.getWidth() != o2.getWidth()) return false;

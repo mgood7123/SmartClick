@@ -118,7 +118,9 @@ public class BitmapUtils {
      */
     public static Bitmap decompress(final byte[] imageData) {
         if (imageData == null) return null;
-        return BitmapFactory.decodeStream(new ByteArrayInputStream(imageData));
+        ByteArrayInputStream stream = new ByteArrayInputStream(imageData);
+        Bitmap bitmap = BitmapFactory.decodeStream(stream);
+        return bitmap;
     }
 
     /**

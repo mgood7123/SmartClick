@@ -90,7 +90,7 @@ public class ImageAnalysisRecyclerViewAdapter extends
             }
         });
 
-        holder.bitmapView.setImageBitmap(holder.bitmapData);
+        holder.bitmapView.setImageBitmap(holder.bitmapData, BitmapView.ScaleMode.SCALE_WIDTH_HEIGHT);
     }
 
     @Override
@@ -115,6 +115,7 @@ public class ImageAnalysisRecyclerViewAdapter extends
     public void onViewRecycled(@NonNull final ImageAnalysisRecyclerViewAdapter.MyViewHolder holder) {
         log.logMethodNameWithClassName(this);
         holder.bitmapView.recycle();
+        log.logWithClassName(this, "recycled bitmap");
         super.onViewRecycled(holder);
     }
 
