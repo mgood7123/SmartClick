@@ -413,54 +413,6 @@ Row        Layout
         return computedHeight;
     }
 
-    @Nullable private Bitmap scale(Bitmap bm, boolean recycleAfterUse, boolean shouldScale, ScaleMode.FlagData flagData) {
-        if (bm == null) return null;
-        if (shouldScale && flagData.hasFlags) {
-            int width = computeScaledWidth(bm, flagData);
-            int height = computeScaledHeight(bm, flagData);
-            Log.i(TAG, "scale: scaling bitmap from " + bm.getWidth() + "x" + bm.getHeight() + " to " + width + "x" + height);
-            Bitmap scaled = Bitmap.createScaledBitmap(bm, width, height, false);
-            if (scaled != null) {
-                // recycle if allowed
-                if (recycleAfterUse) bm.recycle();
-                return scaled;
-            } else return null;
-        }
-        return bm;
-    }
-
-    public void setImageBitmap(byte[] compressedBitmap, int scaleMode) {
-        if (compressedBitmap == null) {
-            recycle();
-        } else {
-            state.cache = compressedBitmap.clone();
-            if (state.cacheDecompressed != null) {
-                state.cacheDecompressed.recycle();
-                state.cacheDecompressed = null;
-            }
-
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inJustDecodeBounds = true;
-            BitmapFactory.decodeByteArray(compressedBitmap, 0, compressedBitmap.length, options);
-
-            state.bmw = options.outWidth;
-            state.bmh = options.outHeight;
-            state.scaleMode = scaleMode;
-            state.preScaled = true;
-//            state.cacheDecompressed = BitmapUtils.decompress(state.cache);
-//            setImageBitmap(state.cacheDecompressed, true, false, false, scaleMode);
-            if (getWindowVisibility() != GONE) {
-                Log.i(TAG, "setImageBitmap: drawing because view is not gone");
-                Log.i(TAG, "setImageBitmap: measuring");
-                measure(MeasureSpec.AT_MOST, MeasureSpec.AT_MOST);
-                Log.i(TAG, "setImageBitmap: measured");
-                invalidate();
-            } else {
-                Log.i(TAG, "setImageBitmap: not drawing because view is gone");
-            }
-        }
-    }
-
     static class RecordingState {
         static final int started = 1;
         static final int recording = 2;
@@ -601,6 +553,53 @@ Row        Layout
         setImageBitmap(bm, recycleAfterUse, setImmediately, true, scaleMode);
     }
 
+    @Nullable private Bitmap scale(Bitmap bm, boolean recycleAfterUse, boolean shouldScale, ScaleMode.FlagData flagData) {
+        if (bm == null) return null;
+        if (shouldScale && flagData.hasFlags) {
+            int width = computeScaledWidth(bm, flagData);
+            int height = computeScaledHeight(bm, flagData);
+            Log.i(TAG, "scale: scaling bitmap from " + bm.getWidth() + "x" + bm.getHeight() + " to " + width + "x" + height);
+            Bitmap scaled = Bitmap.createScaledBitmap(bm, width, height, false);
+            if (scaled != null) {
+                // recycle if allowed
+                if (recycleAfterUse) bm.recycle();
+                return scaled;
+            } else return null;
+        }
+        return bm;
+    }
+
+    public void setImageBitmap(byte[] compressedBitmap, int scaleMode) {
+        if (compressedBitmap == null) {
+            recycle();
+        } else {
+            // TODO: full recycle here?
+            state.cache = compressedBitmap.clone();
+            if (state.cacheDecompressed != null) {
+                state.cacheDecompressed.recycle();
+                state.cacheDecompressed = null;
+            }
+
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+            BitmapFactory.decodeByteArray(compressedBitmap, 0, compressedBitmap.length, options);
+
+            state.bmw = options.outWidth;
+            state.bmh = options.outHeight;
+            state.scaleMode = scaleMode;
+            state.preScaled = true;
+            if (getWindowVisibility() != GONE) {
+                Log.i(TAG, "setImageBitmap: drawing because view is not gone");
+                Log.i(TAG, "setImageBitmap: measuring");
+                measure(MeasureSpec.AT_MOST, MeasureSpec.AT_MOST);
+                Log.i(TAG, "setImageBitmap: measured");
+                invalidate();
+            } else {
+                Log.i(TAG, "setImageBitmap: not drawing because view is gone");
+            }
+        }
+    }
+
     public void setImageBitmap(Bitmap bm, boolean recycleAfterUse, boolean setImmediately, boolean clearCache, int scaleMode) {
         if (clearCache) state.cache = null;
         if (bm == null) {
@@ -608,10 +607,14 @@ Row        Layout
         } else {
             Log.i(TAG, "setImageBitmap: setting");
             Log.i(TAG, "setImageBitmap: state is " + state);
-            if (state.bm != null) state.bm.recycle();
-            state.bm = bm;
-            state.bmw = bm.getWidth();
-            state.bmh = bm.getHeight();
+            if (state.bm != null) {
+                state.bm.recycle();
+                state.bm = null;
+            }
+            state.bm = bm.copy(bm.getConfig(), bm.isMutable());
+            if (recycleAfterUse) bm.recycle();
+            state.bmw = state.bm.getWidth();
+            state.bmh = state.bm.getHeight();
             Log.i(TAG, "setImageBitmap: state.bm is " + state.bm);
             state.recycleAfterUse = recycleAfterUse;
             state.setImmediately = setImmediately;
@@ -671,6 +674,7 @@ Row        Layout
             if (state.cache == null) {
                 Log.i(TAG, "onDraw: cannot draw a pre-scaled bitmap without a cache");
             } else {
+                state.recycleAfterUse = true;
                 // the original bitmap w/h is stored in state.bmw and state.bmh
                 Bitmap scaled = null;
                 if (state.isAllowedToScale) {
