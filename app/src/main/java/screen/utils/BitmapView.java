@@ -607,14 +607,11 @@ Row        Layout
         } else {
             Log.i(TAG, "setImageBitmap: setting");
             Log.i(TAG, "setImageBitmap: state is " + state);
-            if (state.bm != null) {
-                state.bm.recycle();
-                state.bm = null;
-            }
-            state.bm = bm.copy(bm.getConfig(), bm.isMutable());
-            if (recycleAfterUse) bm.recycle();
-            state.bmw = state.bm.getWidth();
-            state.bmh = state.bm.getHeight();
+            if (state.bm != null) state.bm.recycle();
+            // Bitmap#copy introduces a lot of lag
+            state.bm = bm;
+            state.bmw = bm.getWidth();
+            state.bmh = bm.getHeight();
             Log.i(TAG, "setImageBitmap: state.bm is " + state.bm);
             state.recycleAfterUse = recycleAfterUse;
             state.setImmediately = setImmediately;
