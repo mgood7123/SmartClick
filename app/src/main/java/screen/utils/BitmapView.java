@@ -2,6 +2,7 @@ package screen.utils;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -498,7 +499,7 @@ Row        Layout
 
     @Override
     public boolean willNotDraw() {
-        return state.cacheDecompressed != null || state.bm == null;
+        return state.cacheDecompressed == null || state.bm == null || state.scaledbm == null;
     }
 
     @Override
@@ -544,9 +545,17 @@ Row        Layout
         if (state.cacheDecompressed != null) {
             state.cacheDecompressed.recycle();
             state.cacheDecompressed = null;
+            Log.i(TAG, "recycled cacheDecompressed");
+        }
+        if (state.scaledbm != null) {
+            state.scaledbm.recycle();
+            state.scaledbm = null;
+            Log.i(TAG, "recycled scaledbm");
+        }
+        if (state.bm != null) {
             state.bm.recycle();
             state.bm = null;
-            Log.i(TAG, "recycled");
+            Log.i(TAG, "recycled bm");
         }
     }
 
@@ -614,6 +623,7 @@ Row        Layout
         Log.i(TAG, "onDraw: called");
         Log.i(TAG, "onDraw: state is " + state);
         Log.i(TAG, "onDraw: state.bm is " + state.bm);
+        Log.i(TAG, "onDraw: state.scaledbm is " + state.scaledbm);
         if (state.bm == null) {
             // TODO: cache bitmap so recorder still has something to record
             //  otherwise frame skips will occur
@@ -640,10 +650,17 @@ Row        Layout
             }
             if (shouldRecord) internalRecord();
             Pair scaled = null;
+            if (state.scaledbm != null) {
+                state.scaledbm.recycle();
+                state.scaledbm = null;
+            }
             if (state.isAllowedToScale) {
                 final ScaleMode.FlagData flagData = ScaleMode.analyseFlags(state.scaleMode);
-                scaled = scale(state.bm, state.recycleAfterUse, true, flagData);
-                if (scaled.second) state.bm = scaled.first;
+                // the original bitmap must be kept in order to correctly handle orientation changes
+                // as the bitmap will need to be re-scaled
+                scaled = scale(state.bm, false, true, flagData);
+//                if (state.recycleAfterUse) state.bm = null;
+                if (scaled.second) state.scaledbm = scaled.first;
                 state.cacheDecompressed = scaled.first;
             } else {
                 state.cacheDecompressed = state.bm;
@@ -808,6 +825,14 @@ Row        Layout
     // should this become part of the state?
     AspectRatio ratio = new AspectRatio();
 
+    static int orientation = Configuration.ORIENTATION_UNDEFINED;
+
+    @Override
+    protected void onConfigurationChanged(final Configuration newConfig) {
+        orientation = newConfig.orientation;
+        super.onConfigurationChanged(newConfig);
+    }
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         Log.i(TAG, "onMeasure: called");
@@ -817,19 +842,27 @@ Row        Layout
         mPaddingRight = getPaddingRight();
         mPaddingTop = getPaddingTop();
         mPaddingBottom = getPaddingBottom();
+        if (mMaxWidth == Integer.MAX_VALUE) {
+            int tmp = resolveSizeAndState(0, widthMeasureSpec, 0);
+            if (tmp != 0) mMaxWidth = tmp;
+        }
+        if (mMaxHeight == Integer.MAX_VALUE) {
+            int tmp = resolveSizeAndState(0, heightMeasureSpec, 0);
+            if (tmp != 0) mMaxHeight = tmp;
+        }
+        Log.i(TAG, "onMeasure: max: " + mMaxWidth + "x" + mMaxHeight);
 
         if (state.bm == null) {
             Log.i(TAG, "onMeasure: bitmap is null");
-            widthSize = resolveSizeAndState(0, widthMeasureSpec, 0);
-            heightSize = resolveSizeAndState(0, heightMeasureSpec, 0);
-            mMaxWidth = widthSize;
-            mMaxHeight = heightSize;
-            Log.i(TAG, "onMeasure: setting to " + widthSize + "x" + heightSize);
-            setMeasuredDimension(widthSize, heightSize);
+            Log.i(TAG, "onMeasure: setting to " + mMaxWidth + "x" + mMaxHeight);
+            setMeasuredDimension(mMaxWidth, mMaxHeight);
         } else {
             Log.i(TAG, "onMeasure: bitmap is not null");
-            int w = state.bm.getWidth();
-            int h = state.bm.getHeight();
+            int w = state.bmw;
+            int h = state.bmh;
+            if (w != 1440 && h != 1440) {
+                throw new RuntimeException("bitmap is scaled: " + w + "x" + h);
+            }
             if (w <= 0) w = 1;
             if (h <= 0) h = 1;
             AspectRatio bitmapDimensions = new AspectRatio(w, h);
@@ -849,6 +882,8 @@ Row        Layout
             // Get the max possible height given our constraints
             heightSize = resolveAdjustedSize(h + ptop + pbottom, mMaxHeight, heightMeasureSpec);
             Log.i(TAG, "onMeasure: heightSize: " + heightSize);
+
+            ratio = new AspectRatio(widthSize, heightSize);
 
             // Desired aspect ratio of the view's contents (not including padding)
             float desiredAspect = 0.0f;
@@ -878,30 +913,40 @@ Row        Layout
                                     + " to " + boundaryDimensions
                     );
 
-
-                    float oldRatio = bitmapDimensions.ratio();
-                    float newRatio = boundaryDimensions.ratio();
                     Log.i(TAG, "onMeasure: old dimensions: " + bitmapDimensions);
                     Log.i(TAG, "onMeasure: old ratio: " + bitmapDimensions.ratio());
                     Log.i(TAG, "onMeasure: target dimensions: " + boundaryDimensions);
                     Log.i(TAG, "onMeasure: target ratio: " + boundaryDimensions.ratio());
 
-                    ratio = new AspectRatio(widthSize, heightSize);
                     if (heightSize != Integer.MAX_VALUE)  {
                         ratio.bruteForceKnownHeight(
-                                bitmapDimensions,
-                                new AspectRatio(0, heightSize)
+                                bitmapDimensions, new AspectRatio(0, heightSize)
                         );
                         if (ratio.w > widthSize) {
                             Log.i(TAG, "onMeasure: computed width (" + ratio.w + ") exceeds widthSize (" + widthSize + ")");
                             ratio.w = widthSize;
                         }
                         if (boundaryDimensions.w != Integer.MAX_VALUE) {
+                            Log.i(TAG, "onMeasure: ratio.w: " + ratio.w);
+                            int canvasWidth = widthSize; // 817
+                            Log.i(TAG, "onMeasure: canvasWidth: " + canvasWidth);
                             int canvasCenter = widthSize / 2;
-                            int imageWidth = ratio.w / 2;
-                            if (canvasCenter > imageWidth) ratio.x = canvasCenter - imageWidth;
-                            else ratio.x = imageWidth - canvasCenter;
+                            Log.i(TAG, "onMeasure: canvasCenter: " + canvasCenter);
+                            int imageWidth = ratio.w; // 506
+                            Log.i(TAG, "onMeasure: imageWidth: " + imageWidth);
+                            int imageCenter = ratio.w / 2;
+                            Log.i(TAG, "onMeasure: imageCenter: " + imageCenter);
+                            if (canvasCenter > imageCenter) {
+                                Log.i(TAG, "onMeasure: canvasCenter > imageCenter");
+                                ratio.x = canvasCenter - imageCenter;
+                            } else {
+                                Log.i(TAG, "onMeasure: canvasCenter < imageCenter");
+                                ratio.x = imageCenter - canvasCenter;
+                            }
+                            Log.i(TAG, "onMeasure: ratio.w: " + ratio.w);
+                            Log.i(TAG, "onMeasure: ratio.x: " + ratio.x);
                             ratio.w = ratio.x + ratio.w;
+                            Log.i(TAG, "onMeasure: ratio.w: " + ratio.w);
                         }
                     }
                     if (widthSize != Integer.MAX_VALUE) {
@@ -912,117 +957,39 @@ Row        Layout
                             Log.i(TAG, "onMeasure: computed height (" + ratio.h + ") exceeds heightSize (" + heightSize + ")");
                             ratio.h = heightSize;
                         }
+                        Log.i(TAG, "onMeasure: ratio.h: " + ratio.h);
                         if (boundaryDimensions.h != Integer.MAX_VALUE) {
+                            Log.i(TAG, "onMeasure: ratio.h: " + ratio.h);
+                            int canvasHeight = heightSize; // 817
+                            Log.i(TAG, "onMeasure: canvasHeight: " + canvasHeight);
                             int canvasCenter = heightSize / 2;
-                            int imageHeight = ratio.h / 2;
-                            if (canvasCenter > imageHeight) ratio.y = canvasCenter - imageHeight;
-                            else ratio.y = imageHeight - canvasCenter;
+                            Log.i(TAG, "onMeasure: canvasCenter: " + canvasCenter);
+                            int imageHeight = ratio.h; // 506
+                            Log.i(TAG, "onMeasure: imageHeight: " + imageHeight);
+                            int imageCenter = ratio.h / 2;
+                            Log.i(TAG, "onMeasure: imageCenter: " + imageCenter);
+                            if (canvasCenter > imageCenter) {
+                                Log.i(TAG, "onMeasure: canvasCenter > imageCenter");
+                                ratio.y = canvasCenter - imageCenter;
+                            } else {
+                                Log.i(TAG, "onMeasure: canvasCenter < imageCenter");
+                                ratio.y = imageCenter - canvasCenter;
+                            }
+                            Log.i(TAG, "onMeasure: ratio.h: " + ratio.h);
+                            Log.i(TAG, "onMeasure: ratio.y: " + ratio.y);
                             ratio.h = ratio.y + ratio.h;
+                            Log.i(TAG, "onMeasure: ratio.h: " + ratio.h);
                         }
-                    }
-                    if (ratio.w == 0 && ratio.h == 0) {
-                        // this can occur during an orientation change
-                        Log.i(TAG, "onMeasure: invalid ratio, resetting");
-                        ratio.w = widthSize;
-                        ratio.h = heightSize;
                     }
                     Log.i(TAG, "onMeasure: new dimensions: " + ratio);
                     Log.i(TAG, "onMeasure: new ratio: " + ratio.ratio());
-
-////                    int original_width = bitmapDimensions.w;
-////                    int original_height = bitmapDimensions.h;
-////                    int bound_width = boundaryDimensions.w;
-////                    int bound_height = boundaryDimensions.h;
-////                    int new_width = original_width;
-////                    int new_height = original_height;
-////
-////                    // first check if we need to scale width
-////                    if (original_width > bound_width) {
-////                        //scale width to fit
-////                        new_width = bound_width;
-////                        //scale height to maintain aspect ratio
-////                        new_height = (new_width * original_height) / original_width;
-////                    }
-////
-////                    // then check if we need to scale even with the new height
-////                    if (new_height > bound_height) {
-////                        //scale height to fit instead
-////                        new_height = bound_height;
-////                        //scale width to maintain aspect ratio
-////                        new_width = (new_height * original_width) / original_height;
-////                    }
-////
-////                    ratio = new AspectRatio(new_width, new_height);
-////
-////                    float or = bitmapDimensions.ratio();
-////                    float nr = ratio.ratio();
-//
-////                    if (nr != or) {
-////                        throw new RuntimeException(
-////                                "ratio mismatch: old: " + bitmapDimensions + ", [ratio: " + or + "]"
-////                                        + ", new: " + ratio + ", [ratio: " + nr + "]"
-////                        );
-////                    }
-//
-////                    Log.i(TAG, "onMeasure: new dimension: " + ratio);
-//                    boolean done = false;
-//
-//                    // Try adjusting width to be proportional to height
-//                    if (resizeWidth) {
-//                        int newWidth = (int) (desiredAspect * (heightSize - ptop - pbottom)) +
-//                                pleft + pright;
-//                        Log.i(TAG, "onMeasure: newWidth: " + newWidth);
-//
-//                        // Allow the width to outgrow its original estimate if height is fixed.
-//                        if (!resizeHeight && !(targetSdkVersion <= Build.VERSION_CODES.JELLY_BEAN_MR1)) {
-//                            widthSize = resolveAdjustedSize(newWidth, mMaxWidth, widthMeasureSpec);
-//                            Log.i(TAG, "onMeasure: widthSize: " + widthSize);
-//                        }
-//
-//                        if (newWidth <= widthSize) {
-//                            widthSize = newWidth;
-//                            Log.i(TAG, "onMeasure: widthSize: " + widthSize);
-//                            done = true;
-//                        } else {
-//                            Log.i(
-//                                    TAG,
-//                                    "onMeasure: newWidth ("
-//                                            + newWidth
-//                                            + ") cannot be greater then widthSize ("
-//                                            + widthSize
-//                                            + ")"
-//                            );
-//                        }
-//                    }
-//
-//                    // Try adjusting height to be proportional to width
-//                    if (!done && resizeHeight) {
-//                        int newHeight = (int) ((widthSize - pleft - pright) / desiredAspect) +
-//                                ptop + pbottom;
-//                        Log.i(TAG, "onMeasure: newHeight: " + newHeight);
-//
-//                        // Allow the height to outgrow its original estimate if width is fixed.
-//                        if (!resizeWidth && !(targetSdkVersion <= Build.VERSION_CODES.JELLY_BEAN_MR1)) {
-//                            heightSize = resolveAdjustedSize(newHeight, mMaxHeight,
-//                                    heightMeasureSpec);
-//                            Log.i(TAG, "onMeasure: heightSize: " + heightSize);
-//                        }
-//
-//                        if (newHeight <= heightSize) {
-//                            heightSize = newHeight;
-//                            Log.i(TAG, "onMeasure: heightSize: " + heightSize);
-//                        } else {
-//                            Log.i(
-//                                    TAG,
-//                                    "onMeasure: newHeight ("
-//                                            + newHeight
-//                                            + ") cannot be greater then heightSize ("
-//                                            + heightSize
-//                                            + ")"
-//                            );
-//                        }
-//                    }
                 }
+            }
+
+            if (ratio.w == 0 && ratio.h == 0) {
+                Log.i(TAG, "onMeasure: invalid WxH, resetting to obtained WxH");
+                ratio.w = widthSize;
+                ratio.h = heightSize;
             }
 
             Log.i(TAG, "onMeasure: setting to " + ratio.w + "x" + ratio.h);

@@ -165,8 +165,8 @@ class RecordedFrames<Type> implements Parcelable {
                 Bitmap frame = (Bitmap) frames.get(i);
                 if (frame == null) throw nullFrame;
                 frame.recycle();
-                Log.i(TAG, "clear: recycled");
             }
+            Log.i(TAG, "clear: recycled");
             frames.clear();
         } else {
             throw illegalCast;

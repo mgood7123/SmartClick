@@ -6,6 +6,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 class BitmapViewState implements Parcelable {
@@ -15,10 +16,10 @@ class BitmapViewState implements Parcelable {
     BitmapViewState() {};
 
     boolean isAllowedToScale = true;
-    byte[] cache;
-    Bitmap cacheDecompressed;
-    @Nullable
-    Bitmap bm;
+    @Nullable byte[] cache;
+    @Nullable Bitmap cacheDecompressed;
+    @Nullable Bitmap bm;
+    @Nullable Bitmap scaledbm;
     int bmw;
     int bmh;
     Rect src = new Rect(0,0,0,0);
@@ -26,8 +27,8 @@ class BitmapViewState implements Parcelable {
     boolean recycleAfterUse;
     boolean setImmediately;
     int scaleMode;
-    RecordedFrames recordedFrames = null;
-    Object recordingStateLock = new Object();
+    @Nullable RecordedFrames recordedFrames;
+    @NonNull final Object recordingStateLock = new Object();
     int recordingState = BitmapView.RecordingState.stopped;
     Bitmap.CompressFormat compressionFormat = Bitmap.CompressFormat.JPEG;
 
@@ -46,11 +47,14 @@ class BitmapViewState implements Parcelable {
         cache = in.createByteArray();
         cacheDecompressed = in.readParcelable(Bitmap.class.getClassLoader());
         bm = in.readParcelable(Bitmap.class.getClassLoader());
+        scaledbm = in.readParcelable(Bitmap.class.getClassLoader());
         src = in.readParcelable(Rect.class.getClassLoader());
         dst = in.readParcelable(Rect.class.getClassLoader());
         recycleAfterUse = in.readByte() != 0;
         setImmediately = in.readByte() != 0;
         scaleMode = in.readInt();
+        bmw = in.readInt();
+        bmh = in.readInt();
         recordedFrames = in.readParcelable(RecordedFrames.class.getClassLoader());
         recordingState = in.readInt();
         compressionQuality = in.readInt();
@@ -64,11 +68,14 @@ class BitmapViewState implements Parcelable {
         dest.writeByteArray(cache);
         dest.writeParcelable(cacheDecompressed, flags);
         dest.writeParcelable(bm, flags);
+        dest.writeParcelable(scaledbm, flags);
         dest.writeParcelable(src, flags);
         dest.writeParcelable(dst, flags);
         dest.writeByte((byte) (recycleAfterUse ? 1 : 0));
         dest.writeByte((byte) (setImmediately ? 1 : 0));
         dest.writeInt(scaleMode);
+        dest.writeInt(bmw);
+        dest.writeInt(bmh);
         dest.writeParcelable(recordedFrames, flags);
         dest.writeInt(recordingState);
         dest.writeInt(compressionQuality);
