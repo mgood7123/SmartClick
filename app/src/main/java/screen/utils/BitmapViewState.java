@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 class BitmapViewState implements Parcelable {
 
     private final String TAG = "BitmapViewState (" + getClass().getName() + "@" + Integer.toHexString(hashCode()) + ")";
+    public boolean preScaled;
 
     BitmapViewState() {};
 
@@ -20,8 +21,8 @@ class BitmapViewState implements Parcelable {
     @Nullable Bitmap cacheDecompressed;
     @Nullable Bitmap bm;
     @Nullable Bitmap scaledbm;
-    int bmw;
-    int bmh;
+    int bmw = Integer.MAX_VALUE;
+    int bmh = Integer.MAX_VALUE;
     Rect src = new Rect(0,0,0,0);
     Rect dst = new Rect(0,0,0, 0);
     boolean recycleAfterUse;
@@ -50,6 +51,7 @@ class BitmapViewState implements Parcelable {
         scaledbm = in.readParcelable(Bitmap.class.getClassLoader());
         src = in.readParcelable(Rect.class.getClassLoader());
         dst = in.readParcelable(Rect.class.getClassLoader());
+        preScaled = in.readByte() != 0;
         recycleAfterUse = in.readByte() != 0;
         setImmediately = in.readByte() != 0;
         scaleMode = in.readInt();
@@ -71,6 +73,7 @@ class BitmapViewState implements Parcelable {
         dest.writeParcelable(scaledbm, flags);
         dest.writeParcelable(src, flags);
         dest.writeParcelable(dst, flags);
+        dest.writeByte((byte) (preScaled ? 1 : 0));
         dest.writeByte((byte) (recycleAfterUse ? 1 : 0));
         dest.writeByte((byte) (setImmediately ? 1 : 0));
         dest.writeInt(scaleMode);

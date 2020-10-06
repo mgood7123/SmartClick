@@ -64,7 +64,7 @@ public class ImageAnalysisFloatingView {
                         cachedText = text;
                         cachedCompressedBitmap = memory;
                         textViewMain.setText(cachedText);
-                        bitmapViewMain.setImageBitmap(memory, BitmapView.ScaleMode.SCALE_HEIGHT);
+                        bitmapViewMain.setImageBitmap(memory, BitmapView.ScaleMode.SCALE_WIDTH_HEIGHT);
                     }
                 });
 

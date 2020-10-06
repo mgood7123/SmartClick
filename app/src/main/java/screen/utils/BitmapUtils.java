@@ -3,6 +3,8 @@ package screen.utils;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import androidx.annotation.Nullable;
+
+import android.util.Log;
 import android.widget.ImageView;
 
 import java.io.ByteArrayInputStream;
@@ -116,11 +118,22 @@ public class BitmapUtils {
      * @param imageData image data, obtained by calling compress on a bitmap
      * @return The decoded bitmap, or null if the image data could not be decoded.
      */
-    public static Bitmap decompress(final byte[] imageData) {
+    @Nullable public static Bitmap decompress(final byte[] imageData) {
+        return imageData == null ? null : BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
+    }
+
+    /**
+     * decompresses imageData into a bitmap
+     * @param imageData image data, obtained by calling compress on a bitmap
+     * @return The decoded bitmap, or null if the image data could not be decoded.
+     */
+    @Nullable public static Bitmap decompressAndScale(final byte[] imageData, int width, int height) {
         if (imageData == null) return null;
-        ByteArrayInputStream stream = new ByteArrayInputStream(imageData);
-        Bitmap bitmap = BitmapFactory.decodeStream(stream);
-        return bitmap;
+        Bitmap bm = decompress(imageData);
+        if (bm == null) return null;
+        Bitmap tmp = Bitmap.createScaledBitmap(bm, width, height, false);
+        bm.recycle();
+        return tmp;
     }
 
     /**

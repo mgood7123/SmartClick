@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -356,50 +357,57 @@ Row        Layout
         }
     }
 
-
     private int computeScaledWidth(Bitmap bm, ScaleMode.FlagData flagData) {
-        int computedWidth = bm.getWidth();
+        return computeScaledWidth(bm.getWidth(), flagData);
+    }
+
+    private int computeScaledWidth(int width, ScaleMode.FlagData flagData) {
+        int computedWidth = width;
         if (flagData.hasWidthFlag) {
             int viewWidth = getMeasuredWidth();
             return
                     flagData.hasScaleWidthIfLargerThanViewWidthFlag ?
                             (
                                     (computedWidth > viewWidth) ?
-                                        (
-                                            viewWidth
-                                        ) :
-                                    (
-                                        flagData.hasScaleWidthIfSmallerThanViewWidthFlag ?
                                             (
-                                                (computedWidth < viewWidth) ? viewWidth : computedWidth
+                                                    viewWidth
                                             ) :
-                                        computedWidth
-                                    )
-                                ) :
+                                            (
+                                                    flagData.hasScaleWidthIfSmallerThanViewWidthFlag ?
+                                                            (
+                                                                    (computedWidth < viewWidth) ? viewWidth : computedWidth
+                                                            ) :
+                                                            computedWidth
+                                            )
+                            ) :
                             computedWidth;
         }
         return computedWidth;
     }
 
     private int computeScaledHeight(Bitmap bm, ScaleMode.FlagData flagData) {
-        int computedHeight = bm.getHeight();
+        return computeScaledHeight(bm.getHeight(), flagData);
+    }
+
+    private int computeScaledHeight(int height, ScaleMode.FlagData flagData) {
+        int computedHeight = height;
         if (flagData.hasHeightFlag) {
             int viewHeight = getMeasuredHeight();
             return
                     flagData.hasScaleHeightIfLargerThanViewHeightFlag ?
                             (
                                     (computedHeight > viewHeight) ?
-                                        (
-                                            viewHeight
-                                        ) :
-                                    (
-                                        flagData.hasScaleHeightIfSmallerThanViewHeightFlag ?
                                             (
-                                                (computedHeight < viewHeight) ? viewHeight : computedHeight
+                                                    viewHeight
                                             ) :
-                                        computedHeight
-                                    )
-                                ) :
+                                            (
+                                                    flagData.hasScaleHeightIfSmallerThanViewHeightFlag ?
+                                                            (
+                                                                    (computedHeight < viewHeight) ? viewHeight : computedHeight
+                                                            ) :
+                                                            computedHeight
+                                            )
+                            ) :
                             computedHeight;
         }
         return computedHeight;
@@ -416,9 +424,9 @@ Row        Layout
                 // recycle if allowed
                 if (recycleAfterUse) bm.recycle();
                 return scaled;
-            }
+            } else return null;
         }
-        return null;
+        return bm;
     }
 
     public void setImageBitmap(byte[] compressedBitmap, int scaleMode) {
@@ -430,8 +438,26 @@ Row        Layout
                 state.cacheDecompressed.recycle();
                 state.cacheDecompressed = null;
             }
-            state.cacheDecompressed = BitmapUtils.decompress(state.cache);
-            setImageBitmap(state.cacheDecompressed, true, false, false, scaleMode);
+
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+            BitmapFactory.decodeByteArray(compressedBitmap, 0, compressedBitmap.length, options);
+
+            state.bmw = options.outWidth;
+            state.bmh = options.outHeight;
+            state.scaleMode = scaleMode;
+            state.preScaled = true;
+//            state.cacheDecompressed = BitmapUtils.decompress(state.cache);
+//            setImageBitmap(state.cacheDecompressed, true, false, false, scaleMode);
+            if (getWindowVisibility() != GONE) {
+                Log.i(TAG, "setImageBitmap: drawing because view is not gone");
+                Log.i(TAG, "setImageBitmap: measuring");
+                measure(MeasureSpec.AT_MOST, MeasureSpec.AT_MOST);
+                Log.i(TAG, "setImageBitmap: measured");
+                invalidate();
+            } else {
+                Log.i(TAG, "setImageBitmap: not drawing because view is gone");
+            }
         }
     }
 
@@ -590,6 +616,7 @@ Row        Layout
             state.recycleAfterUse = recycleAfterUse;
             state.setImmediately = setImmediately;
             state.scaleMode = scaleMode;
+            state.preScaled = false;
             if (getWindowVisibility() != GONE) {
                 Log.i(TAG, "setImageBitmap: drawing because view is not gone");
                 Log.i(TAG, "setImageBitmap: measuring");
@@ -607,7 +634,26 @@ Row        Layout
             if (state.recordedFrames.frames.size() == state.maxRecordingFrames) {
                 state.recordedFrames.remove(0);
             }
-            state.recordedFrames.add(BitmapUtils.compress(state.bm, state.compressionFormat, state.compressionQuality));
+            if (state.preScaled) {
+                state.recordedFrames.add(state.cache);
+            } else {
+                state.recordedFrames.add(BitmapUtils.compress(state.bm, state.compressionFormat, state.compressionQuality));
+            }
+        }
+    }
+
+    @Nullable private Bitmap scale(byte[] bm, boolean shouldScale, BitmapView.ScaleMode.FlagData flagData) {
+        if (bm == null) return null;
+        if (shouldScale && flagData.hasFlags) {
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+            BitmapFactory.decodeByteArray(bm, 0, bm.length, options);
+            int width = computeScaledWidth(options.outWidth, flagData);
+            int height = computeScaledHeight(options.outHeight, flagData);
+            Log.i(TAG, "scale: scaling bitmap from " + options.outWidth + "x" + options.outHeight + " to " + width + "x" + height);
+            return BitmapUtils.decompressAndScale(bm, width, height);
+        } else {
+            return BitmapUtils.decompress(bm);
         }
     }
 
@@ -621,7 +667,66 @@ Row        Layout
         Log.i(TAG, "onDraw: state.bm is " + state.bm);
         Log.i(TAG, "onDraw: state.cacheDecompressed is " + state.cacheDecompressed);
         Log.i(TAG, "onDraw: state.scaledbm is " + state.scaledbm);
-        if (state.bm == null) {
+        if (state.preScaled) {
+            if (state.cache == null) {
+                Log.i(TAG, "onDraw: cannot draw a pre-scaled bitmap without a cache");
+            } else {
+                // the original bitmap w/h is stored in state.bmw and state.bmh
+                Bitmap scaled = null;
+                if (state.isAllowedToScale) {
+                    final ScaleMode.FlagData flagData = ScaleMode.analyseFlags(state.scaleMode);
+                    // the original bitmap must be kept in order to correctly handle orientation changes
+                    // as the bitmap will need to be re-scaled
+                    // this decodes the cache and scales it using getMeasured*()
+                    scaled = scale(state.cache, true, flagData);
+                    if (scaled != null) {
+                        if (state.scaledbm != null) state.scaledbm.recycle();
+                        state.scaledbm = scaled;
+                    } else throw new RuntimeException("failed to scale bitmap");
+                }
+
+                if (BitmapVector.sameAs(state.bm, state.scaledbm)) {
+                    state.bm.recycle();
+                    Log.i(TAG, "onDraw: recycled bm");
+                }
+                Log.i(TAG, "onDraw: setting");
+                Log.i(TAG, "onDraw: state is " + state);
+                if (state.bm != null) state.bm.recycle();
+                state.bm = state.scaledbm;
+                Log.i(TAG, "onDraw: state.bm is " + state.bm);
+                state.recycleAfterUse = true;
+                state.setImmediately = false;
+                state.cacheDecompressed = state.bm;
+                int w = state.cacheDecompressed.getWidth();
+                int h = state.cacheDecompressed.getHeight();
+                state.src.right = w;
+                state.src.bottom = h;
+                Log.i(TAG, "onDraw: drawing a bitmap with size " + w + "x" + h);
+                state.dst.right = getMeasuredWidth();
+                state.dst.bottom = getMeasuredHeight();
+                canvas.drawBitmap(state.cacheDecompressed, state.src, ratio.toRect(), null);
+                if (state.recycleAfterUse) {
+                    // only recycle if we can restore from compressed cache
+                    if (state.cache != null) {
+                        if (BitmapVector.sameAs(state.cacheDecompressed, state.bm)) {
+                            state.bm.recycle();
+                            state.bm = null;
+                            Log.i(TAG, "onDraw: recycled bm");
+                        } else if (BitmapVector.sameAs(state.cacheDecompressed, state.scaledbm)) {
+                            state.scaledbm.recycle();
+                            state.scaledbm = null;
+                            Log.i(TAG, "onDraw: recycled scaledbm");
+                        } else {
+                            state.cacheDecompressed.recycle();
+                            Log.i(TAG, "onDraw: recycled cacheDecompressed");
+                        }
+                        state.cacheDecompressed = null;
+                    } else {
+                        Log.i(TAG, "onDraw: not recycling due to cache unavailable");
+                    }
+                }
+            }
+        } else if (state.bm == null) {
             // TODO: cache bitmap so recorder still has something to record
             //  otherwise frame skips will occur
             Log.i(TAG, "onDraw: cannot draw null bitmap");
@@ -885,7 +990,7 @@ Row        Layout
         }
         Log.i(TAG, "onMeasure: max: " + mMaxWidth + "x" + mMaxHeight);
 
-        if (state.bm == null) {
+        if (state.bmw == Integer.MAX_VALUE && state.bmh == Integer.MAX_VALUE) {
             Log.i(TAG, "onMeasure: bitmap is null");
             Log.i(TAG, "onMeasure: setting to " + mMaxWidth + "x" + mMaxHeight);
             setMeasuredDimension(mMaxWidth, mMaxHeight);
@@ -893,9 +998,6 @@ Row        Layout
             Log.i(TAG, "onMeasure: bitmap is not null");
             int w = state.bmw;
             int h = state.bmh;
-            if (w != 1440 && h != 1440) {
-                throw new RuntimeException("bitmap is scaled: " + w + "x" + h);
-            }
             if (w <= 0) w = 1;
             if (h <= 0) h = 1;
             AspectRatio bitmapDimensions = new AspectRatio(w, h);
