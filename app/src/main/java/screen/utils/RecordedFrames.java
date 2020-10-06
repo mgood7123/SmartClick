@@ -28,6 +28,8 @@ class RecordedFrames<Type> implements Parcelable {
         width = in.readInt();
         height = in.readInt();
         compressRecordedFrames = in.readByte() != 0;
+        frames = new ArrayList();
+        in.readList(frames, RecordedFrames.class.getClassLoader());
     }
 
     public RecordedFrames() {
@@ -39,6 +41,7 @@ class RecordedFrames<Type> implements Parcelable {
         dest.writeInt(width);
         dest.writeInt(height);
         dest.writeByte((byte) (compressRecordedFrames ? 1 : 0));
+        dest.writeList(frames);
     }
 
     @Override
