@@ -34,11 +34,12 @@ import smallville7123.libparcelablebundle.annotations.UnsupportedAppUsage;
 @SuppressLint("AppCompatCustomView")
 public class BitmapView extends ImageView {
 
+    static final Bitmap nullBitmap = null;
+    static final byte[] nullByteArray = null;
     private final String TAG = "BitmapView (" + getClass().getName() + "@" + Integer.toHexString(hashCode()) + ")";
-
     static Vector<BitmapView> bitmapViews = new Vector();
-
     int targetSdkVersion;
+    private boolean drawNothing = false;
 
     public BitmapView(Context context) {
         super(context);
@@ -467,7 +468,18 @@ Row        Layout
 
     @Override
     public boolean willNotDraw() {
-        return state.cacheDecompressed == null || state.bm == null || state.scaledbm == null;
+        Log.i(TAG, "willNotDraw: called");
+        boolean hasBitmap;
+        if (state.cacheDecompressed != null) {
+            hasBitmap = true;
+        } else if (state.bm != null) {
+            hasBitmap = true;
+        } else if (state.scaledbm != null) {
+            hasBitmap = true;
+        } else {
+            hasBitmap = false;
+        }
+        return state.preScaled || hasBitmap;
     }
 
     @Override
@@ -509,7 +521,13 @@ Row        Layout
      * does nothing if already recycled
      */
     public void recycle() {
-        if (state.cache != null) state.cache = null;
+        if (state.cache != null) {
+            // only clear cache if it is not the current image source
+            if (!state.preScaled) {
+                state.cache = null;
+                Log.i(TAG, "cleared compressed cache");
+            }
+        }
         if (state.cacheDecompressed != null) {
             state.cacheDecompressed.recycle();
             state.cacheDecompressed = null;
@@ -569,64 +587,10 @@ Row        Layout
         return bm;
     }
 
-    public void setImageBitmap(byte[] compressedBitmap, int scaleMode) {
-        if (compressedBitmap == null) {
-            recycle();
-        } else {
-            // TODO: full recycle here?
-            state.cache = compressedBitmap.clone();
-            if (state.cacheDecompressed != null) {
-                state.cacheDecompressed.recycle();
-                state.cacheDecompressed = null;
-            }
-
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inJustDecodeBounds = true;
-            BitmapFactory.decodeByteArray(compressedBitmap, 0, compressedBitmap.length, options);
-
-            state.bmw = options.outWidth;
-            state.bmh = options.outHeight;
-            state.scaleMode = scaleMode;
-            state.preScaled = true;
-            if (getWindowVisibility() != GONE) {
-                Log.i(TAG, "setImageBitmap: drawing because view is not gone");
-                Log.i(TAG, "setImageBitmap: measuring");
-                measure(MeasureSpec.AT_MOST, MeasureSpec.AT_MOST);
-                Log.i(TAG, "setImageBitmap: measured");
-                invalidate();
-            } else {
-                Log.i(TAG, "setImageBitmap: not drawing because view is gone");
-            }
-        }
-    }
-
-    public void setImageBitmap(Bitmap bm, boolean recycleAfterUse, boolean setImmediately, boolean clearCache, int scaleMode) {
-        if (clearCache) state.cache = null;
-        if (bm == null) {
-            recycle();
-        } else {
-            Log.i(TAG, "setImageBitmap: setting");
-            Log.i(TAG, "setImageBitmap: state is " + state);
-            if (state.bm != null) state.bm.recycle();
-            // Bitmap#copy introduces a lot of lag
-            state.bm = bm;
-            state.bmw = bm.getWidth();
-            state.bmh = bm.getHeight();
-            Log.i(TAG, "setImageBitmap: state.bm is " + state.bm);
-            state.recycleAfterUse = recycleAfterUse;
-            state.setImmediately = setImmediately;
-            state.scaleMode = scaleMode;
-            state.preScaled = false;
-            if (getWindowVisibility() != GONE) {
-                Log.i(TAG, "setImageBitmap: drawing because view is not gone");
-                Log.i(TAG, "setImageBitmap: measuring");
-                measure(MeasureSpec.AT_MOST, MeasureSpec.AT_MOST);
-                Log.i(TAG, "setImageBitmap: measured");
-                invalidate();
-            } else {
-                Log.i(TAG, "setImageBitmap: not drawing because view is gone");
-            }
-        }
+    @Override
+    public void invalidate() {
+        Log.i(TAG, "setImageBitmap: invalidated");
+        super.invalidate();
     }
 
     void internalRecord() {
@@ -657,11 +621,106 @@ Row        Layout
         }
     }
 
+    public void setImageBitmap(byte[] compressedBitmap, int scaleMode) {
+        state.preScaled = false;
+        if (compressedBitmap == null) {
+            Log.w(TAG, "setImageBitmap: compressedBitmap is null, did you mean to invoke clearImage()?");
+            recycle();
+            drawNothing = true;
+            invalidate();
+        } else {
+            drawNothing = false;
+            // TODO: full recycle here?
+            state.cache = compressedBitmap.clone();
+            if (state.cacheDecompressed != null) {
+                state.cacheDecompressed.recycle();
+                state.cacheDecompressed = null;
+            }
+
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+            BitmapFactory.decodeByteArray(compressedBitmap, 0, compressedBitmap.length, options);
+
+            state.bmw = options.outWidth;
+            state.bmh = options.outHeight;
+            state.scaleMode = scaleMode;
+            state.preScaled = true;
+            if (getWindowVisibility() != GONE) {
+                Log.i(TAG, "setImageBitmap: drawing because view is not gone");
+                Log.i(TAG, "setImageBitmap: measuring");
+                measure(MeasureSpec.AT_MOST, MeasureSpec.AT_MOST);
+                Log.i(TAG, "setImageBitmap: measured");
+                postInvalidate();
+            } else {
+                Log.i(TAG, "setImageBitmap: not drawing because view is gone");
+            }
+        }
+    }
+
+    public void setImageBitmap(Bitmap bm, boolean recycleAfterUse, boolean setImmediately, boolean clearCache, int scaleMode) {
+        state.preScaled = false;
+        if (clearCache) {
+            state.cache = null;
+            Log.i(TAG, "setImageBitmap: cleared compressed cache");
+        }
+        if (bm == null) {
+            Log.w(TAG, "setImageBitmap: bm is null, did you mean to invoke clearImage()?");
+            recycle();
+            drawNothing = true;
+            invalidate();
+        } else {
+            drawNothing = false;
+            Log.i(TAG, "setImageBitmap: setting");
+            Log.i(TAG, "setImageBitmap: state is " + state);
+            if (state.bm != null) state.bm.recycle();
+            // Bitmap#copy introduces a lot of lag
+            state.bm = bm;
+            state.bmw = bm.getWidth();
+            state.bmh = bm.getHeight();
+            Log.i(TAG, "setImageBitmap: state.bm is " + state.bm);
+            state.recycleAfterUse = recycleAfterUse;
+            state.setImmediately = setImmediately;
+            state.scaleMode = scaleMode;
+            state.preScaled = false;
+            if (getWindowVisibility() != GONE) {
+                Log.i(TAG, "setImageBitmap: drawing because view is not gone");
+                Log.i(TAG, "setImageBitmap: measuring");
+                measure(MeasureSpec.AT_MOST, MeasureSpec.AT_MOST);
+                Log.i(TAG, "setImageBitmap: measured");
+                invalidate();
+            } else {
+                Log.i(TAG, "setImageBitmap: not drawing because view is gone");
+            }
+        }
+    }
+
+    public void clearImage() {
+        clearImage(false);
+    }
+
+    public void clearImage(boolean clearCache) {
+        if (clearCache) {
+            state.cache = null;
+            Log.i(TAG, "clearImage: cleared compressed cache");
+        }
+        recycle();
+        drawNothing = true;
+        invalidate();
+    }
+
     static final IllegalStateException drawRecycled = new IllegalStateException("onDraw: cannot draw a recycled bitmap");
 
     @Override
     protected void onDraw(Canvas canvas) {
         Log.i(TAG, "onDraw: called");
+        if (drawNothing) {
+            Log.i(TAG, "onDraw: drawing nothing");
+            state.dst.right = getMeasuredWidth();
+            state.dst.bottom = getMeasuredHeight();
+            canvas.drawRect(state.dst, new Paint());
+            drawNothing = false;
+            return;
+        }
         Log.i(TAG, "onDraw: state is " + state);
         Log.i(TAG, "onDraw: state.cache is " + state.cache);
         Log.i(TAG, "onDraw: state.bm is " + state.bm);
@@ -968,6 +1027,7 @@ Row        Layout
 
     @Override
     protected void onConfigurationChanged(final Configuration newConfig) {
+        Log.i(TAG, "onConfigurationChanged: called");
         orientation = newConfig.orientation;
         super.onConfigurationChanged(newConfig);
     }

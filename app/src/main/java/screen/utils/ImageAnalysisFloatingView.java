@@ -19,7 +19,8 @@ public class ImageAnalysisFloatingView {
     private FloatingView mFloatingView;
 
     private TextView textViewMain;
-    private BitmapView bitmapViewMain;
+    private BitmapView bitmapViewMainPicker;
+    private BitmapView bitmapViewMainEditor;
     
     private String cachedText;
     private byte[] cachedCompressedBitmap;
@@ -33,8 +34,28 @@ public class ImageAnalysisFloatingView {
 
     Variables variables;
     private View sourceButton;
+    private View analyzerPicker;
+    private View analyzerEditor;
+
+    void initVariables() {
+        mFloatingView = null;
+        textViewMain = null;
+        bitmapViewMainPicker = null;
+        bitmapViewMainEditor = null;
+        cachedText = null;
+        cachedCompressedBitmap = null;
+        recyclerView = null;
+        currentAdapter = null;
+        previousAdapter = null;
+        layoutManager = null;
+        analyzerRootLayout = null;
+        sourceButton = null;
+        analyzerPicker = null;
+        analyzerEditor = null;
+    }
 
     public ImageAnalysisFloatingView(Variables variables) {
+        initVariables();
         this.variables = variables;
     }
 
@@ -43,12 +64,16 @@ public class ImageAnalysisFloatingView {
     }
 
     final String analyzerRootLayoutKey = "1";
-    final String textViewMainKey = "2";
-    final String bitmapViewMainKey = "3";
-    final String recyclerViewKey = "4";
+    final String analyzerPickerKey = "2";
+    final String textViewMainKey = "3";
+    final String bitmapViewMainPickerKey = "4";
+    final String recyclerViewKey = "5";
+    final String analyzerEditorKey = "6";
+    final String bitmapViewMainEditorKey = "7";
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void onCreate(Context context) {
+        initVariables();
         variables.log.logMethodNameWithClassName(this);
 
         mFloatingView = (FloatingView) variables.layoutInflater.inflate(R.layout.layout_floating_image_analysis_widget, null);
@@ -58,17 +83,18 @@ public class ImageAnalysisFloatingView {
             @Override
             public void run(final FloatingView floatingView) {
                 // set up on-click listeners
+
                 currentAdapter.setClickListener(new ImageAnalysisRecyclerViewAdapter.ItemClickListener() {
                     @Override
                     public void onItemClick(byte[] memory, String text) {
                         cachedText = text;
                         cachedCompressedBitmap = memory;
                         textViewMain.setText(cachedText);
-                        bitmapViewMain.setImageBitmap(memory, BitmapView.ScaleMode.SCALE_WIDTH_HEIGHT);
+                        bitmapViewMainPicker.setImageBitmap(memory, BitmapView.ScaleMode.SCALE_WIDTH_HEIGHT);
                     }
                 });
 
-                floatingView.findViewById(R.id.analyzerEraseVideoBufferButton).setOnClickListener(new View.OnClickListener() {
+                analyzerPicker.findViewById(R.id.analyzerEraseVideoBufferButton).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         currentAdapter.clearData();
@@ -76,8 +102,28 @@ public class ImageAnalysisFloatingView {
                     }
                 });
 
+                analyzerPicker.findViewById(R.id.analyzerProcessImageButton).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (cachedCompressedBitmap != null) {
+                            analyzerEditor.setVisibility(View.VISIBLE);
+                            analyzerPicker.setVisibility(View.GONE);
+                            bitmapViewMainEditor.setImageBitmap(cachedCompressedBitmap, BitmapView.ScaleMode.SCALE_WIDTH_HEIGHT);
+                        }
+                    }
+                });
+
                 //adding click listener to close button
-                floatingView.findViewById(R.id.analyzerFinishButton).setOnClickListener(new View.OnClickListener() {
+                analyzerEditor.findViewById(R.id.analyzerEditorFinishButton).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        analyzerPicker.setVisibility(View.VISIBLE);
+                        analyzerEditor.setVisibility(View.GONE);
+                    }
+                });
+
+                //adding click listener to close button
+                analyzerPicker.findViewById(R.id.analyzerFinishButton).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         if (sourceButton != null) sourceButton.setBackgroundTintList(ColorStateList.valueOf(Color.RED));
@@ -97,12 +143,18 @@ public class ImageAnalysisFloatingView {
 
                 if (analyzerRootLayout != null)
                     state.putInt(analyzerRootLayoutKey, analyzerRootLayout.getVisibility());
+                if (analyzerPicker != null)
+                    state.putInt(analyzerPickerKey, analyzerPicker.getVisibility());
                 if (textViewMain != null)
                     state.putInt(textViewMainKey, textViewMain.getVisibility());
-                if (bitmapViewMain != null)
-                    state.putInt(bitmapViewMainKey, bitmapViewMain.getVisibility());
+                if (bitmapViewMainPicker != null)
+                    state.putInt(bitmapViewMainPickerKey, bitmapViewMainPicker.getVisibility());
                 if (recyclerView != null)
                     state.putInt(recyclerViewKey, recyclerView.getVisibility());
+                if (analyzerEditor != null)
+                    state.putInt(analyzerEditorKey, analyzerEditor.getVisibility());
+                if (bitmapViewMainEditor != null)
+                    state.putInt(bitmapViewMainEditorKey, bitmapViewMainEditor.getVisibility());
             }
         });
 
@@ -110,11 +162,15 @@ public class ImageAnalysisFloatingView {
             @Override
             public void run(FloatingView floatingView) {
                 // get all required view's
-                analyzerRootLayout = variables.log.errorAndThrowIfNull(floatingView.findViewById(R.id.analyzerRootLayout));
+                analyzerRootLayout = floatingView.findViewById(R.id.analyzerRootLayout);
 
-                textViewMain = (TextView) floatingView.findViewById(R.id.analyzerTextView);
-                bitmapViewMain = (BitmapView) floatingView.findViewById(R.id.analyzerSelectedImage);
-                recyclerView = (RecyclerView) floatingView.findViewById(R.id.analyzerRecyclerView);
+                analyzerPicker = floatingView.findViewById(R.id.analyzerPicker);
+                textViewMain = analyzerPicker.findViewById(R.id.analyzerTextView);
+                bitmapViewMainPicker = analyzerPicker.findViewById(R.id.analyzerSelectedImage);
+                recyclerView = analyzerPicker.findViewById(R.id.analyzerRecyclerView);
+
+                analyzerEditor = floatingView.findViewById(R.id.analyzerEditor);
+                bitmapViewMainEditor = analyzerEditor.findViewById(R.id.analyzerEditorSelectedImage);
 
                 // set up our RecyclerView
                 layoutManager = new LinearLayoutManager(variables.context, LinearLayoutManager.HORIZONTAL, false);
@@ -136,15 +192,24 @@ public class ImageAnalysisFloatingView {
                 // restore view states
                 int visibility = state.getInt(analyzerRootLayoutKey, View.VISIBLE);
                 analyzerRootLayout.setVisibility(visibility);
+                visibility = state.getInt(analyzerPickerKey, View.VISIBLE);
+                analyzerPicker.setVisibility(visibility);
                 visibility = state.getInt(textViewMainKey, View.VISIBLE);
                 textViewMain.setVisibility(visibility);
-                visibility = state.getInt(bitmapViewMainKey, View.VISIBLE);
-                bitmapViewMain.setVisibility(visibility);
+                visibility = state.getInt(bitmapViewMainPickerKey, View.VISIBLE);
+                bitmapViewMainPicker.setVisibility(visibility);
                 visibility = state.getInt(recyclerViewKey, View.VISIBLE);
                 recyclerView.setVisibility(visibility);
+                visibility = state.getInt(analyzerEditorKey, View.GONE);
+                analyzerEditor.setVisibility(visibility);
+                visibility = state.getInt(bitmapViewMainEditorKey, View.VISIBLE);
+                bitmapViewMainEditor.setVisibility(visibility);
 
                 if (cachedText != null) textViewMain.setText(cachedText);
-                if (cachedCompressedBitmap != null) bitmapViewMain.setImageBitmap(cachedCompressedBitmap);
+                if (cachedCompressedBitmap != null) {
+                    bitmapViewMainPicker.setImageBitmap(cachedCompressedBitmap);
+                    bitmapViewMainEditor.setImageBitmap(cachedCompressedBitmap);
+                }
                 
                 // if we previously had an adapter
                 // then we use the previous adapter to restore our current adapter
@@ -162,6 +227,8 @@ public class ImageAnalysisFloatingView {
 
         // hide by default
         analyzerRootLayout.setVisibility(View.GONE);
+        analyzerPicker.setVisibility(View.VISIBLE);
+        analyzerEditor.setVisibility(View.GONE);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -184,13 +251,14 @@ public class ImageAnalysisFloatingView {
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void onDestroy() {
         variables.log.logMethodNameWithClassName(this);
+        if (currentAdapter != null) {
+            currentAdapter.clearData();
+            currentAdapter.notifyDataSetChanged();
+        }
 
         if (mFloatingView != null) {
             mFloatingView.detachFromWindowManager();
-
-            // destroy references
-            analyzerRootLayout = null;
-            mFloatingView = null;
         }
+        initVariables();
     }
 }

@@ -10,6 +10,8 @@ import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
+
 import smallville7123.smartclick.R;
 
 public class ImageAnalysisRecyclerViewAdapter extends
@@ -21,7 +23,9 @@ public class ImageAnalysisRecyclerViewAdapter extends
     private ItemClickListener mClickListener;
 
     public void clearData() {
+        log.logWithClassName(this, "clearing data");
         if (data != null) data.clear();
+        for (MyViewHolder holder : holders) holder.bitmapView.clearImage(false);
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
@@ -48,14 +52,18 @@ public class ImageAnalysisRecyclerViewAdapter extends
         data = adapter.data;
     }
 
+    ArrayList<ImageAnalysisRecyclerViewAdapter.MyViewHolder> holders = new ArrayList<>();
+
     @Override
     public ImageAnalysisRecyclerViewAdapter.MyViewHolder onCreateViewHolder(ViewGroup parent,
                                                                             int viewType) {
         log.logMethodNameWithClassName(this);
-        return new ImageAnalysisRecyclerViewAdapter.MyViewHolder(
+        ImageAnalysisRecyclerViewAdapter.MyViewHolder h = new ImageAnalysisRecyclerViewAdapter.MyViewHolder(
                 (ConstraintLayout) LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.recyclerview_item, parent, false)
         );
+        holders.add(h);
+        return h;
     }
 
     @Override
