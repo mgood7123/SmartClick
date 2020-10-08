@@ -9,9 +9,4 @@ public class MediaProjectionBinder extends Binder {
     public MediaProjectionBinder(FloatingViewService floatingViewService) {
         this.floatingViewService = floatingViewService;
     }
-
-    public FloatingViewService getService() {
-        return floatingViewService;
-    }
-
 }

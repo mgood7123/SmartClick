@@ -1,12 +1,10 @@
 package screen.utils;
 
-import android.app.Notification;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.res.ColorStateList;
-import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Handler;
@@ -89,77 +87,12 @@ public class FloatingViewService extends Service {
         }
     }
 
-    /**
-     * Service
-     *
-     * @param context           context
-     * @param serviceConnection serviceConnection
-     */
-    public static void bindService(Context context, ServiceConnection serviceConnection) {
-        Intent intent = new Intent(context, FloatingViewService.class);
-        context.bindService(intent, serviceConnection, Service.BIND_AUTO_CREATE);
-    }
-
-    /**
-     * Service
-     *
-     * @param context           context
-     * @param serviceConnection serviceConnection
-     */
-    public static void unbindService(Context context, ServiceConnection serviceConnection) {
-        context.unbindService(serviceConnection);
-    }
-
-    private MediaProjectionNotificationEngine notificationEngine;
-
-    /**
-     * 显示通知栏
-     */
-    private void showNotification() {
-        if (notificationEngine == null) {
-            return;
-        }
-
-        Notification notification = notificationEngine.getNotification();
-
-        startForeground(SU.variables.REQUEST_CODE_FLOATING_WINDOW+1, notification);
-    }
-
-    /**
-     * 设置 通知引擎
-     *
-     * @param notificationEngine notificationEngine
-     */
-    public void setNotificationEngine(MediaProjectionNotificationEngine notificationEngine) {
-        this.notificationEngine = notificationEngine;
-    }
-
-
-
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onCreate() {
         super.onCreate();
 
-        setNotificationEngine(new MediaProjectionNotificationEngine() {
-            @Override
-            public Notification getNotification() {
-                String title = "Floating View";
-                return NotificationHelper.getInstance().createSystem(
-                        FloatingViewService.this,
-                        getResources().getString(getApplication().getApplicationInfo().labelRes),
-                        R.drawable.ic_launcher,
-                        R.drawable.icon
-                )
-                        .setOngoing(true)// 常驻通知栏
-                        .setTicker(title)
-                        .setContentText(title)
-                        .setDefaults(Notification.DEFAULT_ALL)
-                        .build();
-            }
-        });
-
-        showNotification();
+        new smallville7123.smartclick.Notification(this, "Floating View").show(1);
 
         SU.variables.log.logMethodNameWithClassName(this);
 

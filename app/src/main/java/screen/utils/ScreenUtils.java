@@ -2,6 +2,7 @@ package screen.utils;
 
 import android.app.Activity;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -18,7 +19,7 @@ public class ScreenUtils {
 
     public ScreenUtils() {}
 
-    public void onCreate(@NonNull Service service, final Variables.Callback runOnUiThread) {
+    public ScreenUtils onCreate(@NonNull Service service, final Variables.Callback runOnUiThread) {
         // service overload
         variables.log.logMethodNameWithClassName(this);
         variables.service = service;
@@ -27,9 +28,10 @@ public class ScreenUtils {
         variables.cacheDir = service.getCacheDir().getAbsolutePath();
         variables.layoutInflater = LayoutInflater.from(service);
         variables.setRunOnUIThread(runOnUiThread);
+        return this;
     }
 
-    public void onCreate(@NonNull Activity activity) {
+    public ScreenUtils onCreate(@NonNull Activity activity) {
         variables.log.logMethodNameWithClassName(this);
         variables.activity = activity;
         variables.context = activity;
@@ -42,6 +44,16 @@ public class ScreenUtils {
                 variables.activity.runOnUiThread((Runnable) o);
             }
         });
+        return this;
+    }
+
+    public ScreenUtils onCreate(@NonNull Context context) {
+        variables.log.logMethodNameWithClassName(this);
+        variables.context = context;
+        variables.mProjectionManager = variables.mediaProjectionHelper.getMediaProjectionManager();
+        variables.cacheDir = context.getCacheDir().getAbsolutePath();
+        variables.layoutInflater = LayoutInflater.from(context);
+        return this;
     }
 
     public void setImageView(ImageView imageView) {
@@ -75,7 +87,11 @@ public class ScreenUtils {
     void startFloatingWindowService() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (Settings.canDrawOverlays(variables.context)) {
-                variables.context.startService(new Intent(variables.context, FloatingViewService.class));
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    variables.context.startForegroundService(new Intent(variables.context, FloatingViewService.class));
+                } else {
+                    variables.context.startService(new Intent(variables.context, FloatingViewService.class));
+                }
             }
         }
     }
