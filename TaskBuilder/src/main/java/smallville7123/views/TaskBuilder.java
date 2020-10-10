@@ -1,7 +1,9 @@
 package smallville7123.views;
 
 import android.animation.Animator;
+import android.app.Instrumentation;
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -19,6 +21,7 @@ import androidx.constraintlayout.widget.ConstraintSet;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
@@ -70,7 +73,7 @@ public class TaskBuilder extends ConstraintLayout {
      * @see View#requireViewById(int)
      */
     @androidx.annotation.Nullable
-    public static final <T extends View> T constructView(Class viewClass, Context context, AttributeSet attrs, Integer defStyleAttr, Integer defStyleRes) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public final <T extends View> T constructView(Class viewClass, Context context, AttributeSet attrs, Integer defStyleAttr, Integer defStyleRes) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         if (!View.class.isAssignableFrom(viewClass)) throw new RuntimeException("viewClass must extend View");
 
         boolean attr = attrs != null;
@@ -98,7 +101,7 @@ public class TaskBuilder extends ConstraintLayout {
     }
 
     TextView newPlaceholder(Context context, AttributeSet attrs, Integer defStyleAttr, Integer defStyleRes) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
-        TextView PLACEHOLDER = constructView(TextView.class, context, null, null, null);
+        TextView PLACEHOLDER = constructView(TextView.class, getContext(context), null, null, null);
         PLACEHOLDER.setTextColor(Color.BLACK);
         PLACEHOLDER.setText("PLACEHOLDER");
         PLACEHOLDER.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30f);
@@ -106,11 +109,35 @@ public class TaskBuilder extends ConstraintLayout {
         return PLACEHOLDER;
     }
 
-    // todo: item_list.xml
+    LinearLayout linearLayout1;
+
+    private static class Internal {}
+
+    Internal Internal = new Internal();
+
+    @Override
+    public void addView(View child, int index, ViewGroup.LayoutParams params) {
+        Object tag = child.getTag();
+        if (tag instanceof Internal) {
+            super.addView(child, index, params);
+        } else {
+            linearLayout1.addView(child, index, params);
+        }
+    }
+
+    private boolean showTaskMenu = false;
 
     void construct(final Context context, final AttributeSet attrs, Integer defStyleAttr, Integer defStyleRes) throws NoSuchMethodException, IllegalAccessException, InstantiationException, InvocationTargetException {
-        setBackgroundColor(Color.BLACK);
+        if (attrs != null) {
+            final TypedArray a = context.getTheme().obtainStyledAttributes(
+                    attrs,
+                    R.styleable.TaskBuilder,
+                    0, 0
+            );
 
+            showTaskMenu = a.getBoolean(R.styleable.TaskBuilder_showTaskMenu, false);
+            a.recycle();
+        }
         // be organized:
         //
         // create all our instances
@@ -125,8 +152,11 @@ public class TaskBuilder extends ConstraintLayout {
         // create all our instances
 
         ScrollView scrollView = constructView(ScrollView.class, context, attrs, defStyleAttr, defStyleRes);
+        scrollView.setTag(Internal);
         LinearLayout linearLayout = constructView(LinearLayout.class, context, attrs, defStyleAttr, defStyleRes);
+        linearLayout.setTag(Internal);
         View fab = constructView(ImageButton.class, context, attrs, defStyleAttr, defStyleRes);
+        fab.setTag(Internal);
 
         // set our parameters
         builder.setLayoutConstraintsTarget(scrollView);
@@ -135,8 +165,6 @@ public class TaskBuilder extends ConstraintLayout {
         builder.layout_constraintBottom_toBottomOf(ConstraintBuilder.parent);
         builder.layout_constraintRight_toRightOf(ConstraintBuilder.parent);
         linearLayout.setOrientation(LinearLayout.VERTICAL);
-        for (int i = 0; i < 30; i++) linearLayout.addView(newPlaceholder(context, attrs, defStyleAttr, defStyleRes), wrapContent);
-        fab.setBackgroundColor(Color.MAGENTA);
         fab.setBackgroundResource(R.drawable.plus);
 
         // add our views
@@ -153,9 +181,10 @@ public class TaskBuilder extends ConstraintLayout {
 
         // create all our instances
         final ConstraintLayout area = constructView(ConstraintLayout.class, context, attrs, defStyleAttr, defStyleRes);
-
+        area.setTag(Internal);
+        
         // set our parameters
-        area.setVisibility(GONE);
+        if (!showTaskMenu) area.setVisibility(GONE);
         builder.setLayoutConstraintsTarget(area);
         builder.layout_constraintAll_ToAllOf(ConstraintBuilder.parent);
 
@@ -169,18 +198,18 @@ public class TaskBuilder extends ConstraintLayout {
 
         // create all our instances
         final ScrollView scrollView1 = constructView(ScrollView.class, context, attrs, defStyleAttr, defStyleRes);
-        LinearLayout linearLayout1 = constructView(LinearLayout.class, context, attrs, defStyleAttr, defStyleRes);
+        scrollView1.setTag(Internal);
+        linearLayout1 = constructView(LinearLayout.class, context, attrs, defStyleAttr, defStyleRes);
+        linearLayout1.setTag(Internal);
 
         // set our parameters
         builder.setLayoutConstraintsTarget(scrollView1);
         builder.layout_constraintAll_ToAllOf(ConstraintBuilder.parent);
         scrollView1.setBackgroundColor(Color.DKGRAY);
-        scrollView1.setAlpha(0.0f);
+        if (!showTaskMenu) scrollView1.setAlpha(0.0f);
         linearLayout1.setOrientation(LinearLayout.VERTICAL);
 
         // add our views
-        for (int i = 0; i < 30; i++)
-            linearLayout1.addView(newPlaceholder(context, attrs, defStyleAttr, defStyleRes), wrapContent);
         scrollView1.addView(linearLayout1, matchParent);
         builder.addView(scrollView1, toDP(400), toDP(400));
         builder.build();
@@ -225,7 +254,6 @@ public class TaskBuilder extends ConstraintLayout {
                 }).start();
             }
         });
-
     }
 
     static class ConstraintBuilder {

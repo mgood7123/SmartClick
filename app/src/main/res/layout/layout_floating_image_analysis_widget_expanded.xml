@@ -139,8 +139,16 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/analyzerEditorSelectedImage"
+            app:showTaskMenu="true"
             >
-
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="hi"
+                android:textSize="40dp"
+                android:textColor="@color/cardview_light_background"
+                >
+            </TextView>
         </smallville7123.views.TaskBuilder>
 
         <Button
