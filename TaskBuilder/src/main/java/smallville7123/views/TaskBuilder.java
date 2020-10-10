@@ -1,40 +1,24 @@
 package smallville7123.views;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
 import android.animation.Animator;
 import android.content.Context;
 import android.graphics.Color;
-import android.icu.util.MeasureUnit;
-import android.os.Parcel;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.view.ViewPropertyAnimator;
-import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import androidx.constraintlayout.motion.widget.MotionLayout;
-import androidx.constraintlayout.motion.widget.MotionScene;
-import androidx.constraintlayout.motion.widget.TransitionBuilder;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
-import androidx.constraintlayout.widget.Placeholder;
-import androidx.core.util.Pair;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Map;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
