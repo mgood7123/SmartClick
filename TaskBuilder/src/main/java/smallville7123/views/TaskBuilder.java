@@ -135,6 +135,9 @@ public class TaskBuilder extends ConstraintLayout {
                     0, 0
             );
 
+            // TODO: create xml attributes to let the user specify the height and width of every sub view
+            //  this is needed for correct Layout across device densities's
+
             showTaskMenu = a.getBoolean(R.styleable.TaskBuilder_showTaskMenu, false);
             a.recycle();
         }
