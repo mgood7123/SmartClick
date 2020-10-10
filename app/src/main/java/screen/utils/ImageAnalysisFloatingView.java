@@ -5,9 +5,12 @@ import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Build;
 import android.view.View;
+import android.widget.ImageButton;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import androidx.annotation.RequiresApi;
+import androidx.constraintlayout.motion.widget.MotionLayout;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -19,27 +22,31 @@ import smallville7123.floatingview.FloatingView;
 public class ImageAnalysisFloatingView {
     private FloatingView mFloatingView;
 
+
+
+    View analyzerRootLayout;
+    Variables variables;
+    private View sourceButton;
+
+    private View analyzerPicker;
     private TextView textViewMain;
     private BitmapView bitmapViewMainPicker;
     private BitmapView bitmapViewMainEditor;
-    
     private String cachedText;
     private byte[] cachedCompressedBitmap;
-
     private RecyclerView recyclerView;
     private ImageAnalysisRecyclerViewAdapter currentAdapter;
     private ImageAnalysisRecyclerViewAdapter previousAdapter;
     private RecyclerView.LayoutManager layoutManager;
 
-    View analyzerRootLayout;
-
-    Variables variables;
-    private View sourceButton;
-    private View analyzerPicker;
     private View analyzerEditor;
 
     void initVariables() {
         mFloatingView = null;
+        analyzerRootLayout = null;
+        sourceButton = null;
+
+        analyzerPicker = null;
         textViewMain = null;
         bitmapViewMainPicker = null;
         bitmapViewMainEditor = null;
@@ -49,9 +56,7 @@ public class ImageAnalysisFloatingView {
         currentAdapter = null;
         previousAdapter = null;
         layoutManager = null;
-        analyzerRootLayout = null;
-        sourceButton = null;
-        analyzerPicker = null;
+
         analyzerEditor = null;
     }
 
@@ -169,10 +174,6 @@ public class ImageAnalysisFloatingView {
                 textViewMain = analyzerPicker.findViewById(R.id.analyzerTextView);
                 bitmapViewMainPicker = analyzerPicker.findViewById(R.id.analyzerSelectedImage);
                 recyclerView = analyzerPicker.findViewById(R.id.analyzerRecyclerView);
-
-                analyzerEditor = floatingView.findViewById(R.id.analyzerEditor);
-                bitmapViewMainEditor = analyzerEditor.findViewById(R.id.analyzerEditorSelectedImage);
-
                 // set up our RecyclerView
                 layoutManager = new LinearLayoutManager(variables.context, LinearLayoutManager.HORIZONTAL, false);
                 recyclerView.setLayoutManager(layoutManager);
@@ -184,6 +185,9 @@ public class ImageAnalysisFloatingView {
                 // because of this, the adapter must be saved such that it outlives this scope
                 // and then used to restore the new adapter's state
                 //
+
+                analyzerEditor = floatingView.findViewById(R.id.analyzerEditor);
+                bitmapViewMainEditor = analyzerEditor.findViewById(R.id.analyzerEditorSelectedImage);
             }
         });
 
@@ -228,8 +232,10 @@ public class ImageAnalysisFloatingView {
 
         // hide by default
         analyzerRootLayout.setVisibility(View.GONE);
-        analyzerPicker.setVisibility(View.VISIBLE);
-        analyzerEditor.setVisibility(View.GONE);
+//        analyzerPicker.setVisibility(View.VISIBLE);
+//        analyzerEditor.setVisibility(View.GONE);
+        analyzerPicker.setVisibility(View.GONE);
+        analyzerEditor.setVisibility(View.VISIBLE);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)

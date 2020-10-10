@@ -92,7 +92,7 @@ public class FloatingViewService extends Service {
     public void onCreate() {
         super.onCreate();
 
-        new smallville7123.smartclick.Notification(this, "Floating View").show(1);
+        new smallville7123.smartclick.Notification(this, "Floating View", "Service started").show(1);
 
         SU.variables.log.logMethodNameWithClassName(this);
 

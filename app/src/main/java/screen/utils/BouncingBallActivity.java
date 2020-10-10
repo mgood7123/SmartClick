@@ -9,11 +9,12 @@ import smallville7123.smartclick.R;
 
 public class BouncingBallActivity extends Activity {
 
-    MotionLayout motionLayout;
 
     private LogUtils log = new LogUtils(
             "BouncingBallActivity", "a bug has occurred, this should not happen"
     );
+
+    MotionLayout motionLayout;
 
     void transition(MotionLayout motionLayout) {
         int start_state = motionLayout.getStartState();

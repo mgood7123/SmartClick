@@ -1,3 +1,4 @@
+include ':TaskBuilder'
 include ':FloatingView'
 include ':LibParcelableBundle'
 include ':app'

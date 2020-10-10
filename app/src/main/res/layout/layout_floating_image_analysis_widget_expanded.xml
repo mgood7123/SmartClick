@@ -131,7 +131,7 @@
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/analyzerEditorTextView" />
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <smallville7123.views.TaskBuilder
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:id="@+id/analyzerEditorPanel"
@@ -140,16 +140,8 @@
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/analyzerEditorSelectedImage"
             >
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:text="PANEL"
-                android:textSize="60sp"
-                android:textAlignment="center"
-                android:gravity="center"
-                >
-            </TextView>
-        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </smallville7123.views.TaskBuilder>
 
         <Button
             android:id="@+id/analyzerEditorFinishButton"
