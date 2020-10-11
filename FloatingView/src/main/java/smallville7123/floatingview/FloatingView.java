@@ -401,27 +401,44 @@ public class FloatingView extends FrameLayout {
                         return true;
 
                     case MotionEvent.ACTION_MOVE:
-                        expandedLocationPrevious[0] = expandedLocation[0];
-                        expandedLocationPrevious[1] = expandedLocation[1];
-
-                        float savedNewX = newX;
-                        float savedNewY = newY;
-                        int savedX = minimizedLayout.x;
-                        int savedY = minimizedLayout.y;
-
-                        newX = event.getRawX() + dX;
-                        minimizedLayout.x = (int) newX;
-                        newY = event.getRawY() + dY;
-                        minimizedLayout.y = (int) newY;
-                        updateWindowManagerLayout(minimizedLayout);
-                        getExpandedViewLocationOnScreen(expandedLocation);
-                        if (expandedLocationPrevious[0] == expandedLocation[0]) {
-                            newX = savedNewX;
-                            minimizedLayout.x = savedX;
+                        float savedNewY = 0;
+                        int savedY = 0;
+                        float savedNewX = 0;
+                        int savedX = 0;
+                        boolean needsLayout = false;
+                        boolean widthWrap = layout.width == ViewGroup.LayoutParams.WRAP_CONTENT;
+                        boolean heightWrap = layout.height == ViewGroup.LayoutParams.WRAP_CONTENT;
+                        if (widthWrap) {
+                            expandedLocationPrevious[0] = expandedLocation[0];
+                            savedNewX = newX;
+                            savedX = minimizedLayout.x;
+                            newX = event.getRawX() + dX;
+                            minimizedLayout.x = (int) newX;
+                            needsLayout = true;
                         }
-                        if (expandedLocationPrevious[1] == expandedLocation[1]) {
-                            newY = savedNewY;
-                            minimizedLayout.y = savedY;
+                        if (heightWrap) {
+                            expandedLocationPrevious[1] = expandedLocation[1];
+                            savedNewY = newY;
+                            savedY = minimizedLayout.y;
+                            newY = event.getRawY() + dY;
+                            minimizedLayout.y = (int) newY;
+                            needsLayout = true;
+                        }
+                        if (needsLayout) {
+                            updateWindowManagerLayout(minimizedLayout);
+                            getExpandedViewLocationOnScreen(expandedLocation);
+                            if (widthWrap) {
+                                if (expandedLocationPrevious[0] == expandedLocation[0]) {
+                                    newX = savedNewX;
+                                    minimizedLayout.x = savedX;
+                                }
+                            }
+                            if (heightWrap) {
+                                if (expandedLocationPrevious[1] == expandedLocation[1]) {
+                                    newY = savedNewY;
+                                    minimizedLayout.y = savedY;
+                                }
+                            }
                         }
                         // restoring the window manager layout causes it to become unmovable
                         return true;
