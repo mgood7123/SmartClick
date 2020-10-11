@@ -143,14 +143,117 @@
             app:taskMenu_layout_width="200dp"
             app:taskMenu_layout_height="200dp"
             >
-            <TextView
+
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="hi"
-                android:textSize="40dp"
-                android:textColor="@color/cardview_light_background"
                 >
-            </TextView>
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    >
+                    <LinearLayout
+                        android:id="@+id/a"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintLeft_toLeftOf="parent"
+                        app:layout_constraintRight_toLeftOf="@id/b"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="TESTING"
+                            android:textSize="23sp"
+                            android:textColor="@color/cardview_light_background"
+                            >
+                        </TextView>
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="TESTING"
+                            android:textSize="23sp"
+                            android:textColor="@color/cardview_light_background"
+                            >
+                        </TextView>
+                    </LinearLayout>
+                    <ImageButton
+                        android:id="@+id/b"
+                        android:layout_width="50dp"
+                        android:layout_height="0dp"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintRight_toRightOf="parent"
+                        app:layout_constraintLeft_toRightOf="@id/a"
+                        >
+                    </ImageButton>
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <smallville7123.views.TaskBuilderCompatibleListView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                >
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="LIST A ITEM A"
+                    android:textSize="23sp"
+                    android:textColor="@color/cardview_light_background"
+                    >
+                </TextView>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="LIST A ITEM B"
+                    android:textSize="23sp"
+                    android:textColor="@color/cardview_light_background"
+                    >
+                </TextView>
+            </smallville7123.views.TaskBuilderCompatibleListView>
+            <smallville7123.views.TaskBuilderCompatibleListView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                >
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="LIST B ITEM A"
+                    android:textSize="23sp"
+                    android:textColor="@color/cardview_light_background"
+                    >
+                </TextView>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="LIST B ITEM B"
+                    android:textSize="23sp"
+                    android:textColor="@color/cardview_light_background"
+                    >
+                </TextView>
+            </smallville7123.views.TaskBuilderCompatibleListView>
+            <smallville7123.views.TaskBuilderCompatibleListView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                >
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="LIST C ITEM A"
+                    android:textSize="23sp"
+                    android:textColor="@color/cardview_light_background"
+                    >
+                </TextView>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="LIST C ITEM B"
+                    android:textSize="23sp"
+                    android:textColor="@color/cardview_light_background"
+                    >
+                </TextView>
+            </smallville7123.views.TaskBuilderCompatibleListView>
         </smallville7123.views.TaskBuilder>
 
         <Button
