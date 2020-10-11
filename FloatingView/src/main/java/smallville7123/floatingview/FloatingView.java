@@ -280,37 +280,51 @@ public class FloatingView extends FrameLayout {
             collapse();
     }
 
+    // Often, there will be a slight, unintentional, drag when the user taps on the screen,
+    // so we need to account for this.
+    // TODO: would this value be affected by screen density?
+    private static final float CLICK_DRAG_TOLERANCE = 30.0F;
+
     private void setCollapsedViewOnTouchListener() {
         collapsedView.setOnTouchListener(new View.OnTouchListener() {
-            private int initialX;
-            private int initialY;
-            private float initialTouchX;
-            private float initialTouchY;
+            float downRawX, downRawY, dX, dY, newX, newY;
+            int originalX;
+            int originalY;
 
             @Override
             public boolean onTouch(final View v, final MotionEvent event) {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        initialX = minimizedLayout.x;
-                        initialY = minimizedLayout.y;
-                        initialTouchX = event.getRawX();
-                        initialTouchY = event.getRawY();
+                        originalX = minimizedLayout.x;
+                        originalY = minimizedLayout.y;
+                        downRawX = event.getRawX();
+                        downRawY = event.getRawY();
+                        dX = originalX - downRawX;
+                        dY = originalY - downRawY;
                         return true;
 
                     case MotionEvent.ACTION_UP:
-                        //when the drag is ended switching the state of the widget
-                        //
-                        // TODO: do not change visibility when location has changed significantly
-                        //  such as a drag from one area of the screen to another area of the screen
-                        //
-
-                        expand();
+                        float upRawX = event.getRawX();
+                        float upRawY = event.getRawY();
+                        float upDX = upRawX - downRawX;
+                        float upDY = upRawY - downRawY;
+                        // TODO: would this value be affected by screen density?
+                        if ((Math.abs(upDX) < CLICK_DRAG_TOLERANCE) && (Math.abs(upDY) < CLICK_DRAG_TOLERANCE)) {
+                            // assume that the drag was unintentional, restore the original x and y
+                            minimizedLayout.x = originalX;
+                            minimizedLayout.y = originalY;
+                            updateWindowManagerLayout(minimizedLayout);
+                            expand();
+                        } else {
+                            // A drag
+                        }
                         return true;
 
                     case MotionEvent.ACTION_MOVE:
-                        //this code is helping the widget to move around the screen with fingers
-                        minimizedLayout.x = initialX + (int) (event.getRawX() - initialTouchX);
-                        minimizedLayout.y = initialY + (int) (event.getRawY() - initialTouchY);
+                        newX = event.getRawX() + dX;
+                        newY = event.getRawY() + dY;
+                        minimizedLayout.x = (int) newX;
+                        minimizedLayout.y = (int) newY;
                         updateWindowManagerLayout(minimizedLayout);
                         return true;
                 }
