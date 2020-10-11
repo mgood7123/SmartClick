@@ -3,6 +3,8 @@ package smallville7123.views;
 import android.animation.Animator;
 import android.app.Instrumentation;
 import android.content.Context;
+import android.content.res.Resources;
+import android.content.res.Resources.Theme;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.util.AttributeSet;
@@ -26,10 +28,24 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.MATCH_CONSTRAINT;
+import static smallville7123.views.R.styleable.TaskBuilder_Layout;
+import static smallville7123.views.R.styleable.TaskBuilder_Parameters;
 
 public class TaskBuilder extends ConstraintLayout {
 
     public static final String TAG = "TaskBuilder";
+    static LayoutParams matchParent = new LayoutParams(MATCH_PARENT, MATCH_PARENT);
+    static LayoutParams wrapContent = new LayoutParams(WRAP_CONTENT, WRAP_CONTENT);
+    static LayoutParams matchConstraint = new LayoutParams(MATCH_CONSTRAINT, MATCH_CONSTRAINT);
+    LinearLayout linearLayout1;
+    private static class Internal {}
+    Internal Internal = new Internal();
+    private boolean showTaskMenu;
+    Theme theme;
+    TypedArray attributes;
+    int taskMenu_Layout_Width;
+    int taskMenu_Layout_Height;
+
 
     public TaskBuilder(Context context) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         super(context);
@@ -51,9 +67,6 @@ public class TaskBuilder extends ConstraintLayout {
         construct(context, attrs, defStyleAttr, defStyleRes);
     }
 
-    static LayoutParams matchParent = new LayoutParams(MATCH_PARENT, MATCH_PARENT);
-    static LayoutParams wrapContent = new LayoutParams(WRAP_CONTENT, WRAP_CONTENT);
-    static LayoutParams matchConstraint = new LayoutParams(MATCH_CONSTRAINT, MATCH_CONSTRAINT);
 
     Context getContext(Context context) {
         return context == null ? getContext() : context;
@@ -109,11 +122,8 @@ public class TaskBuilder extends ConstraintLayout {
         return PLACEHOLDER;
     }
 
-    LinearLayout linearLayout1;
 
-    private static class Internal {}
 
-    Internal Internal = new Internal();
 
     @Override
     public void addView(View child, int index, ViewGroup.LayoutParams params) {
@@ -125,22 +135,27 @@ public class TaskBuilder extends ConstraintLayout {
         }
     }
 
-    private boolean showTaskMenu = false;
+    void getAttributeParameters(Context context, AttributeSet attrs, Theme theme) {
+        if (attrs != null) {
+            attributes = theme.obtainStyledAttributes(attrs, TaskBuilder_Parameters, 0, 0);
+            showTaskMenu = attributes.getBoolean(R.styleable.TaskBuilder_Parameters_showTaskMenu, false);
+            attributes.recycle();
+        }
+    }
+
+    void getAttributeLayout(Context context, AttributeSet attrs, Theme theme) {
+        if (attrs != null) {
+            attributes = theme.obtainStyledAttributes(attrs, TaskBuilder_Layout, 0, 0);
+            taskMenu_Layout_Width = attributes.getDimensionPixelSize(R.styleable.TaskBuilder_Layout_taskMenu_layout_width, -1);
+            taskMenu_Layout_Height = attributes.getDimensionPixelSize(R.styleable.TaskBuilder_Layout_taskMenu_layout_height, -1);
+            attributes.recycle();
+        }
+    }
 
     void construct(final Context context, final AttributeSet attrs, Integer defStyleAttr, Integer defStyleRes) throws NoSuchMethodException, IllegalAccessException, InstantiationException, InvocationTargetException {
-        if (attrs != null) {
-            final TypedArray a = context.getTheme().obtainStyledAttributes(
-                    attrs,
-                    R.styleable.TaskBuilder,
-                    0, 0
-            );
-
-            // TODO: create xml attributes to let the user specify the height and width of every sub view
-            //  this is needed for correct Layout across device densities's
-
-            showTaskMenu = a.getBoolean(R.styleable.TaskBuilder_showTaskMenu, false);
-            a.recycle();
-        }
+        Theme theme = getContext(context).getTheme();
+        getAttributeLayout(context, attrs, theme);
+        getAttributeParameters(context, attrs, theme);
         // be organized:
         //
         // create all our instances
@@ -214,7 +229,7 @@ public class TaskBuilder extends ConstraintLayout {
 
         // add our views
         scrollView1.addView(linearLayout1, matchParent);
-        builder.addView(scrollView1, toDP(400), toDP(400));
+        builder.addView(scrollView1, taskMenu_Layout_Width, taskMenu_Layout_Height);
         builder.build();
 
         final ViewPropertyAnimator a = scrollView1.animate();
@@ -598,7 +613,7 @@ public class TaskBuilder extends ConstraintLayout {
                 commandList.add(Commands.addView, view, layoutParams1);
             }
 
-            public void addView(View view, int height, int width) {
+            public void addView(View view, int width, int height) {
                 ConstraintLayout.LayoutParams layoutParams = new ConstraintLayout.LayoutParams(width, height);
                 commandList.add(Commands.addView, view, layoutParams);
             }
@@ -610,7 +625,7 @@ public class TaskBuilder extends ConstraintLayout {
                 commandList.add(Commands.addView, view, layoutParams1);
             }
 
-            public void addView(View view, int height, int width, int left, int top, int right, int bottom) {
+            public void addView(View view, int width, int height, int left, int top, int right, int bottom) {
                 ConstraintLayout.LayoutParams layoutParams = new ConstraintLayout.LayoutParams(width, height);
                 layoutParams.setMargins(left, top, right, bottom);
                 commandList.add(Commands.addView, view, layoutParams);

@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <declare-styleable name="TaskBuilder">
+    <declare-styleable name="TaskBuilder_Layout">
+        <attr name="taskMenu_layout_width" format="dimension" />
+        <attr name="taskMenu_layout_height" format="dimension" />
+    </declare-styleable>
+    <declare-styleable name="TaskBuilder_Parameters">
         <attr name="showTaskMenu" format="boolean" />
     </declare-styleable>
 </resources>
