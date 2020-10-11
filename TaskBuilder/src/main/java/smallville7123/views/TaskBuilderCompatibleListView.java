@@ -48,7 +48,6 @@ public class TaskBuilderCompatibleListView extends ConstraintLayout {
     void construct(Context context, AttributeSet attrs, Integer defStyleAttr, Integer defStyleRes) throws NoSuchMethodException, IllegalAccessException, InstantiationException, InvocationTargetException {
         Resources.Theme theme = TaskBuilder.getContext(this, context).getTheme();
         build_layer_1(context, attrs, defStyleAttr, defStyleRes);
-        build_layer_2(context, attrs, defStyleAttr, defStyleRes);
     }
 
     private static class Internal {}
@@ -56,27 +55,9 @@ public class TaskBuilderCompatibleListView extends ConstraintLayout {
 
     LinearLayout list;
     ImageButton expandCollapse;
-    ConstraintLayout views_TaskMenuContainer;
 
     private void build_layer_1(Context context, AttributeSet attrs, Integer defStyleAttr, Integer defStyleRes) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         ConstraintBuilder.Builder builder = ConstraintBuilder.withTag(TAG).withTarget(this);
-
-        // create all our instances
-        views_TaskMenuContainer = constructView(ConstraintLayout.class, context, attrs, defStyleAttr, defStyleRes);
-
-        // set our parameters
-        views_TaskMenuContainer.setTag(Internal);
-        views_TaskMenuContainer.setBackgroundColor(Color.LTGRAY);
-        builder.setLayoutConstraintsTarget(views_TaskMenuContainer);
-        builder.layout_constraintAll_ToAllOf(ConstraintBuilder.parent);
-
-        // add our views
-        builder.addView(views_TaskMenuContainer, matchParent);
-        builder.build();
-    }
-
-    private void build_layer_2(Context context, AttributeSet attrs, Integer defStyleAttr, Integer defStyleRes) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
-        ConstraintBuilder.Builder builder = ConstraintBuilder.withTag(TAG).withTarget(views_TaskMenuContainer);
 
         // create all our instances
         list = constructView(LinearLayout.class, context, attrs, defStyleAttr, defStyleRes);
@@ -94,6 +75,7 @@ public class TaskBuilderCompatibleListView extends ConstraintLayout {
         builder.layout_constraintBottom_toBottomOf(ConstraintBuilder.parent);
         builder.layout_constraintLeft_toLeftOf(ConstraintBuilder.parent);
         builder.layout_constraintRight_toLeftOf(expandCollapse);
+
         builder.setLayoutConstraintsTarget(expandCollapse);
         builder.layout_constraintTop_toTopOf(ConstraintBuilder.parent);
         builder.layout_constraintBottom_toBottomOf(ConstraintBuilder.parent);
