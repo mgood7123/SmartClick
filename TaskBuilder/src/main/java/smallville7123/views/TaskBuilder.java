@@ -37,7 +37,6 @@ public class TaskBuilder extends ConstraintLayout {
     static LayoutParams matchParent = new LayoutParams(MATCH_PARENT, MATCH_PARENT);
     static LayoutParams wrapContent = new LayoutParams(WRAP_CONTENT, WRAP_CONTENT);
     static LayoutParams matchConstraint = new LayoutParams(MATCH_CONSTRAINT, MATCH_CONSTRAINT);
-    LinearLayout linearLayout1;
     private static class Internal {}
     Internal Internal = new Internal();
     private boolean showTaskMenu;
@@ -122,16 +121,21 @@ public class TaskBuilder extends ConstraintLayout {
         return PLACEHOLDER;
     }
 
-
-
-
     @Override
     public void addView(View child, int index, ViewGroup.LayoutParams params) {
         Object tag = child.getTag();
         if (tag instanceof Internal) {
             super.addView(child, index, params);
         } else {
-            linearLayout1.addView(child, index, params);
+            child.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.d(TAG, "onClick() called with: v = [" + v + "]");
+                    // this will reparent, we do not want that
+                    // views_TaskList.addView(v, v.getLayoutParams());
+                }
+            });
+            views_TaskMenuContainer_Internal_TaskMenu.addView(child, index, params);
         }
     }
 
@@ -152,104 +156,125 @@ public class TaskBuilder extends ConstraintLayout {
         }
     }
 
-    void construct(final Context context, final AttributeSet attrs, Integer defStyleAttr, Integer defStyleRes) throws NoSuchMethodException, IllegalAccessException, InstantiationException, InvocationTargetException {
+    void construct(Context context, AttributeSet attrs, Integer defStyleAttr, Integer defStyleRes) throws NoSuchMethodException, IllegalAccessException, InstantiationException, InvocationTargetException {
         Theme theme = getContext(context).getTheme();
         getAttributeLayout(context, attrs, theme);
         getAttributeParameters(context, attrs, theme);
-        // be organized:
-        //
-        // create all our instances
-        // set our parameters
-        // add our views
-        //
 
-        // build layer 1
+        build_layer_1(context, attrs, defStyleAttr, defStyleRes);
+        build_layer_2(context, attrs, defStyleAttr, defStyleRes);
+        build_layer_3(context, attrs, defStyleAttr, defStyleRes);
 
+        addAnimations();
+    }
+
+    // be organized:
+    //
+    // create all our instances
+    // set our parameters
+    // add our views
+    //
+
+    ScrollView views_TaskListScrollView;
+    LinearLayout views_TaskList;
+    ImageButton views_ShowTaskMenu;
+
+    private void build_layer_1(Context context, AttributeSet attrs, Integer defStyleAttr, Integer defStyleRes) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         ConstraintBuilder.Builder builder = ConstraintBuilder.withTarget(this);
 
         // create all our instances
-
-        ScrollView scrollView = constructView(ScrollView.class, context, attrs, defStyleAttr, defStyleRes);
-        scrollView.setTag(Internal);
-        LinearLayout linearLayout = constructView(LinearLayout.class, context, attrs, defStyleAttr, defStyleRes);
-        linearLayout.setTag(Internal);
-        View fab = constructView(ImageButton.class, context, attrs, defStyleAttr, defStyleRes);
-        fab.setTag(Internal);
+        views_TaskListScrollView = constructView(ScrollView.class, context, attrs, defStyleAttr, defStyleRes);
+        views_TaskList = constructView(LinearLayout.class, context, attrs, defStyleAttr, defStyleRes);
+        views_ShowTaskMenu = constructView(ImageButton.class, context, attrs, defStyleAttr, defStyleRes);
 
         // set our parameters
-        builder.setLayoutConstraintsTarget(scrollView);
+        views_TaskListScrollView.setTag(Internal);
+        builder.setLayoutConstraintsTarget(views_TaskListScrollView);
         builder.layout_constraintAll_ToAllOf(ConstraintBuilder.parent);
-        builder.setLayoutConstraintsTarget(fab);
+
+        views_TaskList.setOrientation(LinearLayout.VERTICAL);
+        views_TaskList.setTag(Internal);
+
+        views_ShowTaskMenu.setTag(Internal);
+        builder.setLayoutConstraintsTarget(views_ShowTaskMenu);
         builder.layout_constraintBottom_toBottomOf(ConstraintBuilder.parent);
         builder.layout_constraintRight_toRightOf(ConstraintBuilder.parent);
-        linearLayout.setOrientation(LinearLayout.VERTICAL);
-        fab.setBackgroundResource(R.drawable.plus);
+        views_ShowTaskMenu.setBackgroundResource(R.drawable.plus);
 
         // add our views
-        scrollView.addView(linearLayout, matchParent);
-        builder.addView(scrollView, matchParent);
-        builder.addView(fab, toDP(100), toDP(100), 0, 0, toDP(16), toDP(16));
+        views_TaskListScrollView.addView(views_TaskList, matchParent);
+        builder.addView(views_TaskListScrollView, matchParent);
+        builder.addView(views_ShowTaskMenu, toDP(100), toDP(100), 0, 0, toDP(16), toDP(16));
         builder.build();
+    }
 
-        // Layer 1 is built
+    ConstraintLayout views_TaskMenuContainer;
 
-        // build layer 2
-
-        builder = ConstraintBuilder.withTarget(this);
+    private void build_layer_2(Context context, AttributeSet attrs, Integer defStyleAttr, Integer defStyleRes) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        ConstraintBuilder.Builder builder = ConstraintBuilder.withTarget(this);
 
         // create all our instances
-        final ConstraintLayout area = constructView(ConstraintLayout.class, context, attrs, defStyleAttr, defStyleRes);
-        area.setTag(Internal);
-        
+        views_TaskMenuContainer = constructView(ConstraintLayout.class, context, attrs, defStyleAttr, defStyleRes);
+        views_TaskMenuContainer.setTag(Internal);
+
         // set our parameters
-        if (!showTaskMenu) area.setVisibility(GONE);
-        builder.setLayoutConstraintsTarget(area);
+        if (!showTaskMenu) views_TaskMenuContainer.setVisibility(GONE);
+        builder.setLayoutConstraintsTarget(views_TaskMenuContainer);
         builder.layout_constraintAll_ToAllOf(ConstraintBuilder.parent);
 
         // add our views
-        builder.addView(area, matchParent);
+        builder.addView(views_TaskMenuContainer, matchParent);
         builder.build();
+    }
 
-        // layer 3
+    ScrollView views_TaskMenuContainer_Internal_ScrollView;
+    LinearLayout views_TaskMenuContainer_Internal_TaskMenu;
 
-        builder = ConstraintBuilder.withTarget(area);
+    private void build_layer_3(Context context, AttributeSet attrs, Integer defStyleAttr, Integer defStyleRes) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        ConstraintBuilder.Builder builder = ConstraintBuilder.withTarget(views_TaskMenuContainer);
 
         // create all our instances
-        final ScrollView scrollView1 = constructView(ScrollView.class, context, attrs, defStyleAttr, defStyleRes);
-        scrollView1.setTag(Internal);
-        linearLayout1 = constructView(LinearLayout.class, context, attrs, defStyleAttr, defStyleRes);
-        linearLayout1.setTag(Internal);
+        views_TaskMenuContainer_Internal_ScrollView = constructView(ScrollView.class, context, attrs, defStyleAttr, defStyleRes);
+        views_TaskMenuContainer_Internal_ScrollView.setTag(Internal);
+        views_TaskMenuContainer_Internal_TaskMenu = constructView(LinearLayout.class, context, attrs, defStyleAttr, defStyleRes);
+        views_TaskMenuContainer_Internal_TaskMenu.setTag(Internal);
 
         // set our parameters
-        builder.setLayoutConstraintsTarget(scrollView1);
+        builder.setLayoutConstraintsTarget(views_TaskMenuContainer_Internal_ScrollView);
         builder.layout_constraintAll_ToAllOf(ConstraintBuilder.parent);
-        scrollView1.setBackgroundColor(Color.DKGRAY);
-        if (!showTaskMenu) scrollView1.setAlpha(0.0f);
-        linearLayout1.setOrientation(LinearLayout.VERTICAL);
+        if (!showTaskMenu) views_TaskMenuContainer_Internal_ScrollView.setAlpha(0.0f);
+        views_TaskMenuContainer_Internal_ScrollView.setBackgroundColor(Color.DKGRAY);
+
+        builder.setLayoutConstraintsTarget(views_TaskMenuContainer_Internal_TaskMenu);
+        builder.layout_constraintAll_ToAllOf(ConstraintBuilder.parent);
+        views_TaskMenuContainer_Internal_TaskMenu.setOrientation(LinearLayout.VERTICAL);
+        views_TaskMenuContainer_Internal_TaskMenu.setBackgroundColor(Color.LTGRAY);
 
         // add our views
-        scrollView1.addView(linearLayout1, matchParent);
-        builder.addView(scrollView1, taskMenu_Layout_Width, taskMenu_Layout_Height);
+        views_TaskMenuContainer_Internal_ScrollView.addView(views_TaskMenuContainer_Internal_TaskMenu, matchParent);
+        builder.addView(views_TaskMenuContainer_Internal_ScrollView, taskMenu_Layout_Width, taskMenu_Layout_Height);
         builder.build();
+    }
 
-        final ViewPropertyAnimator a = scrollView1.animate();
+    private void addAnimations() {
+        final ViewPropertyAnimator viewPropertyAnimator = views_TaskMenuContainer_Internal_ScrollView.animate();
 
-        fab.setOnClickListener(new OnClickListener() {
+        views_ShowTaskMenu.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                a.cancel();
-                a.setListener(null);
-                area.setVisibility(VISIBLE);
-                scrollView1.setAlpha(0.0f);
-                a.alpha(1.0f).setDuration(500).start();
+                viewPropertyAnimator.cancel();
+                viewPropertyAnimator.setListener(null);
+                views_TaskMenuContainer.setVisibility(VISIBLE);
+                views_TaskMenuContainer_Internal_ScrollView.setAlpha(0.0f);
+                viewPropertyAnimator.alpha(1.0f).setDuration(500).start();
             }
         });
 
-        area.setOnClickListener(new OnClickListener() {
+        views_TaskMenuContainer.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                a.cancel();
-                a.alpha(0f).setDuration(500).setListener(new Animator.AnimatorListener() {
+                viewPropertyAnimator.cancel();
+                viewPropertyAnimator.alpha(0f).setDuration(500).setListener(new Animator.AnimatorListener() {
                     @Override
                     public void onAnimationStart(Animator animation) {
 
@@ -257,7 +282,7 @@ public class TaskBuilder extends ConstraintLayout {
 
                     @Override
                     public void onAnimationEnd(Animator animation) {
-                        area.setVisibility(GONE);
+                        views_TaskMenuContainer.setVisibility(GONE);
                     }
 
                     @Override
