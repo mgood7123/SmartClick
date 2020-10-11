@@ -16,6 +16,7 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.annotation.Size;
 
 import smallville7123.libparcelablebundle.ParcelableBundle;
 
@@ -160,7 +161,7 @@ public class FloatingView extends FrameLayout {
 
         expandedView = log.errorAndThrowIfNull(View.inflate(context, expandedViewRes, null),  "expanded view could not be inflated");
 
-        setExpandedViewOnClickListener();
+        setExpandedViewOnTouchListener();
 
         addView(expandedView);
     }
@@ -285,6 +286,19 @@ public class FloatingView extends FrameLayout {
     // TODO: would this value be affected by screen density?
     private static final float CLICK_DRAG_TOLERANCE = 30.0F;
 
+    void getCollapsedViewLocationOnScreen(@Size(2) int[] outLocation) {
+        collapsedView.getLocationOnScreen(outLocation);
+    }
+
+    void getExpandedViewLocationOnScreen(@Size(2) int[] outLocation) {
+        expandedView.getLocationOnScreen(outLocation);
+    }
+
+    int[] collapsedLocationPrevious = new int[2];
+    int[] collapsedLocation = new int[2];
+    int[] expandedLocationPrevious = new int[2];
+    int[] expandedLocation = new int[2];
+
     private void setCollapsedViewOnTouchListener() {
         collapsedView.setOnTouchListener(new View.OnTouchListener() {
             float downRawX, downRawY, dX, dY, newX, newY;
@@ -321,11 +335,29 @@ public class FloatingView extends FrameLayout {
                         return true;
 
                     case MotionEvent.ACTION_MOVE:
+                        collapsedLocationPrevious[0] = collapsedLocation[0];
+                        collapsedLocationPrevious[1] = collapsedLocation[1];
+
+                        float savedNewX = newX;
+                        float savedNewY = newY;
+                        int savedX = minimizedLayout.x;
+                        int savedY = minimizedLayout.y;
+
                         newX = event.getRawX() + dX;
-                        newY = event.getRawY() + dY;
                         minimizedLayout.x = (int) newX;
+                        newY = event.getRawY() + dY;
                         minimizedLayout.y = (int) newY;
                         updateWindowManagerLayout(minimizedLayout);
+                        getCollapsedViewLocationOnScreen(collapsedLocation);
+                        if (collapsedLocationPrevious[0] == collapsedLocation[0]) {
+                            newX = savedNewX;
+                            minimizedLayout.x = savedX;
+                        }
+                        if (collapsedLocationPrevious[1] == collapsedLocation[1]) {
+                            newY = savedNewY;
+                            minimizedLayout.y = savedY;
+                        }
+                        // restoring the window manager layout causes it to become unmovable
                         return true;
                 }
                 return false;
@@ -333,11 +365,68 @@ public class FloatingView extends FrameLayout {
         });
     }
 
-    private void setExpandedViewOnClickListener() {
-        expandedView.setOnClickListener(new View.OnClickListener() {
+    private void setExpandedViewOnTouchListener() {
+        expandedView.setOnTouchListener(new View.OnTouchListener() {
+            float downRawX, downRawY, dX, dY, newX, newY;
+            int originalX;
+            int originalY;
+
             @Override
-            public void onClick(final View v) {
-                collapse();
+            public boolean onTouch(final View v, final MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        originalX = minimizedLayout.x;
+                        originalY = minimizedLayout.y;
+                        downRawX = event.getRawX();
+                        downRawY = event.getRawY();
+                        dX = originalX - downRawX;
+                        dY = originalY - downRawY;
+                        return true;
+
+                    case MotionEvent.ACTION_UP:
+                        float upRawX = event.getRawX();
+                        float upRawY = event.getRawY();
+                        float upDX = upRawX - downRawX;
+                        float upDY = upRawY - downRawY;
+                        // TODO: would this value be affected by screen density?
+                        if ((Math.abs(upDX) < CLICK_DRAG_TOLERANCE) && (Math.abs(upDY) < CLICK_DRAG_TOLERANCE)) {
+                            // assume that the drag was unintentional, restore the original x and y
+                            minimizedLayout.x = originalX;
+                            minimizedLayout.y = originalY;
+                            updateWindowManagerLayout(minimizedLayout);
+                            collapse();
+                        } else {
+                            // A drag
+                        }
+                        return true;
+
+                    case MotionEvent.ACTION_MOVE:
+                        expandedLocationPrevious[0] = expandedLocation[0];
+                        expandedLocationPrevious[1] = expandedLocation[1];
+
+                        float savedNewX = newX;
+                        float savedNewY = newY;
+                        int savedX = minimizedLayout.x;
+                        int savedY = minimizedLayout.y;
+
+                        newX = event.getRawX() + dX;
+                        minimizedLayout.x = (int) newX;
+                        newY = event.getRawY() + dY;
+                        minimizedLayout.y = (int) newY;
+                        updateWindowManagerLayout(minimizedLayout);
+                        getExpandedViewLocationOnScreen(expandedLocation);
+                        if (expandedLocationPrevious[0] == expandedLocation[0]) {
+                            newX = savedNewX;
+                            minimizedLayout.x = savedX;
+                        }
+                        if (expandedLocationPrevious[1] == expandedLocation[1]) {
+                            newY = savedNewY;
+                            minimizedLayout.y = savedY;
+                        }
+                        // restoring the window manager layout causes it to become unmovable
+                        return true;
+                }
+                return false;
             }
         });
     }
