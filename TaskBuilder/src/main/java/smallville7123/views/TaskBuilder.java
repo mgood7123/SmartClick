@@ -146,8 +146,8 @@ public class TaskBuilder extends ConstraintLayout {
     void getAttributeLayout(Context context, AttributeSet attrs, Theme theme) {
         if (attrs != null) {
             attributes = theme.obtainStyledAttributes(attrs, TaskBuilder_Layout, 0, 0);
-            taskMenu_Layout_Width = attributes.getDimensionPixelSize(R.styleable.TaskBuilder_Layout_taskMenu_layout_width, -1);
-            taskMenu_Layout_Height = attributes.getDimensionPixelSize(R.styleable.TaskBuilder_Layout_taskMenu_layout_height, -1);
+            taskMenu_Layout_Width = attributes.getDimensionPixelSize(R.styleable.TaskBuilder_Layout_taskMenu_layout_width, MATCH_PARENT);
+            taskMenu_Layout_Height = attributes.getDimensionPixelSize(R.styleable.TaskBuilder_Layout_taskMenu_layout_height, MATCH_PARENT);
             attributes.recycle();
         }
     }
