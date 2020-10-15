@@ -18,6 +18,8 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
+import smallville7123.layoututils.LayoutUtils;
+
 public class ExpandableLayout extends LinearLayout {
 
     public ExpandableLayout(Context context) {
@@ -51,15 +53,17 @@ public class ExpandableLayout extends LinearLayout {
     Internal Internal = new Internal();
 
     String text;
-    Float textSize;
+    int textSize;
     int textColor;
+    boolean expanded;
 
     void getAttributeParameters(Context context, AttributeSet attrs, Resources.Theme theme) {
         if (attrs != null) {
             TypedArray attributes = theme.obtainStyledAttributes(attrs, R.styleable.ExpandableLayout, 0, 0);
             text = attributes.getString(R.styleable.ExpandableLayout_android_text);
-            textSize = attributes.getDimension(R.styleable.ExpandableLayout_android_textSize, 20.0f);
+            textSize = LayoutUtils.getTextSizeAttributesSuitableForTextView(attributes, R.styleable.ExpandableLayout_android_textSize);
             textColor = attributes.getColor(R.styleable.ExpandableLayout_android_textColor, Color.BLACK);
+            expanded = attributes.getBoolean(R.styleable.ExpandableLayout_android_state_expanded, false);
             attributes.recycle();
         }
     }
@@ -73,18 +77,19 @@ public class ExpandableLayout extends LinearLayout {
         title = root.findViewById(R.id.title);
         title.setTag(Internal);
         if (text != null) title.setText(text);
-        title.setTextSize(textSize);
+        LayoutUtils.setTextSizeAttributesSuitableForTextView(title, textSize);
         title.setTextColor(textColor);
         chevron = root.findViewById(R.id.chevron);
         chevron.setTag(Internal);
         chevron.setImageResource(R.drawable.ic_chevron);
 
-        LinearLayout header = root.findViewById(R.id.header);
+        final LinearLayout header = root.findViewById(R.id.header);
         header.setBackgroundResource(R.drawable.expandable_ripple_bg);
         header.setTag(Internal);
         header.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.d(TAG, "onClick() called with: v = [" + v + "]");
                 int vv = contentLayout.getVisibility();
                 contentLayout.setVisibility(vv == VISIBLE ? GONE : VISIBLE);
                 chevron.setRotation(vv == VISIBLE ? CHEVRON_POSITION_DOWN : CHEVRON_POSITION_UP);
@@ -92,14 +97,14 @@ public class ExpandableLayout extends LinearLayout {
         });
         contentLayout = root.findViewById(R.id.content);
         contentLayout.setTag(Internal);
-        contentLayout.setVisibility(GONE);
-        chevron.setRotation(CHEVRON_POSITION_DOWN);
+        if (!expanded) contentLayout.setVisibility(GONE);
+        chevron.setRotation(expanded ? CHEVRON_POSITION_UP : CHEVRON_POSITION_DOWN);
         addView(root, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
     }
 
     private void addContent(View v, int index, ViewGroup.LayoutParams params) {
-        contentLayout.setVisibility(GONE);
-        chevron.setRotation(CHEVRON_POSITION_DOWN);
+        if (!expanded) contentLayout.setVisibility(GONE);
+        chevron.setRotation(expanded ? CHEVRON_POSITION_UP : CHEVRON_POSITION_DOWN);
         contentLayout.addView(v, index, params);
     }
 
@@ -112,14 +117,6 @@ public class ExpandableLayout extends LinearLayout {
             Log.d(TAG, "addView() called with INTERNAL: child = [" + child + "], index = [" + index + "], params = [" + params + "]");
             super.addView(child, index, params);
         } else {
-            child.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Log.d(TAG, "onClick() called with: v = [" + v + "]");
-                    // this will reparent, we do not want that
-                    // views_TaskList.addView(v, v.getLayoutParams());
-                }
-            });
             Log.d(TAG, "addView() called with EXTERNAL: child = [" + child + "], index = [" + index + "], params = [" + params + "]");
             // add items to linear layout
             addContent(child, index, params);

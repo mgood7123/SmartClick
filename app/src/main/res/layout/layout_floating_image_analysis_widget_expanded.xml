@@ -145,95 +145,69 @@
             app:taskMenu_layout_height="200dp"
             >
 
+            <smallville7123.views.Task
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="TASK"
+                android:textSize="23sp"
+                >
+            </smallville7123.views.Task>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="TEXTVIEW"
+                android:textSize="23sp"
+                >
+            </TextView>
+            <smallville7123.views.Task
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="TASK"
+                android:textSize="23sp"
+                >
+            </smallville7123.views.Task>
             <smallville7123.views.ExpandableLayout
-                android:id="@+id/exe"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="A"
-                android:textSize="4sp"
+                android:textSize="23sp"
                 android:textColor="@color/cardview_light_background"
+                android:state_expanded="true"
                 >
-                <TextView
+                <smallville7123.views.Task
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="LIST A ITEM A"
                     android:textSize="23sp"
                     >
-                </TextView>
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="LIST A ITEM B"
-                    android:textSize="23sp"
-                    >
-                </TextView>
-            </smallville7123.views.ExpandableLayout>
-
-            <smallville7123.views.ExpandableLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="B"
-                android:textSize="4sp"
-                android:textColor="@color/cardview_light_background"
-                >
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="LIST B ITEM A"
-                    android:textSize="23sp"
-                    >
-                </TextView>
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="LIST B ITEM B"
-                    android:textSize="23sp"
-                    >
-                </TextView>
+                </smallville7123.views.Task>
             </smallville7123.views.ExpandableLayout>
             <smallville7123.views.ExpandableLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="C"
-                android:textSize="4sp"
+                android:text="A"
+                android:textSize="23sp"
                 android:textColor="@color/cardview_light_background"
+                android:state_expanded="false"
                 >
-                <TextView
+                <smallville7123.views.ExpandableLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="LIST C ITEM A"
+                    android:text="B"
                     android:textSize="23sp"
+                    android:textColor="@color/cardview_light_background"
+                    android:state_expanded="false"
                     >
-                </TextView>
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="LIST C ITEM B"
-                    android:textSize="23sp"
-                    >
-                </TextView>
-            </smallville7123.views.ExpandableLayout>
-            <smallville7123.views.ExpandableLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="D"
-                android:textSize="4sp"
-                android:textColor="@color/cardview_light_background"
-                >
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="LIST D ITEM A"
-                    android:textSize="23sp"
-                    >
-                </TextView>
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="LIST D ITEM B"
-                    android:textSize="23sp"
-                    >
-                </TextView>
+                    <smallville7123.views.ExpandableLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="C"
+                        android:textSize="23sp"
+                        android:textColor="@color/cardview_light_background"
+                        android:state_expanded="false"
+                        >
+                    </smallville7123.views.ExpandableLayout>
+                </smallville7123.views.ExpandableLayout>
             </smallville7123.views.ExpandableLayout>
         </smallville7123.views.TaskBuilder>
 

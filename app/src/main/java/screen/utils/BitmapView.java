@@ -24,6 +24,7 @@ import java.util.Vector;
 
 import smallville7123.libparcelablebundle.ParcelableBundle;
 import smallville7123.libparcelablebundle.annotations.UnsupportedAppUsage;
+import smallville7123.taggable.Taggable;
 
 /**
  * a special variant of ImageView designed specifically for bitmaps
@@ -36,7 +37,7 @@ public class BitmapView extends ImageView {
 
     static final Bitmap nullBitmap = null;
     static final byte[] nullByteArray = null;
-    private final String TAG = "BitmapView (" + getClass().getName() + "@" + Integer.toHexString(hashCode()) + ")";
+    private final String TAG = "BitmapView (" + Taggable.getTag(this) + ")";
     static Vector<BitmapView> bitmapViews = new Vector();
     int targetSdkVersion;
     private boolean drawNothing = false;
@@ -928,7 +929,7 @@ Row        Layout
     private int mMaxHeight = Integer.MAX_VALUE;
 
     static public class AspectRatio {
-        private final String TAG = getClass().getName() + "@" + Integer.toHexString(hashCode());
+        private final String TAG = Taggable.getTag(this);
         int x;
         int y;
         int w;

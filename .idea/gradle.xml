@@ -11,8 +11,12 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/Clickable" />
+            <option value="$PROJECT_DIR$/Draggable" />
             <option value="$PROJECT_DIR$/FloatingView" />
+            <option value="$PROJECT_DIR$/LayoutUtils" />
             <option value="$PROJECT_DIR$/LibParcelableBundle" />
+            <option value="$PROJECT_DIR$/Taggable" />
             <option value="$PROJECT_DIR$/TaskBuilder" />
             <option value="$PROJECT_DIR$/app" />
           </set>

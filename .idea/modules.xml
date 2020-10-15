@@ -2,13 +2,17 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Clickable/Clickable.iml" filepath="$PROJECT_DIR$/.idea/modules/Clickable/Clickable.iml" group="SmartClick/Clickable" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Draggable/Draggable.iml" filepath="$PROJECT_DIR$/.idea/modules/Draggable/Draggable.iml" group="SmartClick/Draggable" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/FloatingView/FloatingView.iml" filepath="$PROJECT_DIR$/.idea/modules/FloatingView/FloatingView.iml" group="SmartClick/FloatingView" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/LayoutUtils/LayoutUtils.iml" filepath="$PROJECT_DIR$/.idea/modules/LayoutUtils/LayoutUtils.iml" group="SmartClick/LayoutUtils" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/LibParcelableBundle/LibParcelableBundle.iml" filepath="$PROJECT_DIR$/.idea/modules/LibParcelableBundle/LibParcelableBundle.iml" group="SmartClick/LibParcelableBundle" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/SmartClick.iml" filepath="$PROJECT_DIR$/.idea/modules/SmartClick.iml" group="SmartClick" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/FloatingView/SmartClick-FloatingView.iml" filepath="$PROJECT_DIR$/.idea/modules/FloatingView/SmartClick-FloatingView.iml" group="SmartClick/FloatingView" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/LibParcelableBundle/SmartClick-LibParcelableBundle.iml" filepath="$PROJECT_DIR$/.idea/modules/LibParcelableBundle/SmartClick-LibParcelableBundle.iml" group="SmartClick/LibParcelableBundle" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/SmartClick-app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/SmartClick-app.iml" group="SmartClick/app" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/StudioProjects-SmartClick.iml" filepath="$PROJECT_DIR$/.idea/modules/StudioProjects-SmartClick.iml" group="SmartClick" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Taggable/Taggable.iml" filepath="$PROJECT_DIR$/.idea/modules/Taggable/Taggable.iml" group="SmartClick/Taggable" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/TaskBuilder/TaskBuilder.iml" filepath="$PROJECT_DIR$/.idea/modules/TaskBuilder/TaskBuilder.iml" group="SmartClick/TaskBuilder" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/app.iml" group="SmartClick/app" />
     </modules>

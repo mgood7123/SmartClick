@@ -1,3 +1,7 @@
+include ':Clickable'
+include ':LayoutUtils'
+include ':Taggable'
+include ':Draggable'
 include ':TaskBuilder'
 include ':FloatingView'
 include ':LibParcelableBundle'

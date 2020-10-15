@@ -9,9 +9,11 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import smallville7123.taggable.Taggable;
+
 class BitmapViewState implements Parcelable {
 
-    private final String TAG = "BitmapViewState (" + getClass().getName() + "@" + Integer.toHexString(hashCode()) + ")";
+    private final String TAG = "BitmapViewState (" + Taggable.getTag(this) + ")";
     public boolean preScaled;
 
     BitmapViewState() {};
@@ -92,7 +94,7 @@ class BitmapViewState implements Parcelable {
     }
 
     public static final Creator<BitmapViewState> CREATOR = new Creator<BitmapViewState>() {
-        private final String TAG = "Creator<BitmapViewState> (" + getClass().getName() + "@" + Integer.toHexString(hashCode()) + ")";
+        private final String TAG = "Creator<BitmapViewState> (" + Taggable.getTag(this) + ")";
         @Override
         public BitmapViewState createFromParcel(Parcel in) {
             Log.i(TAG, "createFromParcel: creating from parcel");

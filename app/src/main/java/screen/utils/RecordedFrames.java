@@ -7,8 +7,10 @@ import android.util.Log;
 
 import java.util.ArrayList;
 
+import smallville7123.taggable.Taggable;
+
 class RecordedFrames<Type> implements Parcelable {
-    private final String TAG = "RecordedFrames (" + getClass().getName() + "@" + Integer.toHexString(hashCode()) + ")";
+    private final String TAG = "RecordedFrames (" + Taggable.getTag(this) + ")";
     ArrayList<Type> frames = new ArrayList();
     int width = 0;
     int height = 0;

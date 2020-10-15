@@ -7,7 +7,6 @@ import android.graphics.PixelFormat;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -16,8 +15,8 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-import androidx.annotation.Size;
 
+import smallville7123.draggable.Draggable;
 import smallville7123.libparcelablebundle.ParcelableBundle;
 
 import static android.content.Context.WINDOW_SERVICE;
@@ -281,169 +280,120 @@ public class FloatingView extends FrameLayout {
             collapse();
     }
 
-    // Often, there will be a slight, unintentional, drag when the user taps on the screen,
-    // so we need to account for this.
-    // TODO: would this value be affected by screen density?
-    private static final float CLICK_DRAG_TOLERANCE = 30.0F;
-
-    void getCollapsedViewLocationOnScreen(@Size(2) int[] outLocation) {
-        collapsedView.getLocationOnScreen(outLocation);
-    }
-
-    void getExpandedViewLocationOnScreen(@Size(2) int[] outLocation) {
-        expandedView.getLocationOnScreen(outLocation);
-    }
-
-    int[] collapsedLocationPrevious = new int[2];
-    int[] collapsedLocation = new int[2];
-    int[] expandedLocationPrevious = new int[2];
-    int[] expandedLocation = new int[2];
-
     private void setCollapsedViewOnTouchListener() {
-        collapsedView.setOnTouchListener(new View.OnTouchListener() {
-            float downRawX, downRawY, dX, dY, newX, newY;
-            int originalX;
-            int originalY;
+        collapsedView.setOnTouchListener(new Draggable() {
+            @Override
+            public void getViewLocationOnScreen(int[] outLocation) {
+                collapsedView.getLocationOnScreen(outLocation);
+            }
 
             @Override
-            public boolean onTouch(final View v, final MotionEvent event) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        originalX = minimizedLayout.x;
-                        originalY = minimizedLayout.y;
-                        downRawX = event.getRawX();
-                        downRawY = event.getRawY();
-                        dX = originalX - downRawX;
-                        dY = originalY - downRawY;
-                        return true;
+            public int getX() {
+                return minimizedLayout.x;
+            }
 
-                    case MotionEvent.ACTION_UP:
-                        float upRawX = event.getRawX();
-                        float upRawY = event.getRawY();
-                        float upDX = upRawX - downRawX;
-                        float upDY = upRawY - downRawY;
-                        // TODO: would this value be affected by screen density?
-                        if ((Math.abs(upDX) < CLICK_DRAG_TOLERANCE) && (Math.abs(upDY) < CLICK_DRAG_TOLERANCE)) {
-                            // assume that the drag was unintentional, restore the original x and y
-                            minimizedLayout.x = originalX;
-                            minimizedLayout.y = originalY;
-                            updateWindowManagerLayout(minimizedLayout);
-                            expand();
-                        } else {
-                            // A drag
-                        }
-                        return true;
+            @Override
+            public void setX(int x) {
+                minimizedLayout.x = x;
+            }
 
-                    case MotionEvent.ACTION_MOVE:
-                        collapsedLocationPrevious[0] = collapsedLocation[0];
-                        collapsedLocationPrevious[1] = collapsedLocation[1];
+            @Override
+            public int getY() {
+                return minimizedLayout.y;
+            }
 
-                        float savedNewX = newX;
-                        float savedNewY = newY;
-                        int savedX = minimizedLayout.x;
-                        int savedY = minimizedLayout.y;
+            @Override
+            public void setY(int y) {
+                minimizedLayout.y = y;
+            }
 
-                        newX = event.getRawX() + dX;
-                        minimizedLayout.x = (int) newX;
-                        newY = event.getRawY() + dY;
-                        minimizedLayout.y = (int) newY;
-                        updateWindowManagerLayout(minimizedLayout);
-                        getCollapsedViewLocationOnScreen(collapsedLocation);
-                        if (collapsedLocationPrevious[0] == collapsedLocation[0]) {
-                            newX = savedNewX;
-                            minimizedLayout.x = savedX;
-                        }
-                        if (collapsedLocationPrevious[1] == collapsedLocation[1]) {
-                            newY = savedNewY;
-                            minimizedLayout.y = savedY;
-                        }
-                        // restoring the window manager layout causes it to become unmovable
-                        return true;
-                }
-                return false;
+            @Override
+            public void onClick(View v) {
+                expand();
+            }
+
+            @Override
+            public void onDrag(View v) {
+
+            }
+
+            @Override
+            public void onMovement(View v) {
+                updateWindowManagerLayout(minimizedLayout);
+            }
+
+            @Override
+            public int getLayoutParamsWidth() {
+                return layout.width;
+            }
+
+            @Override
+            public int getLayoutParamsHeight() {
+                return layout.height;
+            }
+
+            @Override
+            public int getLayoutParamsWRAP_CONTENT() {
+                return ViewGroup.LayoutParams.WRAP_CONTENT;
             }
         });
     }
 
     private void setExpandedViewOnTouchListener() {
-        expandedView.setOnTouchListener(new View.OnTouchListener() {
-            float downRawX, downRawY, dX, dY, newX, newY;
-            int originalX;
-            int originalY;
+        expandedView.setOnTouchListener(new Draggable() {
+            @Override
+            public void getViewLocationOnScreen(int[] outLocation) {
+                expandedView.getLocationOnScreen(outLocation);
+            }
 
             @Override
-            public boolean onTouch(final View v, final MotionEvent event) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        originalX = minimizedLayout.x;
-                        originalY = minimizedLayout.y;
-                        downRawX = event.getRawX();
-                        downRawY = event.getRawY();
-                        dX = originalX - downRawX;
-                        dY = originalY - downRawY;
-                        return true;
+            public int getX() {
+                return minimizedLayout.x;
+            }
 
-                    case MotionEvent.ACTION_UP:
-                        float upRawX = event.getRawX();
-                        float upRawY = event.getRawY();
-                        float upDX = upRawX - downRawX;
-                        float upDY = upRawY - downRawY;
-                        // TODO: would this value be affected by screen density?
-                        if ((Math.abs(upDX) < CLICK_DRAG_TOLERANCE) && (Math.abs(upDY) < CLICK_DRAG_TOLERANCE)) {
-                            // assume that the drag was unintentional, restore the original x and y
-                            minimizedLayout.x = originalX;
-                            minimizedLayout.y = originalY;
-                            updateWindowManagerLayout(minimizedLayout);
-                            collapse();
-                        } else {
-                            // A drag
-                        }
-                        return true;
+            @Override
+            public void setX(int x) {
+                minimizedLayout.x = x;
+            }
 
-                    case MotionEvent.ACTION_MOVE:
-                        float savedNewY = 0;
-                        int savedY = 0;
-                        float savedNewX = 0;
-                        int savedX = 0;
-                        boolean needsLayout = false;
-                        boolean widthWrap = layout.width == ViewGroup.LayoutParams.WRAP_CONTENT;
-                        boolean heightWrap = layout.height == ViewGroup.LayoutParams.WRAP_CONTENT;
-                        if (widthWrap) {
-                            expandedLocationPrevious[0] = expandedLocation[0];
-                            savedNewX = newX;
-                            savedX = minimizedLayout.x;
-                            newX = event.getRawX() + dX;
-                            minimizedLayout.x = (int) newX;
-                            needsLayout = true;
-                        }
-                        if (heightWrap) {
-                            expandedLocationPrevious[1] = expandedLocation[1];
-                            savedNewY = newY;
-                            savedY = minimizedLayout.y;
-                            newY = event.getRawY() + dY;
-                            minimizedLayout.y = (int) newY;
-                            needsLayout = true;
-                        }
-                        if (needsLayout) {
-                            updateWindowManagerLayout(minimizedLayout);
-                            getExpandedViewLocationOnScreen(expandedLocation);
-                            if (widthWrap) {
-                                if (expandedLocationPrevious[0] == expandedLocation[0]) {
-                                    newX = savedNewX;
-                                    minimizedLayout.x = savedX;
-                                }
-                            }
-                            if (heightWrap) {
-                                if (expandedLocationPrevious[1] == expandedLocation[1]) {
-                                    newY = savedNewY;
-                                    minimizedLayout.y = savedY;
-                                }
-                            }
-                        }
-                        // restoring the window manager layout causes it to become unmovable
-                        return true;
-                }
-                return false;
+            @Override
+            public int getY() {
+                return minimizedLayout.y;
+            }
+
+            @Override
+            public void setY(int y) {
+                minimizedLayout.y = y;
+            }
+
+            @Override
+            public void onClick(View v) {
+                collapse();
+            }
+
+            @Override
+            public void onDrag(View v) {
+
+            }
+
+            @Override
+            public void onMovement(View v) {
+                updateWindowManagerLayout(minimizedLayout);
+            }
+
+            @Override
+            public int getLayoutParamsWidth() {
+                return layout.width;
+            }
+
+            @Override
+            public int getLayoutParamsHeight() {
+                return layout.height;
+            }
+
+            @Override
+            public int getLayoutParamsWRAP_CONTENT() {
+                return ViewGroup.LayoutParams.WRAP_CONTENT;
             }
         });
     }
