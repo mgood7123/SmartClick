@@ -10,7 +10,12 @@ import android.view.ViewParent;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 
+import static smallville7123.taggable.Taggable.getLastClassName;
+import static smallville7123.taggable.Taggable.getShortTag;
+
 public class ViewHierarchy {
+
+    public String TAG = getLastClassName(this);
 
     ArrayList<ViewHierarchy> children;
     View view;
@@ -22,23 +27,34 @@ public class ViewHierarchy {
     ViewHolder restoreData;
 
     // build up a child hierarchy
+
     public void analyze(View root) {
-        if (root instanceof ViewGroup) analyze((ViewGroup) root);
-        else view = root;
+        analyze(root, true);
     }
 
     public void analyze(ViewGroup root) {
-        view = root;
-        int childCount = root.getChildCount();
-        if (childCount != 0) children = new ArrayList<>();
-        for (int i = 0; i < childCount; i++) {
-            ViewHierarchy viewHierarchy = new ViewHierarchy();
-            viewHierarchy.analyze(root.getChildAt(i));
-            children.add(viewHierarchy);
-        }
+        analyze(root, true);
     }
 
+    public void analyze(View root, boolean analyzeChildren) {
+        if (root instanceof ViewGroup) analyze((ViewGroup) root, analyzeChildren);
+        else view = root;
+    }
+
+    public void analyze(ViewGroup root, boolean analyzeChildren) {
+        view = root;
+        if (analyzeChildren) {
+            int childCount = root.getChildCount();
+            if (childCount != 0) children = new ArrayList<>();
+            for (int i = 0; i < childCount; i++) {
+                ViewHierarchy viewHierarchy = new ViewHierarchy();
+                viewHierarchy.analyze(root.getChildAt(i));
+                children.add(viewHierarchy);
+            }
+        }
+    }
     //Used for new ListenerInfo class structure used beginning with API 14 (ICS)
+
     public static View.OnClickListener getOnClickListener(View view) {
         if (view == null) return null;
         View.OnClickListener retrievedListener = null;
@@ -91,8 +107,8 @@ public class ViewHierarchy {
 
         return retrievedListener;
     }
-
     //Used for new ListenerInfo class structure used beginning with API 14 (ICS)
+
     public static View.OnTouchListener getOnTouchListener(View view) {
         if (view == null) return null;
         View.OnTouchListener retrievedListener = null;
@@ -147,7 +163,10 @@ public class ViewHierarchy {
     }
 
     public void save() {
-        if (saveData != null) saveData.process(this, data);
+        if (saveData != null) {
+            Log.d(TAG, "save: invoking saveData.process for view " + getLastClassName(view));
+            saveData.process(this, data);
+        }
         if (children != null) {
             for (ViewHierarchy child : children) {
                 child.saveData = saveData;
@@ -158,7 +177,10 @@ public class ViewHierarchy {
     }
 
     public void process() {
-        if (processView != null) processView.process(this, data);
+        if (processView != null) {
+            Log.d(TAG, "process: invoking processView.process for view " + getLastClassName(view));
+            processView.process(this, data);
+        }
         if (children != null) {
             for (ViewHierarchy child : children) {
                 child.processView = processView;
@@ -169,7 +191,10 @@ public class ViewHierarchy {
     }
 
     public void restore() {
-        if (restoreData != null) restoreData.process(this, data);
+        if (restoreData != null) {
+            Log.d(TAG, "restore: invoking restoreData.process for view " + getLastClassName(view));
+            restoreData.process(this, data);
+        }
         if (children != null) {
             for (ViewHierarchy child : children) {
                 child.restoreData = restoreData;

@@ -36,10 +36,6 @@ public class InterceptTouchFrameLayout extends FrameLayout {
         @Override
         public boolean onInterceptTouchEvent(InterceptTouchFrameLayout view, MotionEvent motionEvent, boolean disallowIntercept) {
             Log.d(TAG, "MotionEvent.actionToString(ev.getAction()) = [" + MotionEvent.actionToString(motionEvent.getAction()) + "]");
-            Log.d(TAG, "motionEvent.getX() = [" + motionEvent.getX() + "]");
-            Log.d(TAG, "motionEvent.getRawX() = [" + motionEvent.getRawX() + "]");
-            Log.d(TAG, "motionEvent.getY() = [" + motionEvent.getY() + "]");
-            Log.d(TAG, "motionEvent.getRawY() = [" + motionEvent.getRawY() + "]");
             return false;
         }
         @Override
@@ -69,6 +65,7 @@ public class InterceptTouchFrameLayout extends FrameLayout {
     public InterceptTouchFrameLayout(Context context, AttributeSet attrs, int defStyleAttr, int defStyle) {
         super(context, attrs, defStyleAttr, defStyle);
     }
+
 
     @Override
     public void requestDisallowInterceptTouchEvent(boolean disallowIntercept) {

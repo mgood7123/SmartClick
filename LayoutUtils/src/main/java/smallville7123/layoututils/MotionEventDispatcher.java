@@ -6,13 +6,13 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
-import android.widget.ScrollView;
 
 import java.util.ArrayList;
 
 import smallville7123.taggable.Taggable;
 
 import static smallville7123.taggable.Taggable.getTag;
+import static smallville7123.taggable.Taggable.getLastClassName;
 
 public class MotionEventDispatcher {
     public String TAG = getTag(this);
@@ -51,7 +51,7 @@ public class MotionEventDispatcher {
         boolean callerHasOnClickListener = ViewHierarchy.getOnClickListener(caller) != null;
         boolean callerHasOnTouchListener = ViewHierarchy.getOnTouchListener(caller) != null;
         ViewHierarchy viewHierarchy = new ViewHierarchy();
-        viewHierarchy.analyze(v);
+        viewHierarchy.analyze(v, false);
         viewHierarchy.setOnViewSaveData(new ViewHierarchy.ViewHolder() {
             @Override
             void process(ViewHierarchy viewHierarchy, Bundle data) {
@@ -93,13 +93,13 @@ public class MotionEventDispatcher {
 
         viewHierarchy.save();
         viewHierarchy.process();
-        boolean result = false;
+        boolean result = true;
         if (callerHasOnClickListener) {
-            Log.d(TAG, "dispatchMotionEvent: calling callOnClick for view = [" + lastClassName(caller) + "]");
+            Log.d(TAG, "dispatchMotionEvent: calling callOnClick for view = [" + getLastClassName(caller) + "]");
             result = caller.callOnClick();
         }
         if (callerHasOnTouchListener) {
-            Log.d(TAG, "dispatchMotionEvent: calling dispatchTouchEvent for view = [" + lastClassName(caller) + "]");
+            Log.d(TAG, "dispatchMotionEvent: calling dispatchTouchEvent for view = [" + getLastClassName(caller) + "]");
             result = caller.dispatchTouchEvent(motionEvent);
         }
         viewHierarchy.restore();
@@ -138,7 +138,7 @@ public class MotionEventDispatcher {
     public ArrayList<String> getClassNames(ArrayList<? extends View> mChildren) {
         ArrayList<String> arrayList = new ArrayList(mChildren.size());
         for (View child : mChildren) {
-            arrayList.add(lastClassName(Taggable.getName(child)));
+            arrayList.add(getLastClassName(Taggable.getName(child)));
         }
         return arrayList;
     }
@@ -162,15 +162,6 @@ public class MotionEventDispatcher {
         return isPointInsideView(out, matches, doesNotMatch, ev.getRawX(), ev.getRawY(), view);
     }
 
-    private String lastClassName(View view) {
-        return lastClassName(view.getClass().getName());
-    }
-
-    private String lastClassName(String name) {
-        int idx = name.lastIndexOf(".");
-        return idx == -1 ? name : name.substring(idx + 1);
-    }
-
     /**
      * Determines if given points are inside view
      *
@@ -188,12 +179,12 @@ public class MotionEventDispatcher {
         //point is inside view bounds
         if ((x > viewX && x < (viewX + view.getWidth())) &&
                 (y > viewY && y < (viewY + view.getHeight()))) {
-            String str = LayoutUtils.indentString(indent, "    ") + "Within: " + true + ", view = [" + lastClassName(view) + "], xy = [" + x + "," + y + "], location = [" + LayoutUtils.locationToString(location) + "]\n";
+            String str = LayoutUtils.indentString(indent, "    ") + "Within: " + true + ", view = [" + getLastClassName(view) + "], xy = [" + x + "," + y + "], location = [" + LayoutUtils.locationToString(location) + "]\n";
             out.append(str);
             matches.append(str);
             return true;
         } else {
-            String str = LayoutUtils.indentString(indent, "    ") + "Within: " + false + ", view = [" + lastClassName(view) + "], xy = [" + x + "," + y + "], location = [" + LayoutUtils.locationToString(location) + "]\n";
+            String str = LayoutUtils.indentString(indent, "    ") + "Within: " + false + ", view = [" + getLastClassName(view) + "], xy = [" + x + "," + y + "], location = [" + LayoutUtils.locationToString(location) + "]\n";
             out.append(str);
             doesNotMatch.append(str);
             return false;

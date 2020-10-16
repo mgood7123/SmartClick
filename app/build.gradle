@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 30
-    buildToolsVersion "30.0.2"
+    compileSdkVersion 29 // Q
+    buildToolsVersion "29.0.2" // Q
 
     defaultConfig {
         applicationId "smallville7123.smartclick"
-        minSdkVersion 26
-        targetSdkVersion 30
+        minSdkVersion 28 // P
+        targetSdkVersion 29 // Q
         versionCode 1
         versionName "1.0"
 
