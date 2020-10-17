@@ -11,8 +11,8 @@ import java.util.ArrayList;
 
 import smallville7123.taggable.Taggable;
 
-import static smallville7123.taggable.Taggable.getTag;
 import static smallville7123.taggable.Taggable.getLastClassName;
+import static smallville7123.taggable.Taggable.getTag;
 
 public class MotionEventDispatcher {
     public String TAG = getTag(this);
@@ -32,8 +32,11 @@ public class MotionEventDispatcher {
         }
     };
 
-    public boolean dispatchMotionEvent(final View root, MotionEvent motionEvent) {
-        ArrayList<View> viewArrayList = findTouchedView(root, motionEvent);
+    public boolean dispatchMotionEvent(final View root, MotionEvent event) {
+
+        // setup
+
+        ArrayList<View> viewArrayList = findTouchedView(root, event);
         if (viewArrayList == null) throw new RuntimeException("failed to find Touched View");
         if (viewArrayList.size() == 0) return false;
         ArrayList<String> mChildrenNames = getClassNames(viewArrayList);
@@ -46,12 +49,12 @@ public class MotionEventDispatcher {
         final View child = getLastListener(viewArrayList);
         View a = viewArrayList.get(0);
         View b = viewArrayList.get(1);
-        final View v = a == root ? b : a;
-        final View caller = child != null ? child : v;
+        final View rootChildView = a == root ? b : a;
+        final View caller = child != null ? child : rootChildView;
         boolean callerHasOnClickListener = ViewHierarchy.getOnClickListener(caller) != null;
         boolean callerHasOnTouchListener = ViewHierarchy.getOnTouchListener(caller) != null;
         ViewHierarchy viewHierarchy = new ViewHierarchy();
-        viewHierarchy.analyze(v, false);
+        viewHierarchy.analyze(rootChildView, false);
         viewHierarchy.setOnViewSaveData(new ViewHierarchy.ViewHolder() {
             @Override
             void process(ViewHierarchy viewHierarchy, Bundle data) {
@@ -93,17 +96,34 @@ public class MotionEventDispatcher {
 
         viewHierarchy.save();
         viewHierarchy.process();
-        boolean result = true;
-        if (callerHasOnClickListener) {
-            Log.d(TAG, "dispatchMotionEvent: calling callOnClick for view = [" + getLastClassName(caller) + "]");
-            result = caller.callOnClick();
+
+        // setup complete
+
+        // process
+
+        boolean consumed = false;
+
+        if (caller.onFilterTouchEventForSecurity(event)) {
+            consumed = handleClick(caller, event);
+//            if (callerHasOnClickListener) {
+//                Log.d(TAG, "dispatchMotionEvent: calling callOnClick for view = [" + getLastClassName(caller) + "]");
+//                consumed = caller.callOnClick();
+//            }
+//            if (callerHasOnTouchListener) {
+//                Log.d(TAG, "dispatchMotionEvent: calling dispatchTouchEvent for view = [" + getLastClassName(caller) + "]");
+//                consumed = caller.dispatchTouchEvent(event);
+//            }
         }
-        if (callerHasOnTouchListener) {
-            Log.d(TAG, "dispatchMotionEvent: calling dispatchTouchEvent for view = [" + getLastClassName(caller) + "]");
-            result = caller.dispatchTouchEvent(motionEvent);
-        }
+
+        // restore and return
+
         viewHierarchy.restore();
-        return result;
+        Log.d(TAG, "dispatchMotionEvent: consumed = [" + consumed + "]");
+        return true;
+    }
+
+    private boolean handleClick(View view, MotionEvent event) {
+        return new ViewOnMotionEvent(view).onTouchEvent(event);
     }
 
     public View getLastListener(ArrayList<View> viewArrayList) {

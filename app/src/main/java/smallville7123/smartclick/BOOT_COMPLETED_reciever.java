@@ -1,9 +1,5 @@
 package smallville7123.smartclick;
 
-import android.app.Activity;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.job.JobScheduler;
 import android.app.job.JobService;
 import android.content.BroadcastReceiver;
@@ -11,15 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.os.Build;
 import android.os.Handler;
-import android.util.Log;
-import android.widget.Toast;
-
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 
 import screen.utils.ScreenUtils;
 

@@ -5,19 +5,15 @@ import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Build;
 import android.view.View;
-import android.widget.ImageButton;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import androidx.annotation.RequiresApi;
-import androidx.constraintlayout.motion.widget.MotionLayout;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import smallville7123.floatingview.FloatingView;
 import smallville7123.libparcelablebundle.ParcelableBundle;
 import smallville7123.smartclick.R;
-import smallville7123.floatingview.FloatingView;
 
 public class ImageAnalysisFloatingView {
     private FloatingView mFloatingView;

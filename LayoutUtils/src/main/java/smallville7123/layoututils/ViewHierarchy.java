@@ -2,16 +2,13 @@ package smallville7123.layoututils;
 
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewParent;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 
 import static smallville7123.taggable.Taggable.getLastClassName;
-import static smallville7123.taggable.Taggable.getShortTag;
 
 public class ViewHierarchy {
 

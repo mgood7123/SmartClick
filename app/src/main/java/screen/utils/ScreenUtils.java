@@ -7,9 +7,10 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
-import androidx.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.widget.ImageView;
+
+import androidx.annotation.NonNull;
 
 import static android.app.Activity.RESULT_OK;
 

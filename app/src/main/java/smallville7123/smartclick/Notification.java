@@ -1,7 +1,6 @@
 package smallville7123.smartclick;
 
 import android.app.Activity;
-import android.app.Application;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -12,12 +11,9 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Build;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
-
-import screen.utils.FloatingViewService;
 
 public class Notification {
     private NotificationCompat.Builder notificationBuilder;

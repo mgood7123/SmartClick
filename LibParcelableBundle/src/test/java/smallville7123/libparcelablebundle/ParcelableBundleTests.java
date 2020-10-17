@@ -1,7 +1,6 @@
 package smallville7123.libparcelablebundle;
 
 import android.os.Build;
-import android.util.Log;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

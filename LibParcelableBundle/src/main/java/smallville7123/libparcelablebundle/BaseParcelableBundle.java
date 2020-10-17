@@ -45,7 +45,7 @@ import smallville7123.libparcelablebundle.tools.IndentingPrintWriter;
 import smallville7123.libparcelablebundle.tools.LogWriter;
 import smallville7123.libparcelablebundle.tools.MathUtils;
 import smallville7123.libparcelablebundle.tools.Slog;
-import smallville7123.libparcelablebundle.tools.TODO;
+import smallville7123.todo.TODO;
 
 /**
  * A mapping from String keys to values of various types. In most cases, you
@@ -2075,7 +2075,7 @@ public class BaseParcelableBundle {
      * @param parcel a Parcel
      * @return
      */
-    // ReadWriteHelper itself is annotated by @Hide
+    // ReadWriteHelper itself is annotated by @hide
     // so return an Object instead
     Object getReadWriteHelper(Parcel parcel) {
         if (!sGetParcelReadWriteHelperFieldFetched) {
@@ -2403,7 +2403,7 @@ void queryParcel(ArrayList<Parcel> parcels) {
      */
     void writeToParcelInner(Parcel parcel, int flags) {
         // If the parcel has a read-write helper, we can't just copy the blob, so unparcel it first.
-        // hasReadWriteHelper is annotated by @Hide
+        // hasReadWriteHelper is annotated by @hide
         // however the variable it accesses is not
         if (hasReadWriteHelper(parcel)) {
             unparcel();

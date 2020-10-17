@@ -2,12 +2,10 @@ package screen.utils;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import androidx.annotation.Nullable;
-
-import android.util.Log;
 import android.widget.ImageView;
 
-import java.io.ByteArrayInputStream;
+import androidx.annotation.Nullable;
+
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 

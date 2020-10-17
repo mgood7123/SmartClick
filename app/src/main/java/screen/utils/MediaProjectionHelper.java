@@ -2,15 +2,12 @@ package screen.utils;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.Notification;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ServiceInfo;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.media.ImageReader;
 import android.media.projection.MediaProjectionManager;
-import android.os.Build;
 import android.os.Looper;
 import android.util.DisplayMetrics;
 

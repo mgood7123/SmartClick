@@ -16,6 +16,8 @@
             <option value="$PROJECT_DIR$/FloatingView" />
             <option value="$PROJECT_DIR$/LayoutUtils" />
             <option value="$PROJECT_DIR$/LibParcelableBundle" />
+            <option value="$PROJECT_DIR$/ReflectionUtils" />
+            <option value="$PROJECT_DIR$/TODO" />
             <option value="$PROJECT_DIR$/Taggable" />
             <option value="$PROJECT_DIR$/TaskBuilder" />
             <option value="$PROJECT_DIR$/app" />
