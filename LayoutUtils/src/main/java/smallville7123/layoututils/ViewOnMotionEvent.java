@@ -38,6 +38,7 @@ class ViewOnMotionEvent {
     public boolean onTouchEvent(MotionEvent event) {
         final float x = event.getX();
         final float y = event.getY();
+        // mViewFlags is annotated with @hide
         final int viewFlags = ViewUtils.get_mViewFlags(view);
         // NOTE: we do not not know how @hide works in this particular scenario
         //
@@ -64,20 +65,33 @@ class ViewOnMotionEvent {
         //    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 129147060)
         //    int mPrivateFlags3;
         //
+        // annotated with @hide
         int mPrivateFlags = ViewUtils.get_mPrivateFlags(view);
+        // not allowed via reflection
         int mPrivateFlags2 = ViewUtils.get_mPrivateFlags2(view);
+        // not allowed via reflection
         int mPrivateFlags3 = ViewUtils.get_mPrivateFlags3(view);
         final int action = event.getAction();
 
+        // annotated with @hide
         int CLICKABLE = ViewUtils.get_CLICKABLE(view);
+        // annotated with @hide
         int LONG_CLICKABLE = ViewUtils.get_LONG_CLICKABLE(view);
+        // annotated with @hide
         int CONTEXT_CLICKABLE = ViewUtils.get_CONTEXT_CLICKABLE(view);
+        // annotated with @hide
         int ENABLED_MASK = ViewUtils.get_ENABLED_MASK(view);
+        // annotated with @hide
         int DISABLED = ViewUtils.get_DISABLED(view);
+        // not allowed via reflection
         int PFLAG_PRESSED = ViewUtils.get_PFLAG_PRESSED(view);
+        // not allowed via reflection
         int PFLAG_PREPRESSED = ViewUtils.get_PFLAG_PREPRESSED(view);
+        // not allowed via reflection
         int PFLAG3_FINGER_DOWN = ViewUtils.get_PFLAG3_FINGER_DOWN(view);
+        // annotated with @hide
         int TOOLTIP = ViewUtils.get_TOOLTIP(view);
+        // not allowed via reflection
         boolean mInContextButtonPress = ViewUtils.get_mInContextButtonPress(view);
         boolean mHasPerformedLongPress = ViewUtils.get_mHasPerformedLongPress(view);
         boolean mIgnoreNextUpEvent = ViewUtils.get_mIgnoreNextUpEvent(view);
@@ -111,22 +125,29 @@ class ViewOnMotionEvent {
          *     assume that TOOLTIP flag is cleared if tooltip text is null,
          *     and set if tooltip text is not null
          */
-//        boolean hasToolTip = view.getTooltipText() != null;
+        boolean hasToolTip = view.getTooltipText() != null;
 
-//        final boolean clickable = (view.isClickable()
-//                || view.isLongClickable())
-//                || view.isContextClickable();
-        final boolean clickable = ((viewFlags & CLICKABLE) == CLICKABLE
-                || (viewFlags & LONG_CLICKABLE) == LONG_CLICKABLE)
-                || (viewFlags & CONTEXT_CLICKABLE) == CONTEXT_CLICKABLE;
+        final boolean clickable = (view.isClickable()
+                || view.isLongClickable())
+                || view.isContextClickable();
 
-//        if (!view.isEnabled()) {
-        if ((viewFlags & ENABLED_MASK) == DISABLED) {
-//            if (action == MotionEvent.ACTION_UP && !view.isPressed()) {
-            if (action == MotionEvent.ACTION_UP && (mPrivateFlags & PFLAG_PRESSED) != 0) {
+        if (!view.isEnabled()) {
+            // NOTE: the expression
+            //
+            // (mPrivateFlags & PFLAG_PRESSED) != 0
+            //
+            // and
+            //
+            // (mPrivateFlags & PFLAG_PRESSED) == PFLAG_PRESSED
+            //
+            // are equal as long as PFLAG_PRESSED is correctly set, such that
+            //
+            // ((0xFFFFFFFF & PFLAG_PRESSED) != 0) == true
+            if (action == MotionEvent.ACTION_UP && view.isPressed()) {
+//            if (action == MotionEvent.ACTION_UP && (mPrivateFlags & PFLAG_PRESSED) != 0) {
                 view.setPressed(false);
             }
-            ViewUtils.set_mPrivateFlags3(view, ViewUtils.get_mPrivateFlags3(view) & ~PFLAG3_FINGER_DOWN);
+//            ViewUtils.set_mPrivateFlags3(view, ViewUtils.get_mPrivateFlags3(view) & ~PFLAG3_FINGER_DOWN);
 
             // A disabled view that is clickable still consumes the touch
             // events, it just doesn't respond to them.
@@ -141,13 +162,12 @@ class ViewOnMotionEvent {
             }
         }
 
-//        if (clickable || hasToolTip) {
-        if (clickable || (viewFlags & TOOLTIP) == TOOLTIP) {
+        if (clickable || hasToolTip) {
             switch (action) {
                 case MotionEvent.ACTION_UP:
-                    ViewUtils.set_mPrivateFlags3(view, ViewUtils.get_mPrivateFlags3(view) & ~PFLAG3_FINGER_DOWN);
-//                    if (hasToolTip) {
-                    if ((viewFlags & TOOLTIP) == TOOLTIP) {
+//                    ViewUtils.set_mPrivateFlags3(view, ViewUtils.get_mPrivateFlags3(view) & ~PFLAG3_FINGER_DOWN);
+                    if (hasToolTip) {
+//                    if ((viewFlags & TOOLTIP) == TOOLTIP) {
                         ViewUtils.handleTooltipUp(view);
                     }
                     if (!clickable) {
@@ -161,8 +181,9 @@ class ViewOnMotionEvent {
                         ViewUtils.set_mIgnoreNextUpEvent(view, mIgnoreNextUpEvent);
                         break;
                     }
-                    boolean prepressed = (mPrivateFlags & PFLAG_PREPRESSED) != 0;
-                    if ((mPrivateFlags & PFLAG_PRESSED) != 0 || prepressed) {
+                    boolean prepressed = false; //(mPrivateFlags & PFLAG_PREPRESSED) != 0;
+                    if (view.isPressed() || prepressed) {
+//                    if ((mPrivateFlags & PFLAG_PRESSED) != 0 || prepressed) {
                         // take focus if we don't have it already and we should in
                         // touch mode.
                         boolean focusTaken = false;
@@ -218,7 +239,7 @@ class ViewOnMotionEvent {
 
                 case MotionEvent.ACTION_DOWN:
                     if (event.getSource() == InputDevice.SOURCE_TOUCHSCREEN) {
-                        ViewUtils.set_mPrivateFlags3(view, ViewUtils.get_mPrivateFlags3(view) | PFLAG3_FINGER_DOWN);
+//                        ViewUtils.set_mPrivateFlags3(view, ViewUtils.get_mPrivateFlags3(view) | PFLAG3_FINGER_DOWN);
                     }
                     mHasPerformedLongPress = false;
                     ViewUtils.set_mHasPerformedLongPress(view, mHasPerformedLongPress);
@@ -243,7 +264,7 @@ class ViewOnMotionEvent {
                     // For views inside a scrolling container, delay the pressed feedback for
                     // a short period in case this is a scroll.
                     if (isInScrollingContainer) {
-                        ViewUtils.set_mPrivateFlags(view, ViewUtils.get_mPrivateFlags(view) | PFLAG_PREPRESSED);
+//                        ViewUtils.set_mPrivateFlags(view, ViewUtils.get_mPrivateFlags(view) | PFLAG_PREPRESSED);
                         if (mPendingCheckForTap == null) {
                             mPendingCheckForTap = ViewUtils.new_CheckForTap(view);
                             ViewUtils.set_mPendingCheckForTap(view, mPendingCheckForTap);
@@ -275,7 +296,7 @@ class ViewOnMotionEvent {
                     ViewUtils.set_mInContextButtonPress(view, mInContextButtonPress);
                     ViewUtils.set_mHasPerformedLongPress(view, mHasPerformedLongPress);
                     ViewUtils.set_mIgnoreNextUpEvent(view, mIgnoreNextUpEvent);
-                    ViewUtils.set_mPrivateFlags3(view, ViewUtils.get_mPrivateFlags3(view) & ~PFLAG3_FINGER_DOWN);
+//                    ViewUtils.set_mPrivateFlags3(view, ViewUtils.get_mPrivateFlags3(view) & ~PFLAG3_FINGER_DOWN);
                     break;
 
                 case MotionEvent.ACTION_MOVE:
@@ -320,10 +341,11 @@ class ViewOnMotionEvent {
                         // Remove any future long press/tap checks
                         ViewUtils.removeTapCallback(view);
                         ViewUtils.removeLongPressCallback(view);
-                        if ((mPrivateFlags & PFLAG_PRESSED) != 0) {
+                        if (view.isPressed()) {
+//                        if ((mPrivateFlags & PFLAG_PRESSED) != 0) {
                             view.setPressed(false);
                         }
-                        ViewUtils.set_mPrivateFlags3(view, ViewUtils.get_mPrivateFlags3(view) & ~PFLAG3_FINGER_DOWN);
+//                        ViewUtils.set_mPrivateFlags3(view, ViewUtils.get_mPrivateFlags3(view) & ~PFLAG3_FINGER_DOWN);
                     }
 
                     final boolean deepPress =

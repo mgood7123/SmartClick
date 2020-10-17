@@ -33,144 +33,144 @@ class ViewUtils {
     static ReflectionUtils reflectionUtils = new ReflectionUtils();
 
     public static void handleTooltipUp(View view) {
-        reflectionUtils.invokeMethod(view, "handleTooltipUp");
+        reflectionUtils.invokeMethod(View.class, view, "handleTooltipUp");
     }
 
     public static void setPressed(View view, boolean b, float x, float y) {
-        reflectionUtils.invokeMethod(view, "setPressed", new Boolean(b), new Float(x), new Float(y));
+        reflectionUtils.invokeMethod(View.class, view, "setPressed", new Boolean(b), new Float(x), new Float(y));
     }
 
     public static void removeTapCallback(View view) {
-        reflectionUtils.invokeMethod(view, "removeTapCallback");
+        reflectionUtils.invokeMethod(View.class, view, "removeTapCallback");
     }
 
     public static void removeLongPressCallback(View view) {
-        reflectionUtils.invokeMethod(view, "removeTapCallback");
+        reflectionUtils.invokeMethod(View.class, view, "removeTapCallback");
 
     }
 
     public static TouchDelegate get_mTouchDelegate(View view) {
-        return (TouchDelegate) reflectionUtils.getField(view, "mTouchDelegate");
+        return (TouchDelegate) reflectionUtils.getField(View.class, view, "mTouchDelegate");
     }
 
     /**
      * mViewFlags is annotated with @hide
      */
     public static int get_mViewFlags(View view) {
-        return (int) reflectionUtils.getField(view, "mViewFlags");
+        return (int) reflectionUtils.getField(View.class, view, "mViewFlags");
     }
 
     /**
      * mViewFlags is annotated with @hide
      */
     public static void set_mViewFlags(View view, int value) {
-        reflectionUtils.setField(view, "mViewFlags", value);
+        reflectionUtils.setField(View.class, view, "mViewFlags", value);
     }
 
     /**
      * mPrivateFlags is annotated with @hide
      */
     public static int get_mPrivateFlags(View view) {
-        return (int) reflectionUtils.getField(view, "mPrivateFlags");
+        return (int) reflectionUtils.getField(View.class, view, "mPrivateFlags");
     }
 
     /**
      * mPrivateFlags is annotated with @hide
      */
     public static void set_mPrivateFlags(View view, int value) {
-        reflectionUtils.setField(view, "mPrivateFlags", value);
+        reflectionUtils.setField(View.class, view, "mPrivateFlags", value);
     }
 
     /**
      * mPrivateFlags2 is annotated with @hide
      */
     public static int get_mPrivateFlags2(View view) {
-        return (int) reflectionUtils.getField(view, "mPrivateFlags2");
+        return (int) reflectionUtils.getField(View.class, view, "mPrivateFlags2");
     }
 
     /**
      * mPrivateFlags2 is annotated with @hide
      */
     public static void set_mPrivateFlags2(View view, int value) {
-        reflectionUtils.setField(view, "mPrivateFlags2", value);
+        reflectionUtils.setField(View.class, view, "mPrivateFlags2", value);
     }
 
     /**
      * mPrivateFlags3 is annotated with @hide
      */
     public static int get_mPrivateFlags3(View view) {
-        return (int) reflectionUtils.getField(view, "mPrivateFlags3");
+        return (int) reflectionUtils.getField(View.class, view, "mPrivateFlags3");
     }
 
     /**
      * mPrivateFlags3 is annotated with @hide
      */
     public static void set_mPrivateFlags3(View view, int value) {
-        reflectionUtils.setField(view, "mPrivateFlags3", value);
+        reflectionUtils.setField(View.class, view, "mPrivateFlags3", value);
     }
 
     public static int get_PFLAG3_FINGER_DOWN(View view) {
-        return (int) reflectionUtils.getField(view, "PFLAG3_FINGER_DOWN");
+        return (int) reflectionUtils.getField(View.class, view, "PFLAG3_FINGER_DOWN");
     }
 
     public static int get_CLICKABLE(View view) {
-        return (int) reflectionUtils.getField(view, "CLICKABLE");
+        return (int) reflectionUtils.getField(View.class, view, "CLICKABLE");
     }
 
     public static int get_LONG_CLICKABLE(View view) {
-        return (int) reflectionUtils.getField(view, "LONG_CLICKABLE");
+        return (int) reflectionUtils.getField(View.class, view, "LONG_CLICKABLE");
     }
 
     public static int get_CONTEXT_CLICKABLE(View view) {
-        return (int) reflectionUtils.getField(view, "CONTEXT_CLICKABLE");
+        return (int) reflectionUtils.getField(View.class, view, "CONTEXT_CLICKABLE");
     }
 
     public static int get_ENABLED_MASK(View view) {
-        return (int) reflectionUtils.getField(view, "ENABLED_MASK");
+        return (int) reflectionUtils.getField(View.class, view, "ENABLED_MASK");
     }
 
     public static int get_ENABLED(View view) {
-        return (int) reflectionUtils.getField(view, "ENABLED");
+        return (int) reflectionUtils.getField(View.class, view, "ENABLED");
     }
 
     public static int get_DISABLED(View view) {
-        return (int) reflectionUtils.getField(view, "DISABLED");
+        return (int) reflectionUtils.getField(View.class, view, "DISABLED");
     }
 
     public static int get_PFLAG_PRESSED(View view) {
-        return (int) reflectionUtils.getField(view, "PFLAG_PRESSED");
+        return (int) reflectionUtils.getField(View.class, view, "PFLAG_PRESSED");
     }
 
     public static int get_PFLAG_PREPRESSED(View view) {
-        return (int) reflectionUtils.getField(view, "PFLAG_PREPRESSED");
+        return (int) reflectionUtils.getField(View.class, view, "PFLAG_PREPRESSED");
     }
 
     public static int get_TOOLTIP(View view) {
-        return (int) reflectionUtils.getField(view, "TOOLTIP");
+        return (int) reflectionUtils.getField(View.class, view, "TOOLTIP");
     }
 
     public static boolean get_mInContextButtonPress(View view) {
-        return (boolean) reflectionUtils.getField(view, "mInContextButtonPress");
+        return (boolean) reflectionUtils.getField(View.class, view, "mInContextButtonPress");
     }
 
     public static void set_mInContextButtonPress(View view, boolean value) {
-        reflectionUtils.setField(view, "mInContextButtonPress", value);
+        reflectionUtils.setField(View.class, view, "mInContextButtonPress", value);
     }
 
     public static boolean get_mHasPerformedLongPress(View view) {
-        return (boolean) reflectionUtils.getField(view, "mHasPerformedLongPress");
+        return (boolean) reflectionUtils.getField(View.class, view, "mHasPerformedLongPress");
     }
 
     public static void set_mHasPerformedLongPress(View view, boolean value) {
-        reflectionUtils.setField(view, "mHasPerformedLongPress", value);
+        reflectionUtils.setField(View.class, view, "mHasPerformedLongPress", value);
     }
 
     public static boolean get_mIgnoreNextUpEvent(View view) {
-        return (boolean) reflectionUtils.getField(view, "mIgnoreNextUpEvent");
+        return (boolean) reflectionUtils.getField(View.class, view, "mIgnoreNextUpEvent");
     }
 
     public static void set_mIgnoreNextUpEvent(View view, boolean value) {
-        reflectionUtils.setField(view, "mIgnoreNextUpEvent", value);
+        reflectionUtils.setField(View.class, view, "mIgnoreNextUpEvent", value);
     }
 
     /**
@@ -178,7 +178,7 @@ class ViewUtils {
      * so return Runnable type instead
      */
     public static Runnable get_mPerformClick(View view) {
-        return (Runnable) reflectionUtils.getField(view, "mPerformClick");
+        return (Runnable) reflectionUtils.getField(View.class, view, "mPerformClick");
     }
 
     /**
@@ -186,15 +186,15 @@ class ViewUtils {
      * so accept Runnable type instead
      */
     public static void set_mPerformClick(View view, Runnable value) {
-        reflectionUtils.setField(view, "mPerformClick", value);
+        reflectionUtils.setField(View.class, view, "mPerformClick", value);
     }
 
     public static Runnable new_PerformClick(View view) {
-        return (Runnable) reflectionUtils.instantiate(view, "PerformClick");
+        return (Runnable) reflectionUtils.instantiateInner(View.class, view, "PerformClick");
     }
 
     public static void performClickInternal(View view) {
-        reflectionUtils.invokeMethod(view, "performClickInternal");
+        reflectionUtils.invokeMethod(View.class, view, "performClickInternal");
     }
 
     /**
@@ -202,7 +202,7 @@ class ViewUtils {
      * so return Runnable type instead
      */
     public static Runnable get_mUnsetPressedState(View view) {
-        return (Runnable) reflectionUtils.getField(view, "mUnsetPressedState");
+        return (Runnable) reflectionUtils.getField(View.class, view, "mUnsetPressedState");
     }
 
     /**
@@ -210,11 +210,11 @@ class ViewUtils {
      * so accept Runnable type instead
      */
     public static void set_mUnsetPressedState(View view, Runnable value) {
-        reflectionUtils.setField(view, "mPerformClick", value);
+        reflectionUtils.setField(View.class, view, "mPerformClick", value);
     }
 
     public static Runnable new_UnsetPressedState(View view) {
-        return (Runnable) reflectionUtils.instantiate(view, "UnsetPressedState");
+        return (Runnable) reflectionUtils.instantiateInner(View.class, view, "UnsetPressedState");
     }
 
     /**
@@ -222,7 +222,7 @@ class ViewUtils {
      * so return Runnable type instead
      */
     public static Runnable get_mPendingCheckForTap(View view) {
-        return (Runnable) reflectionUtils.getField(view, "mPendingCheckForTap");
+        return (Runnable) reflectionUtils.getField(View.class, view, "mPendingCheckForTap");
     }
 
     /**
@@ -230,7 +230,7 @@ class ViewUtils {
      * so accept Runnable type instead
      */
     public static void set_mPendingCheckForTap(View view, Runnable value) {
-        reflectionUtils.setField(view, "mPendingCheckForTap", value);
+        reflectionUtils.setField(View.class, view, "mPendingCheckForTap", value);
     }
 
     /**
@@ -238,7 +238,7 @@ class ViewUtils {
      * so accept Runnable type instead
      */
     public static void set_CheckForTap_x(Runnable mCheckForTap, float value) {
-        reflectionUtils.setField(mCheckForTap, "x", value);
+        reflectionUtils.setField(View.class, mCheckForTap, "x", value);
     }
 
     /**
@@ -246,15 +246,15 @@ class ViewUtils {
      * so accept Runnable type instead
      */
     public static void set_CheckForTap_y(Runnable mCheckForTap, float value) {
-        reflectionUtils.setField(mCheckForTap, "y", value);
+        reflectionUtils.setField(View.class, mCheckForTap, "y", value);
     }
 
     public static Runnable new_CheckForTap(View view) {
-        return (Runnable) reflectionUtils.instantiate(view, "CheckForTap");
+        return (Runnable) reflectionUtils.instantiateInner(View.class, view, "CheckForTap");
     }
 
     public static void checkForLongClick(View view, long delay, float x, float y, int classification) {
-        reflectionUtils.invokeMethod(view, "checkForLongClick", delay, x, y, classification);
+        reflectionUtils.invokeMethod(View.class, view, "checkForLongClick", delay, x, y, classification);
     }
 
     /**
@@ -279,15 +279,15 @@ class ViewUtils {
     }
 
     private static int get_PFLAG_CANCEL_NEXT_UP_EVENT(View view) {
-        return (int) reflectionUtils.getField(view, "PFLAG_CANCEL_NEXT_UP_EVENT");
+        return (int) reflectionUtils.getField(View.class, view, "PFLAG_CANCEL_NEXT_UP_EVENT");
     }
 
     public static int get_mTouchSlop(View view) {
-        return (int) reflectionUtils.getField(view, "mTouchSlop");
+        return (int) reflectionUtils.getField(View.class, view, "mTouchSlop");
     }
 
     public static boolean hasPendingLongPressCallback(View view) {
-        return (boolean) reflectionUtils.getField(view, "hasPendingLongPressCallback");
+        return (boolean) reflectionUtils.getField(View.class, view, "hasPendingLongPressCallback");
     }
 
     /**
