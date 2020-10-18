@@ -1,17 +1,19 @@
 package smallville7123.views;
 
 import android.animation.Animator;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources.Theme;
 import android.content.res.TypedArray;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.view.ViewPropertyAnimator;
-import android.widget.ExpandableListView;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -21,6 +23,8 @@ import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collections;
 
 import smallville7123.tools.Builder;
 import smallville7123.tools.ConstraintBuilder;
@@ -38,9 +42,59 @@ public class TaskBuilder extends ConstraintLayout {
     static LayoutParams matchParent = new LayoutParams(MATCH_PARENT, MATCH_PARENT);
     static LayoutParams wrapContent = new LayoutParams(WRAP_CONTENT, WRAP_CONTENT);
     static LayoutParams matchConstraint = new LayoutParams(MATCH_CONSTRAINT, MATCH_CONSTRAINT);
+
+    static class TaskData {
+        CharSequence text;
+        Drawable icon;
+    }
+
+    ArrayList<ViewHolder> taskBuilders = new ArrayList(Collections.singleton(new ViewHolder() {
+
+        @Override
+        boolean process(View view, TaskData taskData) {
+            if (view instanceof Task) {
+                Task task = ((Task) view);
+                taskData.text = task.text;
+                if (task.imageView != null) taskData.icon = task.imageView.getDrawable();
+                return true;
+            } else if (view instanceof TextView) {
+                TextView textView = ((TextView) view);
+                // no image
+                taskData.text = textView.getText();
+                return true;
+            }
+            return false;
+        }
+    }));
+
+    public void addTask(View view) {
+        TaskData taskData = new TaskData();
+        boolean processed = false;
+        for (ViewHolder taskBuilder : taskBuilders) {
+            if (taskBuilder.process(view, taskData)) {
+                processed = true;
+                break;
+            }
+        }
+        if (processed) {
+            Task tmp = new Task(getContext());
+            tmp.setText(taskData.text);
+            tmp.setTextColor(Color.BLACK);
+            tmp.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30f);
+            tmp.setImage(taskData.icon);
+            if (views_TaskList.getChildAt(0) instanceof PLACEHOLDER) views_TaskList.removeViewAt(0);
+            views_TaskList.addView(tmp);
+        } else throw new RuntimeException("failed to process view: " + view);
+    }
+
+    abstract static class ViewHolder {
+        abstract boolean process(View view, TaskData taskData);
+    }
+
     private static class Internal {}
     Internal Internal = new Internal();
     private boolean showTaskMenu;
+    private String nonTaskViews;
     Theme theme;
     TypedArray attributes;
     int taskMenu_Layout_Width;
@@ -72,19 +126,102 @@ public class TaskBuilder extends ConstraintLayout {
         return context == null ? view.getContext() : context;
     }
 
-    TextView newPlaceholder(Context context, AttributeSet attrs, Integer defStyleAttr, Integer defStyleRes) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
-        TextView PLACEHOLDER = constructView(TextView.class, getContext(this, context), null, null, null);
-        PLACEHOLDER.setTextColor(Color.BLACK);
+    @SuppressLint("AppCompatCustomView")
+    class PLACEHOLDER extends TextView {
+        public PLACEHOLDER(Context context) {
+            super(context);
+        }
+
+        public PLACEHOLDER(Context context, @Nullable AttributeSet attrs) {
+            super(context, attrs);
+        }
+
+        public PLACEHOLDER(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+            super(context, attrs, defStyleAttr);
+        }
+
+        public PLACEHOLDER(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+            super(context, attrs, defStyleAttr, defStyleRes);
+        }
+    };
+
+    TextView newPlaceholder(Context context, AttributeSet attrs, Integer defStyleAttr, Integer defStyleRes)  {
+        if (context == null) throw new RuntimeException("context must not be null");
+
+        boolean attr = attrs != null;
+        boolean style = defStyleAttr != null;
+        boolean res = defStyleRes != null;
+        PLACEHOLDER PLACEHOLDER;
+
+        // any of these can be null
+        if (attr) {
+            if (style) {
+                if (res) {
+                    PLACEHOLDER = new PLACEHOLDER(context, attrs, defStyleAttr, defStyleRes);
+                } else {
+                    PLACEHOLDER = new PLACEHOLDER(context, attrs, defStyleAttr);
+                }
+            } else {
+                PLACEHOLDER = new PLACEHOLDER(context, attrs);
+            }
+        } else {
+            PLACEHOLDER = new PLACEHOLDER(context);
+        }
+        PLACEHOLDER.setId(View.generateViewId());
         PLACEHOLDER.setText("PLACEHOLDER");
+        PLACEHOLDER.setTextColor(Color.BLACK);
         PLACEHOLDER.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30f);
         PLACEHOLDER.setBackgroundColor(Color.GREEN);
-        new ExpandableListView(context).addView(this);
         return PLACEHOLDER;
     }
 
     @Override
     public void setOnClickListener(@Nullable final OnClickListener l) {
         throw new UnsupportedOperationException("setOnClickListener(onClickListener) is not supported in TaskBuilder");
+    }
+
+    /**
+     * @param v the view to add
+     * @return a new InterceptTouchFrameLayout that is set up to work with TaskBuilder
+     */
+    static public InterceptTouchFrameLayout new_TaskBuilder_Compatible_InterceptTouchFrameLayout(Context context, View v) {
+        final InterceptTouchFrameLayout x;
+        try {
+            x = InterceptTouchFrameLayout.class.getConstructor(Context.class).newInstance(context);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        // handle View onClick before processing View itself
+        x.callOnClickBefore = true;
+        x.setInterceptOnClickListener(new InterceptTouchFrameLayout.OnInterceptClickListener() {
+            @Override
+            public void onInterceptClick(View view) {
+                Log.d(TAG, "onInterceptClick() called with: view = [" + view + "]");
+                ViewParent p = view.getParent();
+                while (p != null && p instanceof ViewGroup) {
+                    if (p instanceof TaskBuilder) {
+                        TaskBuilder tb = ((TaskBuilder) p);
+                        tb.addTask(view);
+                        break;
+                    }
+                    p = p.getParent();
+                }
+            }
+        });
+        x.addView(v, TaskBuilder.matchParent);
+        return x;
+    }
+
+    public static void addViewInternal(Context context, ViewGroup viewToAddTo, View view, ViewGroup.LayoutParams params) {
+        addViewInternal(context, viewToAddTo, view, -1, params);
+    }
+
+    public static void addViewInternal(Context context, ViewGroup viewToAddTo, View view, int index, ViewGroup.LayoutParams params) {
+        View target = view;
+        // comment this if standAlone should be used
+        if (!(view instanceof ExpandableLayout))
+            target = new_TaskBuilder_Compatible_InterceptTouchFrameLayout(context, view);
+        viewToAddTo.addView(target, index, params);
     }
 
     @Override
@@ -95,7 +232,7 @@ public class TaskBuilder extends ConstraintLayout {
             super.addView(child, index, params);
         } else {
             Log.d(TAG, "addView() called with EXTERNAL: child = [" + child + "], index = [" + index + "], params = [" + params + "]");
-            views_TaskMenuContainer_Internal_TaskMenu.addView(child, index, params);
+            addViewInternal(getContext(), views_TaskMenuContainer_Internal_TaskMenu, child, params);
         }
     }
 
@@ -103,6 +240,7 @@ public class TaskBuilder extends ConstraintLayout {
         if (attrs != null) {
             attributes = theme.obtainStyledAttributes(attrs, TaskBuilder_Parameters, 0, 0);
             showTaskMenu = attributes.getBoolean(R.styleable.TaskBuilder_Parameters_showTaskMenu, false);
+            nonTaskViews = attributes.getString(R.styleable.TaskBuilder_Parameters_nonTaskViews);
             attributes.recycle();
         }
     }
@@ -126,6 +264,8 @@ public class TaskBuilder extends ConstraintLayout {
         build_layer_3(context, attrs, defStyleAttr, defStyleRes);
 
         addAnimations();
+
+        views_TaskList.addView(newPlaceholder(context, attrs, defStyleAttr, defStyleRes), wrapContent);
     }
 
     // be organized:
@@ -139,7 +279,7 @@ public class TaskBuilder extends ConstraintLayout {
     LinearLayout views_TaskList;
     ImageButton views_ShowTaskMenu;
 
-    private void build_layer_1(Context context, AttributeSet attrs, Integer defStyleAttr, Integer defStyleRes) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+    private void build_layer_1(Context context, AttributeSet attrs, Integer defStyleAttr, Integer defStyleRes)  {
         Builder builder = new ConstraintBuilder().withTag(TAG).withTarget(this);
 
         // create all our instances
@@ -170,7 +310,7 @@ public class TaskBuilder extends ConstraintLayout {
 
     ConstraintLayout views_TaskMenuContainer;
 
-    private void build_layer_2(Context context, AttributeSet attrs, Integer defStyleAttr, Integer defStyleRes) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+    private void build_layer_2(Context context, AttributeSet attrs, Integer defStyleAttr, Integer defStyleRes)  {
         Builder builder = new ConstraintBuilder().withTag(TAG).withTarget(this);
 
         // create all our instances
@@ -190,7 +330,7 @@ public class TaskBuilder extends ConstraintLayout {
     ScrollView views_TaskMenuContainer_Internal_ScrollView;
     LinearLayout views_TaskMenuContainer_Internal_TaskMenu;
 
-    private void build_layer_3(Context context, AttributeSet attrs, Integer defStyleAttr, Integer defStyleRes) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+    private void build_layer_3(Context context, AttributeSet attrs, Integer defStyleAttr, Integer defStyleRes)  {
         Builder builder = new ConstraintBuilder().withTag(TAG).withTarget(views_TaskMenuContainer);
 
         // create all our instances

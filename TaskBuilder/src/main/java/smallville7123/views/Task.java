@@ -4,8 +4,8 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -24,27 +24,28 @@ class Task extends LinearLayout {
 
     private final String TAG = Taggable.getTag(this);
 
-    public Task(Context context) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public Task(Context context) {
         super(context);
         construct(context, null, null, null);
     }
 
-    public Task(Context context, AttributeSet attrs) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public Task(Context context, AttributeSet attrs) {
         super(context, attrs);
         construct(context, attrs, null, null);
     }
 
-    public Task(Context context, AttributeSet attrs, int defStyleAttr) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public Task(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         construct(context, attrs, defStyleAttr, null);
     }
 
-    public Task(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public Task(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         construct(context, attrs, defStyleAttr, defStyleRes);
     }
 
-    int imageSrc;
+    int imageSrc = -1;
+    Drawable imageDrawable = null;
 
     String text;
     int textSize;
@@ -60,7 +61,7 @@ class Task extends LinearLayout {
         }
     }
 
-    void construct(Context context, AttributeSet attrs, Integer defStyleAttr, Integer defStyleRes) throws NoSuchMethodException, IllegalAccessException, InstantiationException, InvocationTargetException {
+    void construct(Context context, AttributeSet attrs, Integer defStyleAttr, Integer defStyleRes)  {
         Resources.Theme theme = TaskBuilder.getContext(this, context).getTheme();
         getAttributeParameters(context, attrs, theme);
 
@@ -70,7 +71,7 @@ class Task extends LinearLayout {
     ImageView imageView;
 
     TextView textView;
-    private void build_layer_1(Context context, AttributeSet attrs, Integer defStyleAttr, Integer defStyleRes) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+    private void build_layer_1(Context context, AttributeSet attrs, Integer defStyleAttr, Integer defStyleRes) {
         // create all our instances
 //        imageView = constructView(ImageView.class, context, attrs, defStyleAttr, defStyleRes);
         textView = constructView(TextView.class, context, attrs, defStyleAttr, defStyleRes);
@@ -82,9 +83,15 @@ class Task extends LinearLayout {
         setTextColor(textColor);
 
         // add our views
-        Log.i(TAG, "build_layer_1: " + getWidth());
 //        addView(imageView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         addView(textView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+    }
+
+    public void setImage(Drawable drawable) {
+        imageDrawable = drawable;
+        if (imageDrawable != null)
+            if (imageView != null)
+                imageView.setImageDrawable(imageDrawable);
     }
 
     private void setImageResource(int res) {
@@ -94,15 +101,19 @@ class Task extends LinearLayout {
                 imageView.setImageResource(imageSrc);
     }
 
-    private void setText(String text) {
+    public void setText(CharSequence text) {
         if (text != null) textView.setText(text);
     }
 
-    private void setTextSize(int textSize) {
+    public void setTextSize(int textSize) {
         LayoutUtils.setTextSizeAttributesSuitableForTextView(textView, textSize);
     }
 
-    private void setTextColor(int textColor) {
+    public void setTextSize(int unit, float size) {
+        textView.setTextSize(unit, size);
+    }
+
+    public void setTextColor(int textColor) {
         textView.setTextColor(textColor);
     }
 

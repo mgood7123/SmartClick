@@ -54,8 +54,9 @@ public class LayoutUtils {
      * @see View#requireViewById(int)
      */
     @androidx.annotation.Nullable
-    public static final <T extends View> T constructView(Class viewClass, Context context, AttributeSet attrs, Integer defStyleAttr, Integer defStyleRes) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public static final <T extends View> T constructView(Class viewClass, Context context, AttributeSet attrs, Integer defStyleAttr, Integer defStyleRes) {
         if (!View.class.isAssignableFrom(viewClass)) throw new RuntimeException("viewClass must extend View");
+        if (context == null) throw new RuntimeException("context must not be null");
 
         boolean attr = attrs != null;
         boolean style = defStyleAttr != null;
@@ -63,18 +64,22 @@ public class LayoutUtils {
         View instance = null;
 
         // any of these can be null
-        if (attr) {
-            if (style) {
-                if (res) {
-                    instance = (View) viewClass.getConstructor(Context.class, AttributeSet.class, int.class, int.class).newInstance(context, attrs, defStyleAttr, defStyleRes);
+        try {
+            if (attr) {
+                if (style) {
+                    if (res) {
+                        instance = (View) viewClass.getConstructor(Context.class, AttributeSet.class, int.class, int.class).newInstance(context, attrs, defStyleAttr, defStyleRes);
+                    } else {
+                        instance = (View) viewClass.getConstructor(Context.class, AttributeSet.class, int.class).newInstance(context, attrs, defStyleAttr);
+                    }
                 } else {
-                    instance = (View) viewClass.getConstructor(Context.class, AttributeSet.class, int.class).newInstance(context, attrs, defStyleAttr);
+                    instance = (View) viewClass.getConstructor(Context.class, AttributeSet.class).newInstance(context, attrs);
                 }
             } else {
-                instance = (View) viewClass.getConstructor(Context.class, AttributeSet.class).newInstance(context, attrs);
+                instance = (View) viewClass.getConstructor(Context.class).newInstance(context);
             }
-        } else {
-            instance = (View) viewClass.getConstructor(Context.class).newInstance(context);
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
         }
         if (instance == null) throw new RuntimeException("failed to construct view");
         instance.setId(View.generateViewId());

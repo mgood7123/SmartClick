@@ -44,22 +44,22 @@ public class InterceptTouchFrameLayout extends FrameLayout {
          * If disallowIntercept is true the touch event can't be stealed and the return value is ignored.
          * @see android.view.ViewGroup#onInterceptTouchEvent(android.view.MotionEvent)
          */
-        boolean onInterceptTouchEvent(InterceptTouchFrameLayout view, MotionEvent motionEvent, boolean disallowIntercept);
+        boolean onInterceptTouchEvent(View view, MotionEvent motionEvent, boolean disallowIntercept);
 
         /**
          * @see android.view.View#onTouchEvent(android.view.MotionEvent)
          */
-        boolean onTouchEvent(InterceptTouchFrameLayout view, MotionEvent motionEvent);
+        boolean onTouchEvent(View view, MotionEvent motionEvent);
     }
 
     private static final class DummyInterceptTouchEventListener implements OnInterceptTouchEventListener {
         public String TAG = Taggable.getTag(this);
         @Override
-        public boolean onInterceptTouchEvent(InterceptTouchFrameLayout view, MotionEvent motionEvent, boolean disallowIntercept) {
+        public boolean onInterceptTouchEvent(View view, MotionEvent motionEvent, boolean disallowIntercept) {
             return false;
         }
         @Override
-        public boolean onTouchEvent(InterceptTouchFrameLayout view, MotionEvent motionEvent) {
+        public boolean onTouchEvent(View view, MotionEvent motionEvent) {
             return false;
         }
     }
@@ -72,14 +72,14 @@ public class InterceptTouchFrameLayout extends FrameLayout {
         /**
          * @see android.view.View#setOnClickListener(OnClickListener)
          */
-        void onInterceptClick(InterceptTouchFrameLayout view);
+        void onInterceptClick(View view);
     }
 
     private static final class DummyOnInterceptClickListener implements OnInterceptClickListener {
         public String TAG = Taggable.getTag(this);
 
         @Override
-        public void onInterceptClick(final InterceptTouchFrameLayout view) {}
+        public void onInterceptClick(final View view) {}
     }
 
     private static final OnInterceptClickListener DUMMY_CLICK_LISTENER = new DummyOnInterceptClickListener();
@@ -136,7 +136,7 @@ public class InterceptTouchFrameLayout extends FrameLayout {
              */
             currentChild.performClick();
         }
-        mOnInterceptClickListener.onInterceptClick(this);
+        mOnInterceptClickListener.onInterceptClick(currentChild);
         if (callOnClickAfter) {
             /**
              * Call this view's OnClickListener, if it is defined.  Performs all normal
@@ -176,14 +176,14 @@ public class InterceptTouchFrameLayout extends FrameLayout {
         // onInterceptTouchEvent is called every time,
         // take advantage of this to set up our onClick interceptor
         update();
-        boolean stealTouchEvent = mInterceptTouchEventListener.onInterceptTouchEvent(this, ev, mDisallowIntercept);
+        boolean stealTouchEvent = mInterceptTouchEventListener.onInterceptTouchEvent(currentChild, ev, mDisallowIntercept);
         return stealTouchEvent && !mDisallowIntercept || super.onInterceptTouchEvent(ev);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         Log.d(TAG, "onTouchEvent: MotionEvent.actionToString(ev.getAction()) = [" + MotionEvent.actionToString(event.getAction()) + "]");
-        boolean handled = mInterceptTouchEventListener.onTouchEvent(this, event);
+        boolean handled = mInterceptTouchEventListener.onTouchEvent(currentChild, event);
         return handled || super.onTouchEvent(event);
     }
 

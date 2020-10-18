@@ -10,9 +10,9 @@ import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -21,9 +21,12 @@ import androidx.annotation.Nullable;
 
 import smallville7123.layoututils.LayoutUtils;
 
-import static smallville7123.layoututils.LayoutUtils.constructView;
-
 public class ExpandableLayout extends LinearLayout {
+
+    /**
+     * set to false if you want to use this View as standAlone
+     */
+    boolean taskBuilderCompatible = true;
 
     public ExpandableLayout(Context context) {
         super(context);
@@ -107,34 +110,13 @@ public class ExpandableLayout extends LinearLayout {
     private void addContent(final View v, int index, ViewGroup.LayoutParams params) {
         if (!expanded) contentLayout.setVisibility(GONE);
         chevron.setRotation(expanded ? CHEVRON_POSITION_UP : CHEVRON_POSITION_DOWN);
-        if (v instanceof ExpandableLayout) contentLayout.addView(v, index, params);
-        else {
-            final InterceptTouchFrameLayout x;
-            try {
-                x = constructView(InterceptTouchFrameLayout.class, getContext(), null, null, null);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-            // handle View onClick before processing View itself
-            x.callOnClickBefore = true;
-            x.setInterceptOnClickListener(new InterceptTouchFrameLayout.OnInterceptClickListener() {
-                @Override
-                public void onInterceptClick(InterceptTouchFrameLayout view) {
-                    Log.d(TAG, "onInterceptClick() called with: view = [" + view + "]");
-                    Log.d(TAG, "onClick: BYEBYE!");
-                }
-            });
 
-            v.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Log.d(TAG, "v: onClick() called with: v = [" + v + "]");
-                    Log.d(TAG, "onClick: HELLO!");
-                }
-            });
-            x.addView(v, TaskBuilder.matchParent);
-            contentLayout.addView(x, index, params);
-        }
+        // uncomment this if standAlone should be used
+//        contentLayout.addView(v, index, params);
+
+        // comment this if standAlone should be used
+        TaskBuilder.addViewInternal(getContext(), contentLayout, v, params);
+
     }
 
     String TAG = "ExpandableLayout";
