@@ -25,15 +25,18 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Random;
 
+import smallville7123.layoututils.LayoutUtils;
 import smallville7123.tools.Builder;
 import smallville7123.tools.ConstraintBuilder;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
+import static android.widget.LinearLayout.SHOW_DIVIDER_MIDDLE;
 import static androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.MATCH_CONSTRAINT;
 import static smallville7123.layoututils.LayoutUtils.constructView;
+import static smallville7123.layoututils.LayoutUtils.setTextSizeAttributesSuitableForTextView;
+import static smallville7123.layoututils.LayoutUtils.toDP;
 import static smallville7123.views.R.styleable.TaskBuilder_Layout;
 import static smallville7123.views.R.styleable.TaskBuilder_Parameters;
 
@@ -45,6 +48,7 @@ public class TaskBuilder extends ConstraintLayout {
     static LayoutParams matchConstraint = new LayoutParams(MATCH_CONSTRAINT, MATCH_CONSTRAINT);
     private Drawable taskMenu_background;
     private Drawable taskBuilder_background;
+    private Drawable divider;
 
     @Override
     public void setBackground(final Drawable background) {
@@ -97,9 +101,11 @@ public class TaskBuilder extends ConstraintLayout {
         }
         if (processed) {
             Task tmp = new Task(getContext());
+            tmp.setBackgroundResource(R.drawable.outline);
             tmp.setText(taskData.text);
-            tmp.setTextColor(Color.BLACK);
-            tmp.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30f);
+            tmp.setTextColor(textColor);
+            // accepts a TextViewSize object
+            tmp.setTextSize(textSize);
             tmp.setImage(taskData.icon);
             if (views_TaskList.getChildAt(0) instanceof PLACEHOLDER) views_TaskList.removeViewAt(0);
             views_TaskList.addView(tmp);
@@ -119,22 +125,22 @@ public class TaskBuilder extends ConstraintLayout {
     int taskMenu_Layout_Height;
 
 
-    public TaskBuilder(Context context) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public TaskBuilder(Context context)  {
         super(context);
         construct(context, null, null, null);
     }
 
-    public TaskBuilder(Context context, AttributeSet attrs) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public TaskBuilder(Context context, AttributeSet attrs)  {
         super(context, attrs);
         construct(context, attrs, null, null);
     }
 
-    public TaskBuilder(Context context, AttributeSet attrs, int defStyleAttr) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public TaskBuilder(Context context, AttributeSet attrs, int defStyleAttr)  {
         super(context, attrs, defStyleAttr);
         construct(context, attrs, defStyleAttr, null);
     }
 
-    public TaskBuilder(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public TaskBuilder(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes)  {
         super(context, attrs, defStyleAttr, defStyleRes);
         construct(context, attrs, defStyleAttr, defStyleRes);
     }
@@ -161,7 +167,7 @@ public class TaskBuilder extends ConstraintLayout {
         public PLACEHOLDER(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
             super(context, attrs, defStyleAttr, defStyleRes);
         }
-    };
+    }
 
     TextView newPlaceholder(Context context, AttributeSet attrs, Integer defStyleAttr, Integer defStyleRes)  {
         if (context == null) throw new RuntimeException("context must not be null");
@@ -186,10 +192,9 @@ public class TaskBuilder extends ConstraintLayout {
             PLACEHOLDER = new PLACEHOLDER(context);
         }
         PLACEHOLDER.setId(View.generateViewId());
-        PLACEHOLDER.setText("PLACEHOLDER");
-        PLACEHOLDER.setTextColor(Color.BLACK);
-        PLACEHOLDER.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30f);
-        PLACEHOLDER.setBackgroundColor(Color.valueOf(new Random().nextInt()).toArgb());
+        PLACEHOLDER.setText(text == null ? "PLACEHOLDER" : text);
+        PLACEHOLDER.setTextColor(textColor);
+        setTextSizeAttributesSuitableForTextView(PLACEHOLDER, textSize);
         return PLACEHOLDER;
     }
 
@@ -254,14 +259,24 @@ public class TaskBuilder extends ConstraintLayout {
         }
     }
 
+    String text;
+    LayoutUtils.TextViewSize textSize;
+    int textColor;
+
     void getAttributeParameters(Context context, AttributeSet attrs, Theme theme) {
         if (attrs != null) {
             attributes = theme.obtainStyledAttributes(attrs, TaskBuilder_Parameters, 0, 0);
+            text = attributes.getString(R.styleable.TaskBuilder_Parameters_android_text);
+            textSize = LayoutUtils.getTextSizeAttributesSuitableForTextView(attributes, R.styleable.TaskBuilder_Parameters_android_textSize, 30f);
+            textColor = attributes.getColor(R.styleable.TaskBuilder_Parameters_android_textColor, Color.WHITE);
             taskBuilder_background = attributes.getDrawable(R.styleable.TaskBuilder_Parameters_android_background);
             taskMenu_background = attributes.getDrawable(R.styleable.TaskBuilder_Parameters_taskMenu_background);
             showTaskMenu = attributes.getBoolean(R.styleable.TaskBuilder_Parameters_showTaskMenu, false);
             nonTaskViews = attributes.getString(R.styleable.TaskBuilder_Parameters_nonTaskViews);
             attributes.recycle();
+        } else {
+            textSize = LayoutUtils.new_TextViewSize(30f);
+            textColor = Color.BLACK;
         }
     }
 
@@ -274,8 +289,9 @@ public class TaskBuilder extends ConstraintLayout {
         }
     }
 
-    void construct(Context context, AttributeSet attrs, Integer defStyleAttr, Integer defStyleRes) throws NoSuchMethodException, IllegalAccessException, InstantiationException, InvocationTargetException {
+    void construct(Context context, AttributeSet attrs, Integer defStyleAttr, Integer defStyleRes) {
         Theme theme = getContext(this, context).getTheme();
+        divider = getResources().getDrawable(R.drawable.divider, theme);
         getAttributeLayout(context, attrs, theme);
         getAttributeParameters(context, attrs, theme);
 
@@ -283,6 +299,7 @@ public class TaskBuilder extends ConstraintLayout {
         build_layer_2(context, attrs, defStyleAttr, defStyleRes);
         build_layer_3(context, attrs, defStyleAttr, defStyleRes);
         build_layer_4(context, attrs, defStyleAttr, defStyleRes);
+        build_layer_5(context, attrs, defStyleAttr, defStyleRes);
 
         addAnimations();
 
@@ -335,6 +352,9 @@ public class TaskBuilder extends ConstraintLayout {
         views_TaskList.setTag(Internal);
         views_TaskList.setOrientation(LinearLayout.VERTICAL);
         views_TaskList.setBackground(null);
+        views_TaskList.setShowDividers(SHOW_DIVIDER_MIDDLE);
+        views_TaskList.setDividerDrawable(divider);
+        views_TaskList.setDividerPadding(toDP(getResources(), 22f));
 
         views_ShowTaskMenu.setTag(Internal);
         builder.setLayoutConstraintsTarget(views_ShowTaskMenu);
@@ -345,7 +365,7 @@ public class TaskBuilder extends ConstraintLayout {
         // add our views
         views_TaskListScrollView.addView(views_TaskList, matchParent);
         builder.addView(views_TaskListScrollView, matchParent);
-        builder.addView(views_ShowTaskMenu, toDP(this, 100), toDP(this, 100), 0, 0, toDP(this, 16), toDP(this, 16));
+        builder.addView(views_ShowTaskMenu, toDP(getResources(), 100), toDP(getResources(), 100), 0, 0, toDP(getResources(), 16), toDP(getResources(), 16));
         builder.build();
     }
 
@@ -369,11 +389,31 @@ public class TaskBuilder extends ConstraintLayout {
         builder.build();
     }
 
-    ScrollView views_TaskMenuContainer_Internal_ScrollView;
-    LinearLayout views_TaskMenuContainer_Internal_TaskMenu;
+    ConstraintLayout views_TaskMenuScrollViewContainer;
 
     private void build_layer_4(Context context, AttributeSet attrs, Integer defStyleAttr, Integer defStyleRes)  {
         Builder builder = new ConstraintBuilder().withTag(TAG).withTarget(views_TaskMenuContainer);
+
+        // create all our instances
+        views_TaskMenuScrollViewContainer = constructView(ConstraintLayout.class, context, attrs, defStyleAttr, defStyleRes);
+
+        // set our parameters
+        views_TaskMenuScrollViewContainer.setTag(Internal);
+        views_TaskMenuScrollViewContainer.setBackgroundResource(R.drawable.outline);
+        builder.setLayoutConstraintsTarget(views_TaskMenuScrollViewContainer);
+        builder.layout_constraintAll_ToAllOf(ConstraintBuilder.parent);
+        if (!showTaskMenu) views_TaskMenuScrollViewContainer.setAlpha(0.0f);
+
+        // add our views
+        builder.addView(views_TaskMenuScrollViewContainer, taskMenu_Layout_Width, taskMenu_Layout_Height);
+        builder.build();
+    }
+
+    ScrollView views_TaskMenuContainer_Internal_ScrollView;
+    LinearLayout views_TaskMenuContainer_Internal_TaskMenu;
+
+    private void build_layer_5(Context context, AttributeSet attrs, Integer defStyleAttr, Integer defStyleRes)  {
+        Builder builder = new ConstraintBuilder().withTag(TAG).withTarget(views_TaskMenuScrollViewContainer);
 
         // create all our instances
         views_TaskMenuContainer_Internal_ScrollView = constructView(ScrollView.class, context, attrs, defStyleAttr, defStyleRes);
@@ -383,24 +423,31 @@ public class TaskBuilder extends ConstraintLayout {
         views_TaskMenuContainer_Internal_ScrollView.setTag(Internal);
         builder.setLayoutConstraintsTarget(views_TaskMenuContainer_Internal_ScrollView);
         builder.layout_constraintAll_ToAllOf(ConstraintBuilder.parent);
-        if (!showTaskMenu) views_TaskMenuContainer_Internal_ScrollView.setAlpha(0.0f);
 
         views_TaskMenuContainer_Internal_TaskMenu.setTag(Internal);
         builder.setLayoutConstraintsTarget(views_TaskMenuContainer_Internal_TaskMenu);
         builder.layout_constraintAll_ToAllOf(ConstraintBuilder.parent);
         views_TaskMenuContainer_Internal_TaskMenu.setOrientation(LinearLayout.VERTICAL);
-        if (taskMenu_background != null) {
-            views_TaskMenuContainer_Internal_TaskMenu.setBackground(taskMenu_background);
-        } else views_TaskMenuContainer_Internal_TaskMenu.setBackground(taskBuilder_background);
+        views_TaskMenuContainer_Internal_TaskMenu.setBackground(taskMenu_background);
+        views_TaskMenuContainer_Internal_TaskMenu.setShowDividers(SHOW_DIVIDER_MIDDLE);
+        views_TaskMenuContainer_Internal_TaskMenu.setDividerDrawable(divider);
+        views_TaskMenuContainer_Internal_TaskMenu.setDividerPadding(toDP(getResources(), 22f));
 
         // add our views
         views_TaskMenuContainer_Internal_ScrollView.addView(views_TaskMenuContainer_Internal_TaskMenu, matchParent);
-        builder.addView(views_TaskMenuContainer_Internal_ScrollView, taskMenu_Layout_Width, taskMenu_Layout_Height);
+        builder.addView(views_TaskMenuContainer_Internal_ScrollView,
+                taskMenu_Layout_Width-toDP(getResources(), 16),
+                taskMenu_Layout_Height-toDP(getResources(), 16),
+                toDP(getResources(), 3),
+                toDP(getResources(), 3),
+                toDP(getResources(), 3),
+                toDP(getResources(), 3)
+        );
         builder.build();
     }
 
     private void addAnimations() {
-        final ViewPropertyAnimator viewPropertyAnimator = views_TaskMenuContainer_Internal_ScrollView.animate();
+        final ViewPropertyAnimator viewPropertyAnimator = views_TaskMenuScrollViewContainer.animate();
 
         views_ShowTaskMenu.setOnClickListener(new OnClickListener() {
             @Override
@@ -408,7 +455,7 @@ public class TaskBuilder extends ConstraintLayout {
                 viewPropertyAnimator.cancel();
                 viewPropertyAnimator.setListener(null);
                 views_TaskMenuContainer.setVisibility(VISIBLE);
-                views_TaskMenuContainer_Internal_ScrollView.setAlpha(0.0f);
+                views_TaskMenuScrollViewContainer.setAlpha(0.0f);
                 viewPropertyAnimator.alpha(1.0f).setDuration(500).start();
             }
         });
@@ -417,7 +464,7 @@ public class TaskBuilder extends ConstraintLayout {
             @Override
             public void onClick(View v) {
                 viewPropertyAnimator.cancel();
-                viewPropertyAnimator.alpha(0f).setDuration(500);
+                viewPropertyAnimator.alpha(0.0f).setDuration(500);
                 viewPropertyAnimator.setListener(new Animator.AnimatorListener() {
                     @Override
                     public void onAnimationStart(Animator animation) {
@@ -441,9 +488,5 @@ public class TaskBuilder extends ConstraintLayout {
                 }).start();
             }
         });
-    }
-
-    static int toDP(View view, float val) {
-        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, val, view.getResources().getDisplayMetrics());
     }
 }

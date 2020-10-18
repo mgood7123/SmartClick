@@ -11,6 +11,7 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -54,7 +55,7 @@ public class ExpandableLayout extends LinearLayout {
     Internal Internal = new Internal();
 
     String text;
-    int textSize;
+    LayoutUtils.TextViewSize textSize;
     int textColor;
     boolean expanded;
     Drawable background;
@@ -64,7 +65,7 @@ public class ExpandableLayout extends LinearLayout {
         if (attrs != null) {
             TypedArray attributes = theme.obtainStyledAttributes(attrs, R.styleable.ExpandableLayout, 0, 0);
             text = attributes.getString(R.styleable.ExpandableLayout_android_text);
-            textSize = LayoutUtils.getTextSizeAttributesSuitableForTextView(attributes, R.styleable.ExpandableLayout_android_textSize);
+            textSize = LayoutUtils.getTextSizeAttributesSuitableForTextView(attributes, R.styleable.ExpandableLayout_android_textSize, 30f);
             textColor = attributes.getColor(R.styleable.ExpandableLayout_android_textColor, Color.WHITE);
             expanded = attributes.getBoolean(R.styleable.ExpandableLayout_android_state_expanded, false);
             background = attributes.getDrawable(R.styleable.ExpandableLayout_android_background);
@@ -89,7 +90,8 @@ public class ExpandableLayout extends LinearLayout {
     }
 
     private void init(Context context, AttributeSet attrs) {
-        getAttributeParameters(context, attrs, context.getTheme());
+        Resources.Theme theme = context.getTheme();
+        getAttributeParameters(context, attrs, theme);
         LinearLayout root = (LinearLayout) inflate(context, R.layout.item_expandable, null);
         root.findViewById(R.id.layout).setTag(Internal);
         root.setTag(Internal);
@@ -124,6 +126,9 @@ public class ExpandableLayout extends LinearLayout {
         });
         contentLayout = root.findViewById(R.id.content);
         contentLayout.setTag(Internal);
+        contentLayout.setShowDividers(SHOW_DIVIDER_MIDDLE);
+        contentLayout.setDividerDrawable(getResources().getDrawable(R.drawable.divider, theme));
+        contentLayout.setDividerPadding(LayoutUtils.toDP(getResources(), 22f));
         if (!expanded) contentLayout.setVisibility(GONE);
         chevron.setRotation(expanded ? CHEVRON_POSITION_UP : CHEVRON_POSITION_DOWN);
         addView(root, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));

@@ -48,7 +48,7 @@ class Task extends LinearLayout {
     Drawable imageDrawable = null;
 
     String text;
-    int textSize;
+    LayoutUtils.TextViewSize textSize;
     int textColor;
 
     void getAttributeParameters(Context context, AttributeSet attrs, Resources.Theme theme) {
@@ -56,9 +56,13 @@ class Task extends LinearLayout {
             TypedArray attributes = theme.obtainStyledAttributes(attrs, R.styleable.Task, 0, 0);
             imageSrc = attributes.getResourceId(R.styleable.Task_android_src, -1);
             text = attributes.getString(R.styleable.Task_android_text);
-            textSize = LayoutUtils.getTextSizeAttributesSuitableForTextView(attributes, R.styleable.Task_android_textSize);
+            textSize = LayoutUtils.getTextSizeAttributesSuitableForTextView(attributes, R.styleable.Task_android_textSize, 30f);
             textColor = attributes.getColor(R.styleable.Task_android_textColor, Color.BLACK);
             attributes.recycle();
+        } else {
+            imageSrc = -1;
+            textSize = LayoutUtils.new_TextViewSize(30f);
+            textColor = Color.BLACK;
         }
     }
 
@@ -106,7 +110,10 @@ class Task extends LinearLayout {
         if (text != null) textView.setText(text);
     }
 
-    public void setTextSize(int textSize) {
+    /**
+     * @see LayoutUtils#setTextSizeAttributesSuitableForTextView(TextView, LayoutUtils.TextViewSize)
+     */
+    public void setTextSize(LayoutUtils.TextViewSize textSize) {
         LayoutUtils.setTextSizeAttributesSuitableForTextView(textView, textSize);
     }
 

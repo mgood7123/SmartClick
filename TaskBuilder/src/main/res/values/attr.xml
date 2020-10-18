@@ -53,6 +53,10 @@
         </attr>
     </declare-styleable>
     <declare-styleable name="TaskBuilder_Parameters">
+        <!-- The placeholder text -->
+        <attr name="android:text" format="string" />
+        <attr name="android:textSize" format="dimension" />
+        <attr name="android:textColor" format="color" />
         <!-- A drawable to use as the background.  This can be either a reference
              to a full drawable resource (such as a PNG image, 9-patch,
              XML state list description, etc), or a solid color such as "#ff000000"
@@ -65,7 +69,7 @@
         <attr name="taskMenu_background" format="reference|color" />
         <!-- Whether to initially show the Task Menu -->
         <attr name="showTaskMenu" format="boolean" />
-        <!-- a semicolon ( ; ) separated list of View's
+        <!-- A semicolon ( ; ) separated list of View's
          that should not be seen as valid Tasks.
           this might include Header's, Expandable Views (such as ListView)
           or other views. -->
