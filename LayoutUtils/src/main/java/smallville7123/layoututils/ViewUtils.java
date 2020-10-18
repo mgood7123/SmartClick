@@ -8,9 +8,8 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 
 import smallville7123.reflectionutils.ReflectionUtils;
-import smallville7123.todo.TODO;
 
-class ViewUtils {
+public class ViewUtils {
 
     // the following is generated values obtained from
     // .../gen/com/android/internal/util/FrameworkStatsLog.java

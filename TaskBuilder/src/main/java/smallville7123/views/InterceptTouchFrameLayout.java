@@ -6,8 +6,14 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import androidx.annotation.Nullable;
+
+import smallville7123.layoututils.ViewHierarchy;
+import smallville7123.layoututils.ViewUtils;
 import smallville7123.taggable.Taggable;
 
 /**
@@ -16,6 +22,21 @@ import smallville7123.taggable.Taggable;
 public class InterceptTouchFrameLayout extends FrameLayout {
     public String TAG = Taggable.getTag(this);
 
+    /**
+     * if true, calls onClick after handling its own onClick listener
+     * <br>
+     * if {@link #callOnClickBefore} is also true, then onClick will be called twice
+     */
+    public boolean callOnClickAfter;
+
+    /**
+     * if true, calls onClick before handling its own onClick listener
+     * <br>
+     * if {@link #callOnClickAfter} is also true, then onClick will be called twice
+     */
+    public boolean callOnClickBefore;
+
+    private boolean onClick = false;
     private boolean mDisallowIntercept;
 
     public interface OnInterceptTouchEventListener {
@@ -35,12 +56,10 @@ public class InterceptTouchFrameLayout extends FrameLayout {
         public String TAG = Taggable.getTag(this);
         @Override
         public boolean onInterceptTouchEvent(InterceptTouchFrameLayout view, MotionEvent motionEvent, boolean disallowIntercept) {
-            Log.d(TAG, "MotionEvent.actionToString(ev.getAction()) = [" + MotionEvent.actionToString(motionEvent.getAction()) + "]");
             return false;
         }
         @Override
         public boolean onTouchEvent(InterceptTouchFrameLayout view, MotionEvent motionEvent) {
-            Log.d(TAG, "MotionEvent.actionToString(ev.getAction()) = [" + MotionEvent.actionToString(motionEvent.getAction()) + "]");
             return false;
         }
     }
@@ -48,6 +67,24 @@ public class InterceptTouchFrameLayout extends FrameLayout {
     private static final OnInterceptTouchEventListener DUMMY_LISTENER = new DummyInterceptTouchEventListener();
 
     private OnInterceptTouchEventListener mInterceptTouchEventListener = DUMMY_LISTENER;
+
+    public interface OnInterceptClickListener {
+        /**
+         * @see android.view.View#setOnClickListener(OnClickListener)
+         */
+        void onInterceptClick(InterceptTouchFrameLayout view);
+    }
+
+    private static final class DummyOnInterceptClickListener implements OnInterceptClickListener {
+        public String TAG = Taggable.getTag(this);
+
+        @Override
+        public void onInterceptClick(final InterceptTouchFrameLayout view) {}
+    }
+
+    private static final OnInterceptClickListener DUMMY_CLICK_LISTENER = new DummyOnInterceptClickListener();
+
+    private OnInterceptClickListener mOnInterceptClickListener = DUMMY_CLICK_LISTENER;
 
     public InterceptTouchFrameLayout(Context context) {
         super(context);
@@ -66,26 +103,95 @@ public class InterceptTouchFrameLayout extends FrameLayout {
         super(context, attrs, defStyleAttr, defStyle);
     }
 
-
     @Override
     public void requestDisallowInterceptTouchEvent(boolean disallowIntercept) {
         getParent().requestDisallowInterceptTouchEvent(disallowIntercept);
         mDisallowIntercept = disallowIntercept;
     }
 
+    public void setInterceptOnClickListener(OnInterceptClickListener interceptClickListener) {
+        mOnInterceptClickListener = interceptClickListener != null ? interceptClickListener : DUMMY_CLICK_LISTENER;
+        setClickable(true);
+    }
+
     public void setOnInterceptTouchEventListener(OnInterceptTouchEventListener interceptTouchEventListener) {
         mInterceptTouchEventListener = interceptTouchEventListener != null ? interceptTouchEventListener : DUMMY_LISTENER;
     }
 
+    private void onClick() {
+        // restore clickable to ensure correct behaviour,
+        // also so that update can set it to un-clickable again
+        // just to be safe, as setOnClickListener sets the view to Clickable,
+        currentChild.setClickable(true);
+        // however a quick browse of the source code reveals
+        // that both performClick and callOnClick
+        // do not care if the view is visible or not,
+        // and they do not care if the view is clickable or not
+        // they simply call the listener's onClick if it is present
+        if (callOnClickBefore) {
+            /**
+             * Call this view's OnClickListener, if it is defined.  Performs all normal
+             * actions associated with clicking: reporting accessibility event, playing
+             * a sound, etc.
+             */
+            currentChild.performClick();
+        }
+        mOnInterceptClickListener.onInterceptClick(this);
+        if (callOnClickAfter) {
+            /**
+             * Call this view's OnClickListener, if it is defined.  Performs all normal
+             * actions associated with clicking: reporting accessibility event, playing
+             * a sound, etc.
+             */
+            currentChild.performClick();
+        }
+    }
+
+    @Override
+    public boolean callOnClick() {
+        Log.d(TAG, "callOnClick() called");
+        onClick();
+        return true;
+    }
+
+    @Override
+    public boolean performClick() {
+        Log.d(TAG, "performClick() called");
+        onClick();
+        return true;
+    }
+
+    View currentChild = null;
+
+    private void update() {
+        Log.d(TAG, "update() called");
+        // we do not need to obtain the child's onClick listener
+        // all we need to do is set it to non-clickable to ensure correct behaviour
+        currentChild.setClickable(false);
+    }
+
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
+        Log.d(TAG, "onInterceptTouchEvent: MotionEvent.actionToString(ev.getAction()) = [" + MotionEvent.actionToString(ev.getAction()) + "]");
+        // onInterceptTouchEvent is called every time,
+        // take advantage of this to set up our onClick interceptor
+        update();
         boolean stealTouchEvent = mInterceptTouchEventListener.onInterceptTouchEvent(this, ev, mDisallowIntercept);
         return stealTouchEvent && !mDisallowIntercept || super.onInterceptTouchEvent(ev);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        Log.d(TAG, "onTouchEvent: MotionEvent.actionToString(ev.getAction()) = [" + MotionEvent.actionToString(event.getAction()) + "]");
         boolean handled = mInterceptTouchEventListener.onTouchEvent(this, event);
         return handled || super.onTouchEvent(event);
+    }
+
+    @Override
+    public void addView(final View child, final int index, final ViewGroup.LayoutParams params) {
+        super.addView(child, index, params);
+        // FrameLayout throws if given more than one children, so set current child after
+        // even tho this will not actually make any difference as it will still throw
+        currentChild = child;
     }
 }

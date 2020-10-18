@@ -8,7 +8,6 @@ import android.graphics.Color;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewPropertyAnimator;
@@ -23,7 +22,6 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 
 import java.lang.reflect.InvocationTargetException;
 
-import smallville7123.layoututils.MotionEventDispatcher;
 import smallville7123.tools.Builder;
 import smallville7123.tools.ConstraintBuilder;
 
@@ -196,27 +194,10 @@ public class TaskBuilder extends ConstraintLayout {
         Builder builder = new ConstraintBuilder().withTag(TAG).withTarget(views_TaskMenuContainer);
 
         // create all our instances
-        InterceptTouchFrameLayout x = constructView(InterceptTouchFrameLayout.class, context, attrs, defStyleAttr, defStyleRes);
         views_TaskMenuContainer_Internal_ScrollView = constructView(ScrollView.class, context, attrs, defStyleAttr, defStyleRes);
         views_TaskMenuContainer_Internal_TaskMenu = constructView(LinearLayout.class, context, attrs, defStyleAttr, defStyleRes);
 
         // set our parameters
-        x.setTag(Internal);
-        builder.setLayoutConstraintsTarget(x);
-        builder.layout_constraintAll_ToAllOf(ConstraintBuilder.parent);
-        x.setOnInterceptTouchEventListener(new InterceptTouchFrameLayout.OnInterceptTouchEventListener() {
-            MotionEventDispatcher x = new MotionEventDispatcher();
-            @Override
-            public boolean onInterceptTouchEvent(InterceptTouchFrameLayout view, MotionEvent motionEvent, boolean disallowIntercept) {
-                return x.dispatchMotionEvent(view, motionEvent);
-            }
-
-            @Override
-            public boolean onTouchEvent(InterceptTouchFrameLayout view, MotionEvent motionEvent) {
-                return x.dispatchMotionEvent(view, motionEvent);
-            }
-        });
-
         views_TaskMenuContainer_Internal_ScrollView.setTag(Internal);
         builder.setLayoutConstraintsTarget(views_TaskMenuContainer_Internal_ScrollView);
         builder.layout_constraintAll_ToAllOf(ConstraintBuilder.parent);
@@ -231,8 +212,7 @@ public class TaskBuilder extends ConstraintLayout {
 
         // add our views
         views_TaskMenuContainer_Internal_ScrollView.addView(views_TaskMenuContainer_Internal_TaskMenu, matchParent);
-        x.addView(views_TaskMenuContainer_Internal_ScrollView, matchParent);
-        builder.addView(x, taskMenu_Layout_Width, taskMenu_Layout_Height);
+        builder.addView(views_TaskMenuContainer_Internal_ScrollView, taskMenu_Layout_Width, taskMenu_Layout_Height);
         builder.build();
     }
 

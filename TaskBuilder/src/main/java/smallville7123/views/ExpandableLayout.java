@@ -10,6 +10,7 @@ import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -19,6 +20,8 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 
 import smallville7123.layoututils.LayoutUtils;
+
+import static smallville7123.layoututils.LayoutUtils.constructView;
 
 public class ExpandableLayout extends LinearLayout {
 
@@ -89,7 +92,6 @@ public class ExpandableLayout extends LinearLayout {
         header.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(TAG, "onClick() called with: v = [" + v + "]");
                 int vv = contentLayout.getVisibility();
                 contentLayout.setVisibility(vv == VISIBLE ? GONE : VISIBLE);
                 chevron.setRotation(vv == VISIBLE ? CHEVRON_POSITION_DOWN : CHEVRON_POSITION_UP);
@@ -102,10 +104,37 @@ public class ExpandableLayout extends LinearLayout {
         addView(root, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
     }
 
-    private void addContent(View v, int index, ViewGroup.LayoutParams params) {
+    private void addContent(final View v, int index, ViewGroup.LayoutParams params) {
         if (!expanded) contentLayout.setVisibility(GONE);
         chevron.setRotation(expanded ? CHEVRON_POSITION_UP : CHEVRON_POSITION_DOWN);
-        contentLayout.addView(v, index, params);
+        if (v instanceof ExpandableLayout) contentLayout.addView(v, index, params);
+        else {
+            final InterceptTouchFrameLayout x;
+            try {
+                x = constructView(InterceptTouchFrameLayout.class, getContext(), null, null, null);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            // handle View onClick before processing View itself
+            x.callOnClickBefore = true;
+            x.setInterceptOnClickListener(new InterceptTouchFrameLayout.OnInterceptClickListener() {
+                @Override
+                public void onInterceptClick(InterceptTouchFrameLayout view) {
+                    Log.d(TAG, "onInterceptClick() called with: view = [" + view + "]");
+                    Log.d(TAG, "onClick: BYEBYE!");
+                }
+            });
+
+            v.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.d(TAG, "v: onClick() called with: v = [" + v + "]");
+                    Log.d(TAG, "onClick: HELLO!");
+                }
+            });
+            x.addView(v, TaskBuilder.matchParent);
+            contentLayout.addView(x, index, params);
+        }
     }
 
     String TAG = "ExpandableLayout";
