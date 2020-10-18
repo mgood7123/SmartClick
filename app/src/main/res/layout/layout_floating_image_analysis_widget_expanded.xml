@@ -2,6 +2,7 @@
 <!-- this is the expanded layout -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/analyzerLayoutExpanded"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -132,81 +133,69 @@
             app:layout_constraintTop_toBottomOf="@+id/analyzerEditorTextView" />
 
         <smallville7123.views.TaskBuilder
+            android:id="@+id/analyzerEditorPanel"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:id="@+id/analyzerEditorPanel"
+            android:background="@color/cardview_dark_background"
             app:layout_constraintBottom_toTopOf="@id/analyzerEditorFinishButton"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/analyzerEditorSelectedImage"
             app:showTaskMenu="true"
-            app:taskMenu_layout_width="200dp"
             app:taskMenu_layout_height="200dp"
-            >
-
-            <smallville7123.views.Task
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="TASK"
-                android:textSize="23sp"
-                >
-            </smallville7123.views.Task>
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="TEXTVIEW"
-                android:textSize="23sp"
-                >
-            </TextView>
-            <smallville7123.views.Task
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="TASK"
-                android:textSize="23sp"
-                >
-            </smallville7123.views.Task>
+            app:taskMenu_layout_width="200dp">
             <smallville7123.views.ExpandableLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="A"
+                android:text="Conditional Statements"
                 android:textSize="23sp"
-                android:textColor="@color/cardview_light_background"
+                app:chevron_color="#FF0000"
                 android:state_expanded="true"
                 >
+
                 <smallville7123.views.Task
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="LIST A ITEM A"
-                    android:textSize="23sp"
-                    >
-                </smallville7123.views.Task>
+                    android:text="if"
+                    android:textColor="#ffffff"
+                    android:textSize="23sp" />
+                <smallville7123.views.Task
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="else if"
+                    android:textColor="#ffffff"
+                    android:textSize="23sp" />
+                <smallville7123.views.Task
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="end if"
+                    android:textColor="#ffffff"
+                    android:textSize="23sp" />
+                <smallville7123.views.Task
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="while"
+                    android:textColor="#ffffff"
+                    android:textSize="23sp" />
             </smallville7123.views.ExpandableLayout>
             <smallville7123.views.ExpandableLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="A"
+                android:text="Constants"
                 android:textSize="23sp"
-                android:textColor="@color/cardview_light_background"
-                android:state_expanded="false"
-                >
-                <smallville7123.views.ExpandableLayout
+                app:chevron_color="#FF0000">
+                <smallville7123.views.Task
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="B"
-                    android:textSize="23sp"
-                    android:textColor="@color/cardview_light_background"
-                    android:state_expanded="false"
-                    >
-                    <smallville7123.views.ExpandableLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="C"
-                        android:textSize="23sp"
-                        android:textColor="@color/cardview_light_background"
-                        android:state_expanded="false"
-                        >
-                    </smallville7123.views.ExpandableLayout>
-                </smallville7123.views.ExpandableLayout>
+                    android:text="true"
+                    android:textColor="#ffffff"
+                    android:textSize="23sp" />
+                <smallville7123.views.Task
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="false"
+                    android:textColor="#ffffff"
+                    android:textSize="23sp" />
             </smallville7123.views.ExpandableLayout>
         </smallville7123.views.TaskBuilder>
 

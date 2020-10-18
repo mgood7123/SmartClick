@@ -50,6 +50,7 @@ class Task extends LinearLayout {
     String text;
     int textSize;
     int textColor;
+
     void getAttributeParameters(Context context, AttributeSet attrs, Resources.Theme theme) {
         if (attrs != null) {
             TypedArray attributes = theme.obtainStyledAttributes(attrs, R.styleable.Task, 0, 0);

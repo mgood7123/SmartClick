@@ -12,6 +12,13 @@
         <attr name="android:text" format="string" />
         <attr name="android:textSize" format="dimension" />
         <attr name="android:textColor" format="color" />
+        <!-- A drawable to use as the background.  This can be either a reference
+             to a full drawable resource (such as a PNG image, 9-patch,
+             XML state list description, etc), or a solid color such as "#ff000000"
+            (black). -->
+        <attr name="android:background" format="reference|color" />
+        <!-- a solid color such as "#ff000000" (black). -->
+        <attr name="chevron_color" format="color" />
         <attr name="android:state_expanded" format="boolean" />
     </declare-styleable>
     <declare-styleable name="TaskBuilder_Layout">
@@ -46,6 +53,16 @@
         </attr>
     </declare-styleable>
     <declare-styleable name="TaskBuilder_Parameters">
+        <!-- A drawable to use as the background.  This can be either a reference
+             to a full drawable resource (such as a PNG image, 9-patch,
+             XML state list description, etc), or a solid color such as "#ff000000"
+            (black). -->
+        <attr name="android:background" format="reference|color" />
+        <!-- A drawable to use as the background.  This can be either a reference
+             to a full drawable resource (such as a PNG image, 9-patch,
+             XML state list description, etc), or a solid color such as "#ff000000"
+            (black). -->
+        <attr name="taskMenu_background" format="reference|color" />
         <!-- Whether to initially show the Task Menu -->
         <attr name="showTaskMenu" format="boolean" />
         <!-- a semicolon ( ; ) separated list of View's

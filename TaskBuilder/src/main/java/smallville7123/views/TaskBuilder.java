@@ -25,6 +25,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Random;
 
 import smallville7123.tools.Builder;
 import smallville7123.tools.ConstraintBuilder;
@@ -42,6 +43,24 @@ public class TaskBuilder extends ConstraintLayout {
     static LayoutParams matchParent = new LayoutParams(MATCH_PARENT, MATCH_PARENT);
     static LayoutParams wrapContent = new LayoutParams(WRAP_CONTENT, WRAP_CONTENT);
     static LayoutParams matchConstraint = new LayoutParams(MATCH_CONSTRAINT, MATCH_CONSTRAINT);
+    private Drawable taskMenu_background;
+    private Drawable taskBuilder_background;
+
+    @Override
+    public void setBackground(final Drawable background) {
+        // no background
+    }
+
+    @Override
+    public void setBackgroundResource(final int resid) {
+        // no background
+    }
+
+    @Override
+    public void setBackgroundColor(final int color) {
+        // no background
+    }
+
 
     static class TaskData {
         CharSequence text;
@@ -95,7 +114,6 @@ public class TaskBuilder extends ConstraintLayout {
     Internal Internal = new Internal();
     private boolean showTaskMenu;
     private String nonTaskViews;
-    Theme theme;
     TypedArray attributes;
     int taskMenu_Layout_Width;
     int taskMenu_Layout_Height;
@@ -171,7 +189,7 @@ public class TaskBuilder extends ConstraintLayout {
         PLACEHOLDER.setText("PLACEHOLDER");
         PLACEHOLDER.setTextColor(Color.BLACK);
         PLACEHOLDER.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30f);
-        PLACEHOLDER.setBackgroundColor(Color.GREEN);
+        PLACEHOLDER.setBackgroundColor(Color.valueOf(new Random().nextInt()).toArgb());
         return PLACEHOLDER;
     }
 
@@ -239,6 +257,8 @@ public class TaskBuilder extends ConstraintLayout {
     void getAttributeParameters(Context context, AttributeSet attrs, Theme theme) {
         if (attrs != null) {
             attributes = theme.obtainStyledAttributes(attrs, TaskBuilder_Parameters, 0, 0);
+            taskBuilder_background = attributes.getDrawable(R.styleable.TaskBuilder_Parameters_android_background);
+            taskMenu_background = attributes.getDrawable(R.styleable.TaskBuilder_Parameters_taskMenu_background);
             showTaskMenu = attributes.getBoolean(R.styleable.TaskBuilder_Parameters_showTaskMenu, false);
             nonTaskViews = attributes.getString(R.styleable.TaskBuilder_Parameters_nonTaskViews);
             attributes.recycle();
@@ -262,6 +282,7 @@ public class TaskBuilder extends ConstraintLayout {
         build_layer_1(context, attrs, defStyleAttr, defStyleRes);
         build_layer_2(context, attrs, defStyleAttr, defStyleRes);
         build_layer_3(context, attrs, defStyleAttr, defStyleRes);
+        build_layer_4(context, attrs, defStyleAttr, defStyleRes);
 
         addAnimations();
 
@@ -275,6 +296,7 @@ public class TaskBuilder extends ConstraintLayout {
     // add our views
     //
 
+    ConstraintLayout views_TaskListContainer;
     ScrollView views_TaskListScrollView;
     LinearLayout views_TaskList;
     ImageButton views_ShowTaskMenu;
@@ -283,17 +305,36 @@ public class TaskBuilder extends ConstraintLayout {
         Builder builder = new ConstraintBuilder().withTag(TAG).withTarget(this);
 
         // create all our instances
+        views_TaskListContainer = constructView(ConstraintLayout.class, context, attrs, defStyleAttr, defStyleRes);
+
+        // set our parameters
+        views_TaskListContainer.setTag(Internal);
+        views_TaskListContainer.setBackground(taskBuilder_background);
+        builder.setLayoutConstraintsTarget(views_TaskListContainer);
+        builder.layout_constraintAll_ToAllOf(ConstraintBuilder.parent);
+
+        // add our views
+        builder.addView(views_TaskListContainer, matchParent);
+        builder.build();
+    }
+    
+    private void build_layer_2(Context context, AttributeSet attrs, Integer defStyleAttr, Integer defStyleRes)  {
+        Builder builder = new ConstraintBuilder().withTag(TAG).withTarget(views_TaskListContainer);
+
+        // create all our instances
         views_TaskListScrollView = constructView(ScrollView.class, context, attrs, defStyleAttr, defStyleRes);
         views_TaskList = constructView(LinearLayout.class, context, attrs, defStyleAttr, defStyleRes);
         views_ShowTaskMenu = constructView(ImageButton.class, context, attrs, defStyleAttr, defStyleRes);
 
         // set our parameters
         views_TaskListScrollView.setTag(Internal);
+        views_TaskListScrollView.setBackground(null);
         builder.setLayoutConstraintsTarget(views_TaskListScrollView);
         builder.layout_constraintAll_ToAllOf(ConstraintBuilder.parent);
 
-        views_TaskList.setOrientation(LinearLayout.VERTICAL);
         views_TaskList.setTag(Internal);
+        views_TaskList.setOrientation(LinearLayout.VERTICAL);
+        views_TaskList.setBackground(null);
 
         views_ShowTaskMenu.setTag(Internal);
         builder.setLayoutConstraintsTarget(views_ShowTaskMenu);
@@ -310,14 +351,15 @@ public class TaskBuilder extends ConstraintLayout {
 
     ConstraintLayout views_TaskMenuContainer;
 
-    private void build_layer_2(Context context, AttributeSet attrs, Integer defStyleAttr, Integer defStyleRes)  {
-        Builder builder = new ConstraintBuilder().withTag(TAG).withTarget(this);
+    private void build_layer_3(Context context, AttributeSet attrs, Integer defStyleAttr, Integer defStyleRes)  {
+        Builder builder = new ConstraintBuilder().withTag(TAG).withTarget(views_TaskListContainer);
 
         // create all our instances
         views_TaskMenuContainer = constructView(ConstraintLayout.class, context, attrs, defStyleAttr, defStyleRes);
 
         // set our parameters
         views_TaskMenuContainer.setTag(Internal);
+        views_TaskMenuContainer.setBackground(null);
         if (!showTaskMenu) views_TaskMenuContainer.setVisibility(GONE);
         builder.setLayoutConstraintsTarget(views_TaskMenuContainer);
         builder.layout_constraintAll_ToAllOf(ConstraintBuilder.parent);
@@ -330,7 +372,7 @@ public class TaskBuilder extends ConstraintLayout {
     ScrollView views_TaskMenuContainer_Internal_ScrollView;
     LinearLayout views_TaskMenuContainer_Internal_TaskMenu;
 
-    private void build_layer_3(Context context, AttributeSet attrs, Integer defStyleAttr, Integer defStyleRes)  {
+    private void build_layer_4(Context context, AttributeSet attrs, Integer defStyleAttr, Integer defStyleRes)  {
         Builder builder = new ConstraintBuilder().withTag(TAG).withTarget(views_TaskMenuContainer);
 
         // create all our instances
@@ -342,13 +384,14 @@ public class TaskBuilder extends ConstraintLayout {
         builder.setLayoutConstraintsTarget(views_TaskMenuContainer_Internal_ScrollView);
         builder.layout_constraintAll_ToAllOf(ConstraintBuilder.parent);
         if (!showTaskMenu) views_TaskMenuContainer_Internal_ScrollView.setAlpha(0.0f);
-        views_TaskMenuContainer_Internal_ScrollView.setBackgroundColor(Color.DKGRAY);
 
         views_TaskMenuContainer_Internal_TaskMenu.setTag(Internal);
         builder.setLayoutConstraintsTarget(views_TaskMenuContainer_Internal_TaskMenu);
         builder.layout_constraintAll_ToAllOf(ConstraintBuilder.parent);
         views_TaskMenuContainer_Internal_TaskMenu.setOrientation(LinearLayout.VERTICAL);
-        views_TaskMenuContainer_Internal_TaskMenu.setBackgroundColor(Color.LTGRAY);
+        if (taskMenu_background != null) {
+            views_TaskMenuContainer_Internal_TaskMenu.setBackground(taskMenu_background);
+        } else views_TaskMenuContainer_Internal_TaskMenu.setBackground(taskBuilder_background);
 
         // add our views
         views_TaskMenuContainer_Internal_ScrollView.addView(views_TaskMenuContainer_Internal_TaskMenu, matchParent);
@@ -374,7 +417,8 @@ public class TaskBuilder extends ConstraintLayout {
             @Override
             public void onClick(View v) {
                 viewPropertyAnimator.cancel();
-                viewPropertyAnimator.alpha(0f).setDuration(500).setListener(new Animator.AnimatorListener() {
+                viewPropertyAnimator.alpha(0f).setDuration(500);
+                viewPropertyAnimator.setListener(new Animator.AnimatorListener() {
                     @Override
                     public void onAnimationStart(Animator animation) {
 

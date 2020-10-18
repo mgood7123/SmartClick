@@ -16,7 +16,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Size;
 import androidx.annotation.StyleableRes;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 
 import smallville7123.taggable.Taggable;
