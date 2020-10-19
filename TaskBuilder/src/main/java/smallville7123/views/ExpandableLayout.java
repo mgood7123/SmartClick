@@ -11,7 +11,6 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -126,9 +125,6 @@ public class ExpandableLayout extends LinearLayout {
         });
         contentLayout = root.findViewById(R.id.content);
         contentLayout.setTag(Internal);
-        contentLayout.setShowDividers(SHOW_DIVIDER_MIDDLE);
-        contentLayout.setDividerDrawable(getResources().getDrawable(R.drawable.divider, theme));
-        contentLayout.setDividerPadding(LayoutUtils.toDP(getResources(), 22f));
         if (!expanded) contentLayout.setVisibility(GONE);
         chevron.setRotation(expanded ? CHEVRON_POSITION_UP : CHEVRON_POSITION_DOWN);
         addView(root, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
@@ -142,8 +138,10 @@ public class ExpandableLayout extends LinearLayout {
 //        contentLayout.addView(v, index, params);
 
         // comment this if standAlone should be used
-        TaskBuilder.addViewInternal(getContext(), contentLayout, v, params);
-
+        inflate(getContext(), R.layout.item_expandable_frame, contentLayout);
+        InterceptTouchFrameLayout interceptor = (InterceptTouchFrameLayout) contentLayout.getChildAt(contentLayout.getChildCount()-1);
+        TaskBuilder.make_InterceptTouchFrameLayout_Compatible_with_TaskBuilder(interceptor);
+        interceptor.addView(v, params);
     }
 
     String TAG = "ExpandableLayout";
