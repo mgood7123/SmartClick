@@ -4,6 +4,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
+
+import androidx.annotation.Nullable;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -233,5 +236,50 @@ public class ViewHierarchy {
 
     public void setOnViewRestoreData(ViewHolder viewHolder) {
         restoreData = viewHolder;
+    }
+
+    @Nullable public ViewGroup findRealRoot(@Nullable View view) {
+        if (view != null) {
+            @Nullable ViewParent tmp = view.getParent();
+            if (!(tmp instanceof ViewGroup)) return null;
+            while (true) {
+                @Nullable ViewParent tmp1 = tmp.getParent();
+                if (!(tmp1 instanceof ViewGroup)) {
+                    //noinspection BreakStatement
+                    break;
+                }
+                tmp = tmp1;
+            }
+            assertRealRoot((ViewGroup) tmp);
+            return (ViewGroup) tmp;
+        } else return null;
+    }
+
+    public void assertRealRoot(@Nullable ViewGroup view) {
+        if (view == null) {
+            throw new RuntimeException("invalid root: " + view);
+        }
+        ViewParent tmp = view.getParent();
+        while (view instanceof ViewParent) {
+            if (tmp instanceof View) {
+                View root = (View) tmp;
+                if (!(root instanceof ViewGroup)) {
+                    throw new RuntimeException("invalid root: " + root);
+                }
+            }
+            tmp = tmp.getParent();
+        }
+    }
+
+    public void analyzeFull(View view) {
+        // do a full root analysis
+        ViewGroup root = findRealRoot(view);
+        int childCount = root.getChildCount();
+        if (childCount != 0) children = new ArrayList<>();
+        for (int i = 0; i < childCount; i++) {
+            ViewHierarchy viewHierarchy = new ViewHierarchy();
+            viewHierarchy.analyze(root.getChildAt(i));
+            children.add(viewHierarchy);
+        }
     }
 }
