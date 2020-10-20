@@ -9,9 +9,12 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
-import android.text.StaticLayout;
+import android.text.DynamicLayout;
+import android.text.SpannableStringBuilder;
+import android.text.DynamicLayout;
 import android.text.TextPaint;
 import android.util.AttributeSet;
+import android.util.LruCache;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewTreeObserver;
@@ -42,7 +45,7 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
     private static final int PIXELS = 2;
 
     @Nullable
-    private CharSequence mText;
+    private SpannableStringBuilder mText;
     private int mTextSize;
     private ColorStateList mTextColor;
     private boolean mPreDrawRegistered;
@@ -50,12 +53,14 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
 
 
     private final TextPaint mTextPaint;
-    private final Paint backgroundPaint;
+    private final Paint mBackgroundPaint;
+    DynamicLayout mDynamicLayout;
 
     int mCursorDrawableRes;
     private Drawable mCursorDrawable;
 
     private Context mContext;
+    private TextBook textBook;
 
     /**
      * Kick-start the font cache for the zygote process (to pay the cost of
@@ -95,22 +100,26 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
             setImportantForAutofill(IMPORTANT_FOR_AUTOFILL_YES);
         }
 
-        setTextInternal("");
+        mText = new SpannableStringBuilder();
+        textBook = new TextBook(mText);
 
         res = getResources();
 
         mTextPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
         mTextPaint.density = res.getDisplayMetrics().density;
-        backgroundPaint = new Paint();
-        backgroundPaint.setColor(Color.WHITE);
-        backgroundPaint.setStyle(Paint.Style.FILL);
+        mBackgroundPaint = new Paint();
+        mBackgroundPaint.setColor(Color.WHITE);
+        mBackgroundPaint.setStyle(Paint.Style.FILL);
 
         setTextSize(30.0f);
         mTextColor = ColorStateList.valueOf(0xFF000000);
     }
 
     private void setTextInternal(@Nullable CharSequence text) {
-        mText = text;
+        mText.clear();
+        mText.clearSpans();
+        mText.append(text);
+        mText.append(String.valueOf(repeat(mText, 10)));
     }
 
     public void setText(String text) {
@@ -259,17 +268,40 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
         return true;
     }
 
+    class DynamicLayoutCache {
+        private final int MAX_SIZE = 50; // Max number of cached items
+        private final LruCache cache = new LruCache<String, DynamicLayout>(MAX_SIZE);
+
+        void set(String key, DynamicLayout dynamicLayout) {
+            cache.put(key, dynamicLayout);
+        }
+
+        @Nullable DynamicLayout get(String key) {
+            return (DynamicLayout) cache.get(key);
+        }
+    }
+
+    DynamicLayoutCache cache = new DynamicLayoutCache();
+
     @Override
     protected void onDraw(final Canvas canvas) {
         // Draw the background for this view
         super.onDraw(canvas);
-        canvas.drawPaint(backgroundPaint);
-        char[] text = repeat(mText, 10);
-        StaticLayout staticLayout = StaticLayout
-                .Builder
-                .obtain(String.valueOf(text), 0, text.length, mTextPaint, canvas.getWidth())
-                .build();
-        staticLayout.draw(canvas);
+        canvas.drawPaint(mBackgroundPaint);
+        textBook.draw(canvas, mTextPaint);
+//        String cacheKey = String.valueOf(width);
+//        DynamicLayout tmp = cache.get(cacheKey);
+//        if (tmp == null) {
+//            tmp = DynamicLayout.Builder.obtain(mText, mTextPaint, width).build();
+//            cache.set(cacheKey, tmp);
+//        }
+//        mDynamicLayout = tmp;
+//        mText.append("\nheight = " + mDynamicLayout.getHeight());
+//        mText.append("\nheight = " + mDynamicLayout.getHeight());
+//        mText.append("\nheight = " + mDynamicLayout.getHeight());
+//        mText.append("\nheight = " + mDynamicLayout.getHeight());
+//        mText.append("\nheight = " + mDynamicLayout.getHeight());
+//        mDynamicLayout.draw(canvas);
     }
 
     /**
