@@ -107,9 +107,9 @@ public class ImageAnalysisFloatingView {
                 analyzerPicker.findViewById(R.id.analyzerProcessImageButton).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        analyzerEditor.setVisibility(View.VISIBLE);
+                        analyzerPicker.setVisibility(View.GONE);
                         if (cachedCompressedBitmap != null) {
-                            analyzerEditor.setVisibility(View.VISIBLE);
-                            analyzerPicker.setVisibility(View.GONE);
                             bitmapViewMainEditor.setImageBitmap(cachedCompressedBitmap, BitmapView.ScaleMode.SCALE_WIDTH_HEIGHT);
                         }
                     }
