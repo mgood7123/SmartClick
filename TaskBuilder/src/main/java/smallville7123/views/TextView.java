@@ -119,7 +119,6 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
         mText.clear();
         mText.clearSpans();
         mText.append(text);
-        mText.append(String.valueOf(repeat(mText, 10)));
     }
 
     public void setText(String text) {
@@ -268,40 +267,12 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
         return true;
     }
 
-    class DynamicLayoutCache {
-        private final int MAX_SIZE = 50; // Max number of cached items
-        private final LruCache cache = new LruCache<String, DynamicLayout>(MAX_SIZE);
-
-        void set(String key, DynamicLayout dynamicLayout) {
-            cache.put(key, dynamicLayout);
-        }
-
-        @Nullable DynamicLayout get(String key) {
-            return (DynamicLayout) cache.get(key);
-        }
-    }
-
-    DynamicLayoutCache cache = new DynamicLayoutCache();
-
     @Override
     protected void onDraw(final Canvas canvas) {
         // Draw the background for this view
         super.onDraw(canvas);
         canvas.drawPaint(mBackgroundPaint);
         textBook.draw(canvas, mTextPaint);
-//        String cacheKey = String.valueOf(width);
-//        DynamicLayout tmp = cache.get(cacheKey);
-//        if (tmp == null) {
-//            tmp = DynamicLayout.Builder.obtain(mText, mTextPaint, width).build();
-//            cache.set(cacheKey, tmp);
-//        }
-//        mDynamicLayout = tmp;
-//        mText.append("\nheight = " + mDynamicLayout.getHeight());
-//        mText.append("\nheight = " + mDynamicLayout.getHeight());
-//        mText.append("\nheight = " + mDynamicLayout.getHeight());
-//        mText.append("\nheight = " + mDynamicLayout.getHeight());
-//        mText.append("\nheight = " + mDynamicLayout.getHeight());
-//        mDynamicLayout.draw(canvas);
     }
 
     /**

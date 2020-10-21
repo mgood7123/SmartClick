@@ -14,7 +14,17 @@ public class TaskBuilder_CodeView_Editor {
         renderer.render();
     }
 
-    public void append(String hello) {
-        data = data.concat(hello);
+    public void append(String text) {
+        append(text, 1);
+    }
+
+    public void append(String text, int repeatTimes) {
+        for (int i = 0; i < repeatTimes; i++) {
+            data = data.concat(text);
+        }
+    }
+
+    public String getText() {
+        return data;
     }
 }

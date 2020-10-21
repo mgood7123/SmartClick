@@ -23,6 +23,7 @@ class TaskBuilder_CodeView {
         renderer.setTextView(taskBuilder.CodeView.findViewById(R.id.codeEditor));
         editor.append("hello");
         editor.append(", goodbye. ");
+        editor.append(editor.getText(), 50);
         editor.render();
     }
 }
