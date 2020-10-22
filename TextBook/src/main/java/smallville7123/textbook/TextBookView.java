@@ -1,4 +1,4 @@
-package smallville7123.views;
+package smallville7123.textbook;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -20,6 +20,9 @@ import android.view.View;
 import androidx.annotation.InspectableProperty;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 import smallville7123.draggable.Draggable;
 
@@ -45,6 +48,27 @@ public class TextBookView extends View {
     private final Paint mBackgroundPaint;
     private final ColorStateList mTextBookTextColor;
     private final Context mContext;
+    public static final String SAMPLE_TEXT_SHORT = "sample text";
+    public static final String SAMPLE_TEXT_LONG = "Wiki";
+
+    public String getSampleText() {
+        try {
+            InputStream i = mRes.getAssets().open(SAMPLE_TEXT_LONG);
+            return TextBook.readTextFile(i);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
+    public String setSampleText() {
+        try {
+            mTextBook.setText(mRes.getAssets().open(SAMPLE_TEXT_LONG));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
 
     /**
      * Simple constructor to use when creating a view from code.

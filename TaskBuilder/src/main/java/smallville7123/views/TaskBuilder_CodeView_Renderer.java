@@ -1,5 +1,7 @@
 package smallville7123.views;
 
+import smallville7123.textbook.TextBookView;
+
 public class TaskBuilder_CodeView_Renderer {
     private TextBookView textBookView;
     private TaskBuilder_CodeView_Editor editor;
@@ -23,5 +25,9 @@ public class TaskBuilder_CodeView_Renderer {
 
     public void setData(String data) {
         this.data = data;
+    }
+
+    public TextBookView getTextBookView() {
+        return textBookView;
     }
 }

@@ -21,9 +21,10 @@ class TaskBuilder_CodeView {
         renderer.setEditor(editor);
         editor.setRenderer(renderer);
         renderer.setTextBookView(taskBuilder.CodeView.findViewById(R.id.codeEditor));
-        editor.append("hello");
-        editor.append(", goodbye. ");
-        editor.append(editor.getText(), 80);
+        renderer.getTextBookView().setSampleText();
+//        editor.append("hello");
+//        editor.append(", goodbye. ");
+//        editor.append(editor.getText(), 80);
         editor.render();
     }
 }

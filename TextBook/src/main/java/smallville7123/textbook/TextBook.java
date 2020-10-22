@@ -1,15 +1,19 @@
-package smallville7123.views;
+package smallville7123.textbook;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.text.TextPaint;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
-import java.io.BufferedReader;
-import java.io.CharArrayReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 
 /**
@@ -27,8 +31,13 @@ import java.util.ArrayList;
  */
 @SuppressWarnings("UnqualifiedFieldAccess")
 public class TextBook {
+    public static final char NEW_LINE_UNIX = '\n';
+    public static final char WHITE_SPACE = ' ';
     static String TAG = "TextBook";
     CharSequence text;
+
+    private static int defaultCharBufferSize = 8192;
+    private static int defaultExpectedLineLength = 80;
 
     boolean drawBounds = false;
     int offset_x = 0;
@@ -50,36 +59,76 @@ public class TextBook {
     }
 
     public TextBook(CharSequence charSequence) {
+        setText(charSequence);
+    }
+
+    public static String readTextFile(InputStream inputStream) {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+        byte buf[] = new byte[1024];
+        int len;
+        try {
+            while ((len = inputStream.read(buf)) != -1) {
+                outputStream.write(buf, 0, len);
+            }
+            outputStream.close();
+            inputStream.close();
+        } catch (IOException e) {
+
+        }
+        return outputStream.toString();
+    }
+
+    InputStream stream = null;
+
+    public void setText(InputStream inputStream) {
+        text = null;
+        stream = inputStream;
+    }
+
+    public void setText(CharSequence charSequence) {
+        if (stream != null) {
+            try {
+                stream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            stream = null;
+        }
         text = charSequence;
     }
 
     public void draw(Canvas canvas, TextPaint textPaint) {
-        char[] text = toArray(this.text);
-        BufferedReader reader = new BufferedReader(new CharArrayReader(text, 0, text.length));
-        try {
-            String line = reader.readLine();
-            synchronized (lock) {
-                while (line != null) {
-                    drawLine(canvas, line, textPaint);
-                    line = reader.readLine();
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        Instant before = Instant.now();
+        drawLine(canvas, text == null ? null : text.toString(), textPaint);
+        Instant after = Instant.now();
+        Log.d(TAG, "draw: completed in " + Duration.between(before, after).toMillis() + " milliseconds");
     }
 
     private void drawLine(Canvas canvas, String line, TextPaint textPaint) {
-        // TODO: account for multiple calls due to multiple lines being drawn
-        textStats = new TextStats(canvas, line, textPaint, drawBounds);
+        // performance can be improved by caching
+        if (textStats == null) {
+            Instant before = Instant.now();
+                textStats = new TextStats(canvas, line, textPaint, drawBounds);
+                // building can be slow
+                textStats.buildLineInfo();
+            Instant after = Instant.now();
+            Log.d(TAG, "drawLine: constructed drawing information for " + textStats.lineCount + " lines and " + textStats.lineLength + " characters in " + Duration.between(before, after).toMillis() + " milliseconds");
+        }
+        textStats.currentCanvas = canvas;
         drawLine(textStats, textPaint);
     }
 
     private void drawLine(TextStats textStats, TextPaint alternativeTextPaint) {
-        textStats.buildLineInfo();
         // draw one line extra above and below the screen to enable smooth scrolling
-        textStats.drawOneLineExtraAboveAndBelow();
+        Instant before = Instant.now();
+            textStats.computeLinesToDraw(1, 1);
+        Instant after = Instant.now();
+        Log.d(TAG, "drawLine: computed lines to draw in " + Duration.between(before, after).toMillis() + " milliseconds");
+        before = Instant.now();
         textStats.drawLines(alternativeTextPaint);
+        after = Instant.now();
+        Log.d(TAG, "drawLine: drawn in " + Duration.between(before, after).toMillis() + " milliseconds");
     }
 
     // i assume that getHeight would be the final line position
@@ -105,13 +154,15 @@ public class TextBook {
             offset_x = 0;
         } else {
             // to deal with x, we need only obtain the line with the longest width
-            LineStats lineStats = textStats.getLineWithLongestWidth();
-            if (lineStats != null) {
-                // our line's width may be smaller than our screen screen width
-                if (lineStats.bounds.right > lineStats.maxWidth) {
-                    offset_x = Math.min(x, lineStats.bounds.right - lineStats.maxWidth);
-                } else {
-                    offset_x = Math.min(x, lineStats.bounds.right);
+            if (textStats != null) {
+                LineStats lineStats = textStats.getLineWithLongestWidth();
+                if (lineStats != null) {
+                    // our line's width may be smaller than our screen screen width
+                    if (lineStats.bounds.right > lineStats.maxWidth) {
+                        offset_x = Math.min(x, lineStats.bounds.right - lineStats.maxWidth);
+                    } else {
+                        offset_x = Math.min(x, lineStats.bounds.right);
+                    }
                 }
             }
         }
@@ -123,13 +174,15 @@ public class TextBook {
         } else {
             // to deal with y, we need only obtain the line with the longest total height
             // this is always the last line
-            LineStats lineStats = textStats.getLastLine();
-            if (lineStats != null) {
-                // our line's height may be smaller than our screen screen height
-                if (lineStats.bounds.bottom > lineStats.maxHeight) {
-                    offset_y = Math.min(y, lineStats.bounds.bottom - lineStats.maxHeight);
-                } else {
-                    offset_x = Math.min(y, lineStats.bounds.bottom);
+            if (textStats != null) {
+                LineStats lineStats = textStats.getLastLine();
+                if (lineStats != null) {
+                    // our line's height may be smaller than our screen screen height
+                    if (lineStats.bounds.bottom > lineStats.maxHeight) {
+                        offset_y = Math.min(y, lineStats.bounds.bottom - lineStats.maxHeight);
+                    } else {
+                        offset_x = Math.min(y, lineStats.bounds.bottom);
+                    }
                 }
             }
         }
@@ -172,7 +225,7 @@ public class TextBook {
             this.drawBounds = drawBounds;
             textPaint = paint;
             line = text;
-            lineLength = line.length();
+            lineLength = line == null ? 0 : line.length();
             getBounds();
 
             // TODO: getTextWidths returns a float array, however canvas.getWidth returns an int
@@ -190,9 +243,11 @@ public class TextBook {
 
         void getBounds(LineStats lineStats) {
             if (bounds == null) bounds = new Rect();
+            if (line == null) return;
             int xOffsetSaved = lineStats == null ? 0 : lineStats.bounds.right;
             int yOffsetSaved = lineStats == null ? 0 : lineStats.bounds.bottom;
-            textPaint.getTextBounds(line, 0, lineLength, bounds);
+            String l = line.contentEquals("\n") ? "H" : line;
+            textPaint.getTextBounds(l, 0, lineLength, bounds);
             lineBoundsWidth = bounds.width();
             lineBoundsHeight = bounds.height();
             xOffset = -bounds.left; // + xOffsetSaved;
@@ -240,8 +295,16 @@ public class TextBook {
         }
     }
 
+    private static boolean isWhiteAllSpaces(String line) {
+        for (int i = 0; i < line.length(); i++) {
+            if (line.charAt(i) != WHITE_SPACE) return false;
+        }
+        return true;
+    }
+
 
     class TextStats extends LineStats {
+        public static final char TAB = '\t';
         public Canvas currentCanvas;
         boolean wrapped;
         ArrayList<LineStats> lines;
@@ -273,63 +336,107 @@ public class TextBook {
         }
 
         public void buildLineInfo() {
-            if (wrapped) {
-                int consumed = 0;
-                if (lines == null) lines = new ArrayList<>();
-                LineStats lastLineStats = null;
-                LineStats lineStats = null;
-                while (consumed != lineLength) {
-                    lastLineStats = lineStats;
-                    lineStats = new LineStats(drawBounds);
-                    // process each character individually
-                    // we do not draw each character, but instead build up a string, and then draw it
+            StringBuilder tmp = new StringBuilder();
 
-                    lineStats.line = consumed == 0 ? line : line.substring(consumed);
-                    lineStats.lineLength = lineLength - consumed;
-                    lineStats.textPaint = textPaint;
-                    lineStats.obtainWidthsForEachCharacter();
-
-                    char[] chars = new char[lineStats.lineLength];
-
-                    lineStats.xOffset = xOffset;
-
-                    float currentWidth = lineStats.xOffset;
-                    int charCount = 0;
-
-                    lineStats.maxWidth = maxWidth;
-                    lineStats.maxWidthF = maxWidthF;
-
-                    for (int i = 0; i < lineStats.lineLength; i++) {
-                        float w = currentWidth + lineStats.widths[i];
-                        if (w <= lineStats.maxWidthF) {
-                            currentWidth = w;
-                            chars[i] = lineStats.line.charAt(i);
-                            charCount++;
-                        } else {
-                            break;
-                        }
+            if (stream == null) {
+                process(tmp, line, line.length());
+            } else {
+                // read from a stream
+                byte buf[] = new byte[1024];
+                try {
+                    int len;
+                    while (true) {
+                        len = stream.read(buf);
+                        if (len == -1) return;
+                        String line = new String(buf, 0, len, StandardCharsets.UTF_8);
+                        process(tmp, line, line.length());
                     }
-
-                    // the bounds of the new text may be different than the bounds of the old text
-                    lineStats.line = String.copyValueOf(chars, 0, charCount);
-                    lineStats.lineLength = charCount;
-                    lineCount++;
-                    lineStats.getBounds(lastLineStats);
-                    lineStats.maxHeight = maxHeight;
-                    lineStats.maxHeightF = maxHeightF;
-                    // do not draw lines that would end up being
-                    // be drawn past the maximum canvas height
-
-                    float offset = offset_y;
-                    float heightOffset = maxHeightF + offset;
-
-                    boolean top =  lineStats.bounds.top >= offset;
-                    boolean bottom = lineStats.bounds.bottom <= heightOffset;
-
-                    lineStats.shouldDraw = top && bottom;
-                    lines.add(lineStats);
-                    consumed += charCount;
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
+            }
+        }
+
+        public void process(StringBuilder tmp, String data, int dataLength) {
+            for (int i = 0; i < dataLength; i++) {
+                char c = data.charAt(i);
+                switch (c) {
+                    case NEW_LINE_UNIX:
+                        if (tmp.length() != 0) {
+                            buildLineInfoInternal(tmp);
+                        } else buildLineInfoInternal(String.valueOf(NEW_LINE_UNIX), 1);
+                        break;
+                    case TAB:
+                        tmp.append("    ");
+                        break;
+                    default:
+                        tmp.append(c);
+                        break;
+                }
+            }
+            if (tmp.length() != 0) buildLineInfoInternal(tmp);
+        }
+
+        public void buildLineInfoInternal(StringBuilder tmp) {
+            String s = tmp.toString();
+            int l = s.length();
+            buildLineInfoInternal(s, l);
+            tmp.delete(0, l);
+            tmp.trimToSize();
+        }
+
+        public void buildLineInfoInternal(String line) {
+            buildLineInfoInternal(line, line.length());
+        }
+
+        LineStats lastLineStats;
+        LineStats lineStats = null;
+
+        public void buildLineInfoInternal(String line, int lineLength) {
+            int consumed = 0;
+            if (lines == null) lines = new ArrayList<>();
+            while (consumed != lineLength) {
+                lastLineStats = lineStats;
+                lineStats = new LineStats(drawBounds);
+                // process each character individually
+                // we do not draw each character, but instead build up a string, and then draw it
+
+                lineStats.line = consumed == 0 ? line : line.substring(consumed);
+                lineStats.lineLength = lineLength - consumed;
+                lineStats.textPaint = textPaint;
+                lineStats.obtainWidthsForEachCharacter();
+
+                char[] chars = new char[lineStats.lineLength];
+
+                lineStats.xOffset = xOffset;
+
+                float currentWidth = lineStats.xOffset;
+                int charCount = 0;
+
+                lineStats.maxWidth = maxWidth;
+                lineStats.maxWidthF = maxWidthF;
+
+                for (int i = 0; i < lineStats.lineLength; i++) {
+                    float w = currentWidth + lineStats.widths[i];
+                    if (w <= lineStats.maxWidthF) {
+                        currentWidth = w;
+                        chars[i] = lineStats.line.charAt(i);
+                        charCount++;
+                    } else {
+                        break;
+                    }
+                }
+
+                // the bounds of the new text may be different than the bounds of the old text
+                lineStats.line = String.copyValueOf(chars, 0, charCount);
+                lineStats.lineLength = charCount;
+                this.lineLength += charCount;
+                lineCount++;
+                lineStats.getBounds(lastLineStats);
+                lineStats.maxHeight = maxHeight;
+                lineStats.maxHeightF = maxHeightF;
+                lines.add(lineStats);
+                consumed += charCount;
             }
         }
 
@@ -414,51 +521,38 @@ public class TextBook {
             return currentLine;
         }
 
-        public void drawOneLineExtraAbove() {
-            int size = lines.size();
-            for (int i = 0; i < size; i++) {
-                if (lines.get(i).shouldDraw) {
-                    if (i != 0) lines.get(i - 1).shouldDraw = true;
-                    break;
-                }
-            }
+        public void computeLinesToDraw() {
+            computeLinesToDraw(0, 0);
         }
 
-        public void drawOneLineExtraBelow() {
-            int size = lines.size();
+        public void computeLinesToDraw(int extraLinesToDrawAbove, int extraLinesToDrawBelow) {
             boolean foundStart = false;
+            boolean foundEnd = false;
+            float offset = offset_y;
+            float heightOffset = maxHeightF + offset;
+            int size = lines.size();
+
             for (int i = 0; i < size; i++) {
                 LineStats line = lines.get(i);
+                // do not draw lines that would end up being
+                // be drawn past the maximum canvas height
+                boolean top =  line.bounds.top >= offset;
+                boolean bottom = line.bounds.bottom <= heightOffset;
+                line.shouldDraw = top && bottom;
                 if (line.shouldDraw) {
                     if (!foundStart) {
                         foundStart = true;
-                    }
-                } else {
-                    if (foundStart) {
-                        if (i + 1 <= size) {
-                            line.shouldDraw = true;
-                            break;
+                        for (int i1 = i-1; i1 >= 0 && i1 > (i-1-extraLinesToDrawAbove); i1--) {
+                            lines.get(i1).shouldDraw = true;
                         }
                     }
-                }
-            }
-        }
-
-        public void drawOneLineExtraAboveAndBelow() {
-            int size = lines.size();
-            boolean foundStart = false;
-            for (int i = 0; i < size; i++) {
-                LineStats line = lines.get(i);
-                if (line.shouldDraw) {
-                    if (!foundStart) {
-                        if (i != 0) lines.get(i - 1).shouldDraw = true;
-                        foundStart = true;
-                    }
                 } else {
-                    if (foundStart) {
+                    if (foundStart && !foundEnd) {
                         if (i + 1 <= size) {
-                            line.shouldDraw = true;
-                            break;
+                            foundEnd = true;
+                            for (int i1 = i; i1 < i+extraLinesToDrawBelow && i1 < size; i1++) {
+                                lines.get(i1).shouldDraw = true;
+                            }
                         }
                     }
                 }

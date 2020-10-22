@@ -19,6 +19,7 @@ public class TaskBuilder_CodeView_Editor {
     }
 
     public void append(String text, int repeatTimes) {
+        if (text == null) return;
         for (int i = 0; i < repeatTimes; i++) {
             data = data.concat(text);
         }

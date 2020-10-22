@@ -11,6 +11,7 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/TODO/SmartClick.TODO.iml" filepath="$PROJECT_DIR$/.idea/modules/TODO/SmartClick.TODO.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/Taggable/SmartClick.Taggable.iml" filepath="$PROJECT_DIR$/.idea/modules/Taggable/SmartClick.Taggable.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/TaskBuilder/SmartClick.TaskBuilder.iml" filepath="$PROJECT_DIR$/.idea/modules/TaskBuilder/SmartClick.TaskBuilder.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/TextBook/SmartClick.TextBook.iml" filepath="$PROJECT_DIR$/.idea/modules/TextBook/SmartClick.TextBook.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/SmartClick.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/SmartClick.app.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/StudioProjects.SmartClick.iml" filepath="$PROJECT_DIR$/.idea/modules/StudioProjects.SmartClick.iml" />
     </modules>
