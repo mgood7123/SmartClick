@@ -32,9 +32,9 @@ public abstract class Draggable extends Clickable {
     public abstract int getLayoutParamsWidth();
     public abstract int getLayoutParamsHeight();
     public abstract int getLayoutParamsWRAP_CONTENT();
-
-    private int wrap_content;
-    private boolean wrap_content_set;
+    public boolean isClickable() {
+        return true;
+    };
 
     @Override
     public boolean onTouch(final View v, final MotionEvent event) {
@@ -55,12 +55,16 @@ public abstract class Draggable extends Clickable {
                 upDX = upRawX - downRawX;
                 upDY = upRawY - downRawY;
                 // TODO: would this value be affected by screen density?
-                if ((Math.abs(upDX) < CLICK_DRAG_TOLERANCE) && (Math.abs(upDY) < CLICK_DRAG_TOLERANCE)) {
-                    // assume that the drag was unintentional, restore the original x and y
-                    setX(originalX);
-                    setY(originalY);
-                    onMovement(v);
-                    onClick(v);
+                if (isClickable()) {
+                    if ((Math.abs(upDX) < CLICK_DRAG_TOLERANCE) && (Math.abs(upDY) < CLICK_DRAG_TOLERANCE)) {
+                        // assume that the drag was unintentional, restore the original x and y
+                        setX(originalX);
+                        setY(originalY);
+                        onMovement(v);
+                        onClick(v);
+                    } else {
+                        onDrag(v);
+                    }
                 } else {
                     onDrag(v);
                 }
