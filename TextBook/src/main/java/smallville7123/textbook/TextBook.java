@@ -114,7 +114,7 @@ public class TextBook {
                 // building can be slow
                 textStats.buildLineInfo(stream);
             Instant after = Instant.now();
-            Log.d(TAG, "drawLine: constructed drawing information for " + textStats.lineCount + " lines and " + textStats.lineLength + " characters in " + Duration.between(before, after).toMillis() + " milliseconds");
+            Log.d(TAG, "drawLine: constructed line information for " + textStats.lineCount + " lines and " + textStats.lineLength + " characters in " + Duration.between(before, after).toMillis() + " milliseconds");
         }
         textStats.currentCanvas = canvas;
         drawLine(textStats, textPaint);
