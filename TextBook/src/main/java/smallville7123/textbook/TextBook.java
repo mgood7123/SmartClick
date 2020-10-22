@@ -111,7 +111,14 @@ public class TextBook {
                         return offset_y;
                     }
                 };
+                //
                 // building can be slow
+                //
+                // TODO: accumulative line information building
+                //  this will be requires should we support dynamic layout (changing data)
+                //
+                // TODO: only build information for drawn lines?
+                //
                 textStats.buildLineInfo(stream);
             Instant after = Instant.now();
             Log.d(TAG, "drawLine: constructed line information for " + textStats.lineCount + " lines and " + textStats.lineLength + " characters in " + Duration.between(before, after).toMillis() + " milliseconds");
