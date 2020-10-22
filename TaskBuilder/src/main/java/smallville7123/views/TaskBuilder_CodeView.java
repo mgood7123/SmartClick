@@ -20,10 +20,10 @@ class TaskBuilder_CodeView {
         this.taskBuilder = taskBuilder;
         renderer.setEditor(editor);
         editor.setRenderer(renderer);
-        renderer.setTextView(taskBuilder.CodeView.findViewById(R.id.codeEditor));
+        renderer.setTextBookView(taskBuilder.CodeView.findViewById(R.id.codeEditor));
         editor.append("hello");
         editor.append(", goodbye. ");
-        editor.append(editor.getText(), 50);
+        editor.append(editor.getText(), 80);
         editor.render();
     }
 }

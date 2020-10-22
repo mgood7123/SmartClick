@@ -1,12 +1,12 @@
 package smallville7123.views;
 
 public class TaskBuilder_CodeView_Renderer {
-    private TextView textView;
+    private TextBookView textBookView;
     private TaskBuilder_CodeView_Editor editor;
     private String data = "";
 
-    public void setTextView(TextView renderer) {
-        textView = renderer;
+    public void setTextBookView(TextBookView renderer) {
+        textBookView = renderer;
     }
 
     public void setEditor(TaskBuilder_CodeView_Editor editor) {
@@ -14,7 +14,7 @@ public class TaskBuilder_CodeView_Renderer {
     }
 
     public void renderText(String text) {
-        textView.setText(text);
+        textBookView.setText(text);
     }
 
     public void render() {
