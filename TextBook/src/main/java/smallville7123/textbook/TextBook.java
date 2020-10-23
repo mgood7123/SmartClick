@@ -28,7 +28,9 @@ import java.time.Instant;
 @SuppressWarnings("UnqualifiedFieldAccess")
 public class TextBook {
     public static final char NEW_LINE_UNIX = '\n';
+    public static final String NEW_LINE_UNIX_STRING = "\n";
     public static final char WHITE_SPACE = ' ';
+    public static final String WHITE_SPACE_STRING = " ";
     static String TAG = "TextBook";
     CharSequence text;
 
@@ -59,6 +61,7 @@ public class TextBook {
     }
 
     public static String readTextFile(InputStream inputStream) {
+        Instant before = Instant.now();
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
         byte buf[] = new byte[1024];
@@ -72,7 +75,10 @@ public class TextBook {
         } catch (IOException e) {
 
         }
-        return outputStream.toString();
+        String out = outputStream.toString();
+        Instant after = Instant.now();
+        Log.d(TAG, "readTextFile: completed in " + Duration.between(before, after).toMillis() + " milliseconds");
+        return out;
     }
 
     InputStream stream = null;
@@ -115,7 +121,7 @@ public class TextBook {
                 // building can be slow
                 //
                 // TODO: accumulative line information building
-                //  this will be requires should we support dynamic layout (changing data)
+                //  this will be required should we support dynamic layout (changing data)
                 //
                 // TODO: only build information for drawn lines?
                 //
@@ -130,7 +136,7 @@ public class TextBook {
     private void drawLine(TextStats textStats, TextPaint alternativeTextPaint) {
         // draw one line extra above and below the screen to enable smooth scrolling
         Instant before = Instant.now();
-            textStats.computeLinesToDraw(1, 1);
+        textStats.computeLinesToDraw(1, 1);
         Instant after = Instant.now();
         Log.d(TAG, "drawLine: computed lines to draw in " + Duration.between(before, after).toMillis() + " milliseconds");
         before = Instant.now();

@@ -165,16 +165,18 @@ public class TextBookView extends View {
         }
 
         mContext = context;
-        mText = new SpannableStringBuilder();
-        mTextBook = new TextBook(mText);
         mRes = getResources();
+
         mTextBookPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
         mTextBookPaint.density = mRes.getDisplayMetrics().density;
         mBackgroundPaint = new Paint();
         mBackgroundPaint.setColor(Color.WHITE);
         mBackgroundPaint.setStyle(Paint.Style.FILL);
+
+        mText = new SpannableStringBuilder();
         setTextSize(30.0f);
         mTextBookTextColor = ColorStateList.valueOf(0xFF000000);
+        mTextBook = new TextBook(mText);
 
         initScrollView();
     }

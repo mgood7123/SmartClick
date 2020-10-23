@@ -5,6 +5,10 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.text.TextPaint;
 
+import androidx.annotation.NonNull;
+
+import static smallville7123.textbook.TextBook.NEW_LINE_UNIX;
+
 abstract class LineStats {
     public String line;
     public int lineLength;
@@ -63,7 +67,7 @@ abstract class LineStats {
         if (line == null) return;
         int xOffsetSaved = lineStats == null ? 0 : lineStats.bounds.right;
         int yOffsetSaved = lineStats == null ? 0 : lineStats.bounds.bottom;
-        String l = line.contentEquals("\n") ? "H" : line;
+        String l = line.charAt(0) == NEW_LINE_UNIX ? "H" : line;
         textPaint.getTextBounds(l, 0, lineLength, bounds);
         lineBoundsWidth = bounds.width();
         lineBoundsHeight = bounds.height();
@@ -86,7 +90,32 @@ abstract class LineStats {
      * <br>
      */
     public void obtainWidthsForEachCharacter() {
-        if (widths == null) widths = new float[lineLength];
+        obtainWidthsForEachCharacter(line, lineLength);
+    }
+
+    int oldLineLength;
+
+    /**
+     * get our widths for each character.
+     * <br>
+     * <br>
+     * NOTE:
+     * <br>
+     * <br>
+     * using measureText for each character produces incorrect widths.
+     * <br>
+     * <br>
+     * using getTextWidths for the entire string produces correct widths.
+     * <br>
+     */
+    public void obtainWidthsForEachCharacter(String line, int lineLength) {
+        if (lineLength == 0 || line.isEmpty()) {
+            throw new RuntimeException("attempting to obtain widths for 0 characters");
+        }
+        if (oldLineLength != lineLength) {
+            oldLineLength = lineLength;
+            widths = new float[lineLength];
+        }
         textPaint.getTextWidths(line, widths);
     }
 
@@ -112,4 +141,39 @@ abstract class LineStats {
     }
 
     abstract float getOffsetY();
+
+    char[] chars;
+    int charCount = 0;
+
+    public void copyChar(@NonNull char[] chars, int i) {
+        chars[i] = line.charAt(i);
+        charCount++;
+    }
+
+    public void setLine(@NonNull char[] chars) {
+        line = String.copyValueOf(chars, 0, charCount);
+        lineLength = charCount;
+    }
+
+    public void allocateTmp(int lineLength) {
+        chars = new char[lineLength];
+    }
+
+    protected void deallocateTmp() {
+        chars = null;
+        charCount = 0;
+    }
+
+    protected void wrapCharacters(@NonNull char[] chars, @NonNull float[] widths, int offset) {
+        float currentWidth = xOffset;
+        for (int i = 0; i < lineLength; i++) {
+            float w = currentWidth + widths[i+offset];
+            if (w <= maxWidthF) {
+                currentWidth = w;
+                copyChar(chars, i);
+            } else {
+                break;
+            }
+        }
+    }
 }

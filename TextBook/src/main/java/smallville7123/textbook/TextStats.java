@@ -48,7 +48,10 @@ abstract class TextStats extends LineStats {
         if (stream == null) {
             process(tmp, line, line.length());
         } else {
-            // read from a stream
+            // reading from a stream and processing as we go
+            // seems to increase performance as opposed to
+            // reading the entire stream into a string
+            // and then processing that string
             byte buf[] = new byte[1024];
             try {
                 int len;
@@ -71,7 +74,7 @@ abstract class TextStats extends LineStats {
                 case TextBook.NEW_LINE_UNIX:
                     if (tmp.length() != 0) {
                         buildLineInfoInternal(tmp);
-                    } else buildLineInfoInternal(String.valueOf(TextBook.NEW_LINE_UNIX), 1);
+                    } else buildLineInfoInternal(TextBook.NEW_LINE_UNIX_STRING, 1);
                     break;
                 case TAB:
                     tmp.append("    ");
@@ -102,8 +105,13 @@ abstract class TextStats extends LineStats {
     public void buildLineInfoInternal(String line, int lineLength) {
         int consumed = 0;
         if (lines == null) lines = new ArrayList<>();
+        // invoke this only once, and then offset by index
+        obtainWidthsForEachCharacter(line, lineLength);
+        allocateTmp(lineLength);
         while (consumed != lineLength) {
             lastLineStats = lineStats;
+            // we need to allocate here because we build up a list of lines
+            // adding each line at the end of this loop
             lineStats = new LineStats(drawBounds) {
                 @Override
                 float getOffsetY() {
@@ -116,40 +124,24 @@ abstract class TextStats extends LineStats {
             lineStats.line = consumed == 0 ? line : line.substring(consumed);
             lineStats.lineLength = lineLength - consumed;
             lineStats.textPaint = textPaint;
-            lineStats.obtainWidthsForEachCharacter();
-
-            char[] chars = new char[lineStats.lineLength];
-
             lineStats.xOffset = xOffset;
-
-            float currentWidth = lineStats.xOffset;
-            int charCount = 0;
-
             lineStats.maxWidth = maxWidth;
             lineStats.maxWidthF = maxWidthF;
 
-            for (int i = 0; i < lineStats.lineLength; i++) {
-                float w = currentWidth + lineStats.widths[i];
-                if (w <= lineStats.maxWidthF) {
-                    currentWidth = w;
-                    chars[i] = lineStats.line.charAt(i);
-                    charCount++;
-                } else {
-                    break;
-                }
-            }
+            // offset by consumed
+            lineStats.wrapCharacters(chars, widths, consumed);
 
             // the bounds of the new text may be different than the bounds of the old text
-            lineStats.line = String.copyValueOf(chars, 0, charCount);
-            lineStats.lineLength = charCount;
-            this.lineLength += charCount;
+            lineStats.setLine(chars);
+            this.lineLength += lineStats.lineLength;
             lineCount++;
             lineStats.getBounds(lastLineStats);
             lineStats.maxHeight = maxHeight;
             lineStats.maxHeightF = maxHeightF;
             lines.add(lineStats);
-            consumed += charCount;
+            consumed += lineStats.lineLength;
         }
+        deallocateTmp();
     }
 
     /**
