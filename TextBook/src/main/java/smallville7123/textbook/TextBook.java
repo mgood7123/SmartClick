@@ -84,8 +84,8 @@ public class TextBook {
     InputStream stream = null;
 
     public void setText(InputStream inputStream) {
-        text = null;
-        stream = inputStream;
+        text = readTextFile(inputStream);
+//        stream = inputStream;
     }
 
     public void setText(CharSequence charSequence) {

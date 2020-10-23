@@ -1,13 +1,15 @@
 package smallville7123.views;
 
+import android.widget.TextView;
+
 import smallville7123.textbook.TextBookView;
 
 public class TaskBuilder_CodeView_Renderer {
-    private TextBookView textBookView;
+    private TextView textBookView;
     private TaskBuilder_CodeView_Editor editor;
     private String data = "";
 
-    public void setTextBookView(TextBookView renderer) {
+    public void setTextBookView(TextView renderer) {
         textBookView = renderer;
     }
 
@@ -16,7 +18,7 @@ public class TaskBuilder_CodeView_Renderer {
     }
 
     public void renderText(String text) {
-        textBookView.setText(text);
+//        textBookView.setText(text);
     }
 
     public void render() {
@@ -27,7 +29,7 @@ public class TaskBuilder_CodeView_Renderer {
         this.data = data;
     }
 
-    public TextBookView getTextBookView() {
+    public TextView getTextBookView() {
         return textBookView;
     }
 }
