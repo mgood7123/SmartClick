@@ -15,9 +15,18 @@
 #include <jni.h>
 
 class SkiaInstance {
-    SkBitmap bitmap;
-    SkCanvas * canvas = nullptr;
 public:
+
+    int width = 0;
+    int height = 0;
+    SkImageInfo info;
+    int stride;
+    size_t rowBytes;
+    size_t pixelMemoryLength;
+    uint32_t * pixelMemory = nullptr;
+    sk_sp<SkSurface> surface = nullptr;
+    SkCanvas * canvas = nullptr;
+
     void createCanvas(int width, int height);
 
     static SkiaInstance & getInstance(jlong native_skia_ptr);
@@ -25,18 +34,9 @@ public:
     static SkFont & getFont(jlong font);
 
     void clear(SkColor color);
-    
-    SkBitmap & getBitmap();
-    bool readPixels();
-    void * getPixels();
-    size_t getPixelDataLength();
-    int getStride();
 
     void drawText(const char * text, int index, int count, float x, float y,
             SkPaint & paint, SkFont & font);
-
-    int width = 0;
-    int height = 0;
 
     jintArray getPixels(JNIEnv *env);
 };

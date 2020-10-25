@@ -107,5 +107,5 @@ Java_smallville7123_textbook_Skia_clear(JNIEnv *env, jobject thiz, jlong native_
 extern "C"
 JNIEXPORT jint JNICALL
 Java_smallville7123_textbook_Skia_getStride(JNIEnv *env, jobject thiz, jlong native_skia_ptr) {
-    return SkiaInstance::getInstance(native_skia_ptr).getStride();
+    return SkiaInstance::getInstance(native_skia_ptr).stride;
 }

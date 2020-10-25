@@ -117,21 +117,23 @@ public class Skia {
      */
     public void draw(Canvas canvas, int left, int top, Paint paint) {
         Instant before = Instant.now();
-        int[] pixels = getPixels(native_skia_ptr);
-        Instant after = Instant.now();
-        Log.d(TAG, "draw: read pixels in " + Duration.between(before, after).toMillis() + " milliseconds");
-        before = Instant.now();
-        int stride = getStride(native_skia_ptr);
-        after = Instant.now();
-        Log.d(TAG, "draw: obtained stride in " + Duration.between(before, after).toMillis() + " milliseconds");
-        before = Instant.now();
-        bitmap.setPixels(pixels, 0, stride, 0, 0, width, height);
-        after = Instant.now();
-        Log.d(TAG, "draw: set pixels in " + Duration.between(before, after).toMillis() + " milliseconds");
-        before = Instant.now();
+        /**
+         * stride – The number of colors in pixels[] to skip between rows.
+         *          Normally this value will be the same as the width of the bitmap,
+         *          but it can be larger (or negative).
+         */
+        bitmap.setPixels(
+                getPixels(native_skia_ptr),
+                0,
+                getStride(native_skia_ptr),
+                0,
+                0,
+                width,
+                height
+        );
         canvas.drawBitmap(bitmap, left, top, paint);
-        after = Instant.now();
-        Log.d(TAG, "draw: drawn bitmap in " + Duration.between(before, after).toMillis() + " milliseconds");
+        Instant after = Instant.now();
+        Log.d(TAG, "draw: drawn in " + Duration.between(before, after).toMillis() + " milliseconds");
     }
 
     public void drawText(String line, int index, int count, float x, float y, TextPaint textPaint) {

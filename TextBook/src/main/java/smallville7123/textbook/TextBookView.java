@@ -339,10 +339,6 @@ public class TextBookView extends View {
         mTextBook.draw(canvas, mTextBookPaint);
     }
 
-
-
-
-
     // ScrollView
 
     private void initScrollView() {
