@@ -116,5 +116,6 @@ public class TextBookGL extends SurfaceView implements SurfaceHolder.Callback2 {
     @Override
     public void surfaceRedrawNeededAsync(SurfaceHolder holder, Runnable drawingFinished) {
         Log.d(TAG, "surfaceRedrawNeededAsync() called with: holder = [" + holder + "], drawingFinished = [" + drawingFinished + "]");
+        drawingFinished.run();
     }
 }

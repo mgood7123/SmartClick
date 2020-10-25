@@ -160,18 +160,20 @@ std::atomic_bool running {false};
 class TextBookGL {
 public:
     class EGL egl;
+    std::thread mainThread;
 
     void setWindow(ANativeWindow *pWindow) {
         egl.native_window = pWindow;
         if (egl.native_window == 0) {
             LOG_INFO("ending thread");
             running.store(false);
+            mainThread.join();
             egl.basicDenit();
         } else {
             egl.basicInit();
             running.store(true);
             LOG_INFO("starting thread");
-            std::thread t1(&TextBookGL::main, this);
+            mainThread = std::thread(&TextBookGL::main, this);
         }
     }
 
@@ -183,7 +185,7 @@ public:
     }
 };
 
-TextBookGL textBookGL = TextBookGL();
+TextBookGL textBookGL;
 
 extern "C"
 JNIEXPORT void JNICALL
