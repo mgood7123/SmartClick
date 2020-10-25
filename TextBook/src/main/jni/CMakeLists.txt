@@ -15,3 +15,9 @@ add_library(Skia STATIC IMPORTED)
 set_target_properties(Skia PROPERTIES IMPORTED_LOCATION ${SKIA}/libskia.a)
 
 target_link_libraries(jniSkia android log Skia EGL GLESv3 jnigraphics)
+
+add_library(TextBookGL SHARED
+        TextBookGL.cpp
+)
+
+target_link_libraries(TextBookGL jniSkia)
