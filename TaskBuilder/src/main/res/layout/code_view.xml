@@ -11,7 +11,7 @@
     app:layout_constraintTop_toTopOf="parent"
     tools:showIn="@layout/taskbuilder">
 
-    <smallville7123.textbook.TextBookView
+    <smallville7123.textbook.TextBookGL
         android:id="@+id/codeEditor"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

@@ -2,55 +2,20 @@ package smallville7123.textbook;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-public class TextBookGL extends SurfaceView implements SurfaceHolder.Callback2 {
+public class TextBookGL extends SurfaceView implements SurfaceHolder.Callback {
+
+    private static final String TAG = "TextBookGL";
 
     static {
         System.loadLibrary("TextBookGL");
     }
 
     native void nativeSetSurface(Surface surface);
-
-    /**
-     * An alternative to surfaceRedrawNeeded where it is not required to block
-     * until the redraw is complete. You should initiate the redraw, and return,
-     * later invoking drawingFinished when your redraw is complete.
-     * <p>
-     * This can be useful to avoid blocking your main application thread on rendering.
-     * <p>
-     * As of O, if this is implemented {@link #surfaceRedrawNeeded} will not be called.
-     * However it is still recommended to implement {@link #surfaceRedrawNeeded} for
-     * compatibility with older versions of the platform.
-     *
-     * @param holder          The SurfaceHolder which needs redrawing.
-     * @param drawingFinished A runnable to signal completion. This may be invoked
-     */
-    @Override
-    public void surfaceRedrawNeededAsync(SurfaceHolder holder, Runnable drawingFinished) {
-
-    }
-
-    /**
-     * Called when the application needs to redraw the content of its
-     * surface, after it is resized or for some other reason.  By not
-     * returning from here until the redraw is complete, you can ensure that
-     * the user will not see your surface in a bad state (at its new
-     * size before it has been correctly drawn that way).  This will
-     * typically be preceeded by a call to {@link #surfaceChanged}.
-     * <p>
-     * As of O, {@link #surfaceRedrawNeededAsync} may be implemented
-     * to provide a non-blocking implementation. If {@link #surfaceRedrawNeededAsync}
-     * is not implemented, then this will be called instead.
-     *
-     * @param holder The SurfaceHolder whose surface has changed.
-     */
-    @Override
-    public void surfaceRedrawNeeded(SurfaceHolder holder) {
-
-    }
 
     public TextBookGL(Context context) {
         super(context);
@@ -79,6 +44,7 @@ public class TextBookGL extends SurfaceView implements SurfaceHolder.Callback2 {
      */
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
+        Log.d(TAG, "surfaceCreated() called with: holder = [" + holder + "]");
         nativeSetSurface(holder.getSurface());
     }
 
@@ -95,7 +61,7 @@ public class TextBookGL extends SurfaceView implements SurfaceHolder.Callback2 {
      */
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-
+        Log.d(TAG, "surfaceChanged() called with: holder = [" + holder + "], format = [" + format + "], width = [" + width + "], height = [" + height + "]");
     }
 
     /**
@@ -109,6 +75,7 @@ public class TextBookGL extends SurfaceView implements SurfaceHolder.Callback2 {
      */
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
+        Log.d(TAG, "surfaceDestroyed() called with: holder = [" + holder + "]");
         nativeSetSurface(null);
     }
 }

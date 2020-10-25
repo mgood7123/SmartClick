@@ -155,6 +155,8 @@ public:
     }
 };
 
+std::atomic_bool running {false};
+
 class TextBookGL {
 public:
     class EGL egl;
@@ -162,14 +164,22 @@ public:
     void setWindow(ANativeWindow *pWindow) {
         egl.native_window = pWindow;
         if (egl.native_window == 0) {
+            LOG_INFO("ending thread");
+            running.store(false);
             egl.basicDenit();
         } else {
             egl.basicInit();
+            running.store(true);
+            LOG_INFO("starting thread");
+            std::thread t1(&TextBookGL::main, this);
         }
     }
 
-    void loop() {
-
+    static void main(TextBookGL * textBookGl) {
+        LOG_INFO("thread started");
+        while(running.load()) {
+        }
+        LOG_INFO("thread ended");
     }
 };
 

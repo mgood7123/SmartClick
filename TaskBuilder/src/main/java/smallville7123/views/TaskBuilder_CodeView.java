@@ -18,13 +18,13 @@ class TaskBuilder_CodeView {
 
     void construct(TaskBuilder taskBuilder, @NonNull Context context, @Nullable AttributeSet attrs, @Nullable Integer defStyleAttr, @Nullable Integer defStyleRes) {
         this.taskBuilder = taskBuilder;
-        renderer.setEditor(editor);
-        editor.setRenderer(renderer);
-        renderer.setTextBookView(taskBuilder.CodeView.findViewById(R.id.codeEditor));
-        renderer.getTextBookView().setSampleText();
+//        renderer.setEditor(editor);
+//        editor.setRenderer(renderer);
+//        renderer.setTextBookView(taskBuilder.CodeView.findViewById(R.id.codeEditor));
+//        renderer.getTextBookView().setSampleText();
 //        editor.append("hello");
 //        editor.append(", goodbye. ");
 //        editor.append(editor.getText(), 80);
-        editor.render();
+//        editor.render();
     }
 }
