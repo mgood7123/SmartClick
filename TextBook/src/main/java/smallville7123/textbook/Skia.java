@@ -4,13 +4,23 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.text.TextPaint;
+import android.util.Log;
+
+import java.time.Duration;
+import java.time.Instant;
 
 public class Skia {
+    private static final String TAG = "Skia";
+
     static {
         System.loadLibrary("jniSkia");
     }
 
     private long native_skia_ptr = 0;
+
+    private Bitmap bitmap;
+    private int width;
+    private int height;
 
     public Skia() {
         native_skia_ptr = createNativeInstance();
@@ -18,21 +28,24 @@ public class Skia {
 
     private native void createCanvas(long native_skia_ptr, int width, int height);
     private native long createNativeInstance();
-    private native long getBitmap(long native_skia_ptr);
+    private native int[] getPixels(long native_skia_ptr);
     private native long constructPaint(int alpha, boolean antiAlias, int textColor, int style);
     private native long constructFont(float textSize, float textScaleX, float textSkewX);
     private native void drawText(long native_skia_ptr, String text, int index, int count, float x, float y, long paint, long font);
     private native int getWidth(long native_skia_ptr);
     private native int getHeight(long native_skia_ptr);
+    private native int getStride(long native_skia_ptr);
+    private native void clear(long native_skia_ptr, int color);
 
     public void createCanvas(int w, int h) {
+        width = w;
+        height = h;
         createCanvas(native_skia_ptr, w, h);
-    }
-
-
-    public Bitmap getBitmap() {
-        return null;
-//        return getBitmap(native_skia_ptr);
+        if (bitmap != null) {
+            bitmap.recycle();
+            bitmap = null;
+        }
+        bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
     }
 
     public long constructSkiaPaint(Paint paint) {
@@ -103,8 +116,22 @@ public class Skia {
      * @param paint The paint used to draw the bitmap (may be null)
      */
     public void draw(Canvas canvas, int left, int top, Paint paint) {
-        getBitmap(native_skia_ptr);
-//        canvas.drawBitmap(, left, top, paint);
+        Instant before = Instant.now();
+        int[] pixels = getPixels(native_skia_ptr);
+        Instant after = Instant.now();
+        Log.d(TAG, "draw: read pixels in " + Duration.between(before, after).toMillis() + " milliseconds");
+        before = Instant.now();
+        int stride = getStride(native_skia_ptr);
+        after = Instant.now();
+        Log.d(TAG, "draw: obtained stride in " + Duration.between(before, after).toMillis() + " milliseconds");
+        before = Instant.now();
+        bitmap.setPixels(pixels, 0, stride, 0, 0, width, height);
+        after = Instant.now();
+        Log.d(TAG, "draw: set pixels in " + Duration.between(before, after).toMillis() + " milliseconds");
+        before = Instant.now();
+        canvas.drawBitmap(bitmap, left, top, paint);
+        after = Instant.now();
+        Log.d(TAG, "draw: drawn bitmap in " + Duration.between(before, after).toMillis() + " milliseconds");
     }
 
     public void drawText(String line, int index, int count, float x, float y, TextPaint textPaint) {
@@ -119,5 +146,13 @@ public class Skia {
 
     public int getHeight() {
         return getHeight(native_skia_ptr);
+    }
+
+    public void clear(int color) {
+        clear(native_skia_ptr, color);
+    }
+
+    public void clear(Paint background) {
+        clear(background.getColor());
     }
 }

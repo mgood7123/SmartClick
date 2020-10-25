@@ -21,9 +21,18 @@ Java_smallville7123_textbook_Skia_createCanvas(JNIEnv* env, jobject thiz,
 }
 
 extern "C"
-JNIEXPORT jlong JNICALL
-Java_smallville7123_textbook_Skia_getBitmap(JNIEnv *env, jobject thiz, jlong native_skia_ptr) {
-    return SkiaInstance::getInstance(native_skia_ptr).getBitmap();
+JNIEXPORT jintArray JNICALL
+Java_smallville7123_textbook_Skia_getPixels(JNIEnv *env, jobject thiz, jlong native_skia_ptr) {
+    jintArray pixels = SkiaInstance::getInstance(native_skia_ptr).getPixels(env);
+    return pixels;
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_smallville7123_textbook_Skia_freePixels(JNIEnv *env, jobject thiz, jlong native_skia_ptr,
+        jintArray pixels) {
+    // TODO
+//    JniHelpers::Arrays::createJniIntArray(env, length);
 }
 
 extern "C" JNIEXPORT void JNICALL
@@ -42,7 +51,7 @@ Java_smallville7123_textbook_Skia_drawText(JNIEnv* env, jobject thiz,
             }
     }
 
-    SkiaInstance & skia = SkiaInstance::getInstance(native_skia_ptr);
+    auto skia = SkiaInstance::getInstance(native_skia_ptr);
     SkPaint & p = SkiaInstance::getPaint(paint);
     SkFont & f = SkiaInstance::getFont(font);
     skia.drawText(nText, index, count, x, y, p, f);
@@ -87,4 +96,16 @@ extern "C"
 JNIEXPORT jint JNICALL
 Java_smallville7123_textbook_Skia_getHeight(JNIEnv *env, jobject thiz, jlong native_skia_ptr) {
     return SkiaInstance::getInstance(native_skia_ptr).height;
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_smallville7123_textbook_Skia_clear(JNIEnv *env, jobject thiz, jlong native_skia_ptr,
+        jint color) {
+    return SkiaInstance::getInstance(native_skia_ptr).clear(color);
+}
+extern "C"
+JNIEXPORT jint JNICALL
+Java_smallville7123_textbook_Skia_getStride(JNIEnv *env, jobject thiz, jlong native_skia_ptr) {
+    return SkiaInstance::getInstance(native_skia_ptr).getStride();
 }

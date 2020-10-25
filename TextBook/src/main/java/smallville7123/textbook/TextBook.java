@@ -2,6 +2,8 @@ package smallville7123.textbook;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.text.TextPaint;
 import android.util.Log;
 
@@ -220,5 +222,9 @@ public class TextBook {
             if (line.charAt(i) != WHITE_SPACE) return false;
         }
         return true;
+    }
+
+    public void clear(Paint mBackgroundPaint) {
+        skia.clear(mBackgroundPaint);
     }
 }

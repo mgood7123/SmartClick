@@ -134,22 +134,24 @@ void JniHelpers::Arrays::setJniIntArrayIndex(JNIEnv *env, jintArray * array, int
 
 bool JniHelpers::Arrays::setJniIntArrayIndexes(
         JNIEnv *env, jintArray * array, int index,
-        int * pointer, int totalIndexesInPointer
+        int * pointer, size_t totalIndexesInPointer
 ) {
     if (array == NULL) return false;
     // fill a temp structure to use to populate the java int array
-    jint * fill = (jint*) malloc(totalIndexesInPointer * sizeof(jint));
-    if (fill == NULL) return false;
+    jint * fill = new jint[totalIndexesInPointer];
+    if (fill == nullptr) return false;
 
     // populate the values
     // if valueTotalIndexes is 1, then
     for (int i = 0; i < totalIndexesInPointer; ++i) {
         fill[i] = pointer[i];
     }
+//    memcpy(fill, pointer, totalIndexesInPointer);
+//    env->SetIntArrayRegion(*array, index, totalIndexesInPointer, pointer);
 
     // move from the temp structure to the java structure
     env->SetIntArrayRegion(*array, index, totalIndexesInPointer, fill);
-    free(fill);
+    delete[] fill;
     return true;
 }
 

@@ -40,7 +40,7 @@ public:
         static void setJniIntArrayIndex(JNIEnv *env, jintArray *array, int index, int value);
 
         static bool setJniIntArrayIndexes(JNIEnv *env, jintArray *array, int index, int *pointer,
-                                          int totalIndexesInPointer);
+                                          size_t totalIndexesInPointer);
     };
 
     class Jvm {

@@ -335,7 +335,7 @@ public class TextBookView extends View {
     protected void onDraw(final Canvas canvas) {
         // Draw the background for this view
         super.onDraw(canvas);
-        canvas.drawPaint(mBackgroundPaint);
+        mTextBook.clear(mBackgroundPaint);
         mTextBook.draw(canvas, mTextBookPaint);
     }
 

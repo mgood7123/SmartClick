@@ -15,7 +15,7 @@
 #include <jni.h>
 
 class SkiaInstance {
-    SkBitmap tmp;
+    SkBitmap bitmap;
     SkCanvas * canvas = nullptr;
 public:
     void createCanvas(int width, int height);
@@ -24,13 +24,21 @@ public:
     static SkPaint & getPaint(jlong paint);
     static SkFont & getFont(jlong font);
 
-    jlong getBitmap();
+    void clear(SkColor color);
+    
+    SkBitmap & getBitmap();
+    bool readPixels();
+    void * getPixels();
+    size_t getPixelDataLength();
+    int getStride();
 
     void drawText(const char * text, int index, int count, float x, float y,
             SkPaint & paint, SkFont & font);
 
     int width = 0;
     int height = 0;
+
+    jintArray getPixels(JNIEnv *env);
 };
 
 #endif //SMARTCLICK_SKIAINSTANCE_H
