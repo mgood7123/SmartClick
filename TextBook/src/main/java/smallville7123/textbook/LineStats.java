@@ -1,9 +1,11 @@
 package smallville7123.textbook;
 
-import android.graphics.Canvas;
+import android.graphics.Bitmap;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.os.SystemClock;
 import android.text.TextPaint;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -38,12 +40,12 @@ abstract class LineStats {
         this.drawBounds = drawBounds;
     }
 
-    public LineStats(Canvas canvas, String text, TextPaint paint) {
-        this(canvas, text, paint, false);
+    public LineStats(Skia skia, String text, TextPaint paint) {
+        this(skia, text, paint, false);
     }
 
-    public LineStats(Canvas canvas, String text, TextPaint paint, boolean drawBounds) {
-        this.drawBounds = drawBounds;
+    public LineStats(Skia skia, String text, TextPaint paint, boolean drawBounds) {
+        this(drawBounds);
         textPaint = paint;
         line = text;
         lineLength = line == null ? 0 : line.length();
@@ -52,9 +54,9 @@ abstract class LineStats {
         // TODO: getTextWidths returns a float array, however canvas.getWidth returns an int
         //  how do we account for this?
         //  fow now, just store the canvas width as float
-        maxWidth = canvas.getWidth();
+        maxWidth = skia.getWidth();
         maxWidthF = maxWidth;
-        maxHeight = canvas.getHeight();
+        maxHeight = skia.getHeight();
         maxHeightF = maxHeight;
     }
 
@@ -119,32 +121,11 @@ abstract class LineStats {
         textPaint.getTextWidths(line, widths);
     }
 
-    public void draw(Canvas canvas) {
-        draw(canvas, null);
-    }
-
-    public void draw(Canvas canvas, TextPaint textPaint) {
-        if (shouldDraw) {
-            int index = 0;
-            int count = lineLength;
-            float x = xOffset;
-            float y = yOffset - getOffsetY();
-            canvas.drawText(line, index, count, x, y, textPaint);
-
-            if (drawBounds) {
-                Paint p = new Paint();
-                p.setStyle(Paint.Style.STROKE);
-                p.setColor(0xffff0000);
-                canvas.drawRect(bounds, p);
-            }
-        }
-    }
-
     abstract float getOffsetY();
 
     char[] chars;
-    int charCount = 0;
 
+    int charCount = 0;
     public void copyChar(@NonNull char[] chars, int i) {
         chars[i] = line.charAt(i);
         charCount++;
@@ -174,6 +155,28 @@ abstract class LineStats {
             } else {
                 break;
             }
+        }
+    }
+
+    public void draw(Skia skia) {
+        draw(skia, null);
+    }
+
+    public void draw(Skia skia, TextPaint textPaint) {
+        if (shouldDraw) {
+            int index = 0;
+            int count = lineLength;
+            float x = xOffset;
+            float y = yOffset - getOffsetY();
+
+            skia.drawText(line, index, count, x, y, textPaint);
+
+//            if (drawBounds) {
+//                Paint p = new Paint();
+//                p.setStyle(Paint.Style.STROKE);
+//                p.setColor(0xffff0000);
+//                canvas.drawRect(bounds, p);
+//            }
         }
     }
 }

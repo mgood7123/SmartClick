@@ -1,5 +1,6 @@
 package smallville7123.textbook;
 
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.text.TextPaint;
 import android.util.Log;
@@ -42,6 +43,8 @@ public class TextBook {
     int offset_y = 0;
     Object lock = new Object();
     TextStats textStats;
+    Skia skia;
+
 
     public void setDrawBounds(final boolean drawBounds) {
         this.drawBounds = drawBounds;
@@ -56,7 +59,12 @@ public class TextBook {
         return array;
     }
 
+    public TextBook() {
+        skia = new Skia();
+    }
+
     public TextBook(CharSequence charSequence) {
+        this();
         setText(charSequence);
     }
 
@@ -80,12 +88,12 @@ public class TextBook {
         Log.d(TAG, "readTextFile: completed in " + Duration.between(before, after).toMillis() + " milliseconds");
         return out;
     }
-
     InputStream stream = null;
 
+
     public void setText(InputStream inputStream) {
-        text = readTextFile(inputStream);
-//        stream = inputStream;
+        text = null;
+        stream = inputStream;
     }
 
     public void setText(CharSequence charSequence) {
@@ -100,18 +108,23 @@ public class TextBook {
         text = charSequence;
     }
 
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        skia.createCanvas(w, h);
+    }
+
     public void draw(Canvas canvas, TextPaint textPaint) {
         Instant before = Instant.now();
-        drawLine(canvas, text == null ? null : text.toString(), textPaint);
+        drawLine(skia, text == null ? null : text.toString(), textPaint);
+        skia.draw(canvas);
         Instant after = Instant.now();
         Log.d(TAG, "draw: completed in " + Duration.between(before, after).toMillis() + " milliseconds");
     }
 
-    private void drawLine(Canvas canvas, String line, TextPaint textPaint) {
+    private void drawLine(Skia skia, String line, TextPaint textPaint) {
         // performance can be improved by caching
         if (textStats == null) {
             Instant before = Instant.now();
-                textStats = new TextStats(canvas, line, textPaint, drawBounds) {
+                textStats = new TextStats(skia, line, textPaint, drawBounds) {
                     @Override
                     float getOffsetY() {
                         return offset_y;
@@ -129,7 +142,7 @@ public class TextBook {
             Instant after = Instant.now();
             Log.d(TAG, "drawLine: constructed line information for " + textStats.lineCount + " lines and " + textStats.lineLength + " characters in " + Duration.between(before, after).toMillis() + " milliseconds");
         }
-        textStats.currentCanvas = canvas;
+        textStats.currentSkia = skia;
         drawLine(textStats, textPaint);
     }
 

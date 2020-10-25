@@ -3,6 +3,7 @@ package smallville7123.textbook;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -312,6 +313,22 @@ public class TextBookView extends View {
     @InspectableProperty
     public Typeface getTypeface() {
         return mTextBookPaint.getTypeface();
+    }
+
+    /**
+     * This is called during layout when the size of this view has changed. If
+     * you were just added to the view hierarchy, you're called with the old
+     * values of 0.
+     *
+     * @param w    Current width of this view.
+     * @param h    Current height of this view.
+     * @param oldw Old width of this view.
+     * @param oldh Old height of this view.
+     */
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        if (mTextBook != null) mTextBook.onSizeChanged(w, h, oldw, oldh);
     }
 
     @Override

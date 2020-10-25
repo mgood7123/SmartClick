@@ -1,6 +1,6 @@
 package smallville7123.textbook;
 
-import android.graphics.Canvas;
+import android.graphics.Bitmap;
 import android.text.TextPaint;
 
 import androidx.annotation.Nullable;
@@ -12,7 +12,7 @@ import java.util.ArrayList;
 
 abstract class TextStats extends LineStats {
     public static final char TAB = '\t';
-    public Canvas currentCanvas;
+    public Skia currentSkia;
     boolean wrapped;
     ArrayList<LineStats> lines;
     public int lineCount;
@@ -32,13 +32,13 @@ abstract class TextStats extends LineStats {
         super(drawBounds);
     }
 
-    public TextStats(Canvas canvas, String text, TextPaint paint) {
-        this(canvas, text, paint, false);
+    public TextStats(Skia skia, String text, TextPaint paint) {
+        this(skia, text, paint, false);
     }
 
-    public TextStats(Canvas canvas, String text, TextPaint paint, boolean drawBounds) {
-        super(canvas, text, paint, drawBounds);
-        currentCanvas = canvas;
+    public TextStats(Skia skia, String text, TextPaint paint, boolean drawBounds) {
+        super(skia, text, paint, drawBounds);
+        currentSkia = skia;
         wrapped = lineBoundsWidth > maxWidth;
     }
 
@@ -162,7 +162,7 @@ abstract class TextStats extends LineStats {
     public void drawLines(TextPaint textPaint) {
         if (lineCount != 0) {
             for (LineStats lineStats : lines) {
-                lineStats.draw(currentCanvas, textPaint);
+                lineStats.draw(currentSkia, textPaint);
             }
         }
     }
@@ -188,7 +188,7 @@ abstract class TextStats extends LineStats {
      */
     public void drawLine(int lineNumber, TextPaint textPaint) {
         if (lineNumber >= lineCount) return;
-        lines.get(lineNumber).draw(currentCanvas, textPaint);
+        lines.get(lineNumber).draw(currentSkia, textPaint);
     }
 
     @Nullable
